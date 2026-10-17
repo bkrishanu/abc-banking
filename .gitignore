@@ -1,0 +1,32 @@
+# Secrets and machine-specific config (AGENTS.md section 05)
+local.properties
+app/google-services.json
+*.jks
+*.keystore
+keystore.properties
+
+# Gradle and build output
+.gradle/
+.kotlin/
+build/
+*/build/
+captures/
+*.apk
+*.aab
+*.hprof
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.externalNativeBuild/
+.cxx/
+
+# Firebase CLI
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# OS
+.DS_Store
+Thumbs.db
