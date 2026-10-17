@@ -38,7 +38,8 @@ Firebase project abc-banking-181019
 | --- | --- | --- |
 | IDE and build | Android Studio (latest stable), Gradle Kotlin DSL, version catalog `gradle/libs.versions.toml`, bundled JDK | Standard Android toolchain, one place for versions |
 | Language | Kotlin (latest stable, K2 compiler) | Required for Compose; Java not used |
-| SDK levels | minSdk 26, targetSdk and compileSdk = latest stable in Android Studio | 26 gives java.time, Keystore EC keys and adaptive icons without desugaring |
+| SDK levels | minSdk 26, targetSdk and compileSdk 37 (latest stable, 2026-10) | 26 gives java.time, Keystore EC keys and adaptive icons without desugaring |
+| Build | Gradle 9.8.1 wrapper (checksum pinned), AGP 9.4 with its built-in Kotlin support, so no `org.jetbrains.kotlin.android` plugin; KSP for Hilt | Exact versions live only in `gradle/libs.versions.toml` |
 | UI | Jetpack Compose + Material 3 (Compose BOM), themed by `AbcTheme` | Declarative UI, matches the custom design better than XML views |
 | Navigation | Navigation Compose with type-safe routes (kotlinx.serialization) | First-party, no third-party router |
 | State | ViewModel + Kotlin Coroutines + StateFlow | Lifecycle-aware, testable; no LiveData, no RxJava |
@@ -50,7 +51,7 @@ Firebase project abc-banking-181019
 | Charts | Compose Canvas (no library) | Two simple charts; a library would fight the design |
 | PDFs | `android.graphics.pdf.PdfDocument` to create receipts, statements and the 1099-INT; `PdfRenderer` to view them | Framework APIs, no dependency, no Storage needed |
 | Testing | JUnit 4, kotlinx-coroutines-test, Turbine, MockK, Compose UI Test | Unit tests for domain and ViewModels; UI tests for critical flows only |
-| Formatting and lint | ktlint (Gradle plugin) + Android Lint | One formatter, enforced in CI and locally |
+| Formatting and lint | ktlint (Gradle plugin, `android_studio` style in `.editorconfig`) + Android Lint | One formatter, enforced in CI and locally |
 
 Do not add a dependency that overlaps with a row in this table without asking.
 Every dependency goes through `libs.versions.toml`; no hard-coded versions in module build files.
@@ -72,6 +73,8 @@ BankingMobileApp/
     DEMO_DATA.md                pre-loaded personas and catalog (source for assets/seed)
     Sample Screens 1.png        visual reference
     Sample Screens 2.png        visual reference
+    licenses/                   third-party licences for bundled assets (Inter-OFL.txt)
+  .editorconfig                 ktlint configuration
   firebase.json                 Firebase CLI config (rules + emulators)
   .firebaserc                   default project: abc-banking-181019
   firebase/
@@ -258,7 +261,7 @@ The agent must not "fix" these.
 - Step-up re-asks for the same MPIN; there is no OTP and no biometric (PRD 08). It is not a real second factor. Do not add AndroidX Biometric or an OTP without approval.
 - The customer ID is not an account. It only picks which persona the install's anonymous user is seeded with, and logging in with another ID wipes the current data.
 - Anonymous Firebase auth. Each install is its own demo customer with fresh seeded data; reinstalling resets the demo. There are no credentials to leak.
-- No Cloud Storage. The project is on Spark, so statements and tax documents are generated on the device from Firestore data.
+- No Cloud Storage. The project is on Spark, so statements and tax documents are generated on the device from Firestore data. `google-services.json` lists a default bucket; it stays unused (re-confirmed 2026-10-17), and there are no Storage rules.
 - Check deposits clear on the client after 30 s, not on a server. If the app is closed, they clear on next open.
 - The client writes its own seed data. Rules allow a user to write their own tree, which a real bank would never do; it keeps the demo self-contained.
 - Seed data is bundled JSON with relative dates and a fixed random seed, not live Firestore data shared between devices. Every install of a persona looks identical and always current.
@@ -267,6 +270,7 @@ The agent must not "fix" these.
 - Single Gradle module. Multi-module would slow the demo build for no benefit at this size. Feature packages keep the same boundaries a module split would.
 - Portrait lock and `FLAG_SECURE` on the whole app, including non-sensitive screens. Simpler and matches the "mask on app switcher" requirement.
 - Money as `Long` cents, never `Double` or `BigDecimal` in models.
+- `AndroidManifest.xml` removes components and permissions that libraries merge in: Firebase Auth's exported `GenericIdpActivity`, `RecaptchaActivity` and `RevocationBoundService` (anonymous sign-in needs none of them, and only the launcher Activity may be exported), and from Analytics the advertising permissions `AD_ID`, `ACCESS_ADSERVICES_AD_ID` and `ACCESS_ADSERVICES_ATTRIBUTION`, the Play install-referrer permission and `READ_GSERVICES`. `WAKE_LOCK` is kept so Analytics and Firestore can finish background uploads. Do not remove these `tools:node="remove"` entries. After any dependency change, check the merged release manifest still exports only `MainActivity`.
 
 ## 07 Scalability and future considerations
 

@@ -41,6 +41,8 @@ Tokens live in `core/designsystem/theme/Color.kt` and are read via `AbcTheme.col
 | color-warning | `warning` | #B45309 | Low balance, non-blocking warnings |
 | color-danger | `danger` | #D93025 | Errors, destructive actions, frozen card badge |
 | color-scrim | `scrim` | #66000000 | Behind bottom sheets and dialogs |
+| color-primary-pressed | `primaryPressed` | #2A2A2A | Pressed state of primary buttons (section 06) |
+| color-shadow | `shadow` | #1A000000 | Ambient and spot shadow of floating elements (section 05) |
 
 Card art (bank card faces):
 
@@ -189,6 +191,13 @@ States (every data-driven screen)
 - Stroke width 1.75. Tint with tokens only.
 - Bottom bar icons in the samples are filled. Use Lucide's filled-equivalent shapes or ask before drawing custom ones.
 - Every icon-only control has a contentDescription. Decorative icons set it to null.
+
+Launcher icon (chosen 2026-10-17, concept B "Peach card"):
+- Adaptive icon in `res/mipmap-anydpi/ic_launcher.xml` and `ic_launcher_round.xml`, all vectors, no PNGs (minSdk 26).
+- Background `drawable/ic_launcher_background.xml`: card-peach gradient #F7DCC8 to #F08A3C, top-left to bottom-right, so the icon matches the Main card.
+- Foreground `drawable/ic_launcher_foreground.xml`: the abcbank dotted mark in #111111. 13 rounded squares (corner radius 28% of side) on the diagonals c + r = 3, 5, 7 of a 6 x 6 grid of 7.6dp cells, centred on the 108dp canvas and inside the 66dp safe zone. Size and opacity grow towards the top-right (side 24% to 92% of a cell, opacity 48% to 100%), traced from the wordmark in Sample Screens 1.
+- Monochrome `drawable/ic_launcher_monochrome.xml`: the same mark, for Android 13+ themed icons.
+- If ABC Bank supplies a brand icon, replace these three drawables only.
 
 ## 08 Screen sizes and accessibility
 
