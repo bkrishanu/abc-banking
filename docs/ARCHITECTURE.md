@@ -39,7 +39,7 @@ Firebase project abc-banking-181019
 | IDE and build | Android Studio (latest stable), Gradle Kotlin DSL, version catalog `gradle/libs.versions.toml`, bundled JDK | Standard Android toolchain, one place for versions |
 | Language | Kotlin (latest stable, K2 compiler) | Required for Compose; Java not used |
 | SDK levels | minSdk 26, targetSdk and compileSdk 37 (latest stable, 2026-10) | 26 gives java.time, Keystore EC keys and adaptive icons without desugaring |
-| Build | Gradle 9.8.1 wrapper (checksum pinned), AGP 9.4 with its built-in Kotlin support, so no `org.jetbrains.kotlin.android` plugin; KSP for Hilt | Exact versions live only in `gradle/libs.versions.toml` |
+| Build | Gradle 9.8.1 wrapper (checksum pinned), daemon on JDK 21 (`gradle/gradle-daemon-jvm.properties`, same as Studio's bundled JBR), AGP 9.3.1 with its built-in Kotlin support. AGP may not be newer than the installed Android Studio supports (Studio 2026.1.2: up to 9.3.1), or Studio sync fails; upgrade Studio first, then AGP. Built-in Kotlin means no `org.jetbrains.kotlin.android` plugin; KSP for Hilt | Exact versions live only in `gradle/libs.versions.toml` |
 | UI | Jetpack Compose + Material 3 (Compose BOM), themed by `AbcTheme` | Declarative UI, matches the custom design better than XML views |
 | Navigation | Navigation Compose with type-safe routes (kotlinx.serialization) | First-party, no third-party router |
 | State | ViewModel + Kotlin Coroutines + StateFlow | Lifecycle-aware, testable; no LiveData, no RxJava |
