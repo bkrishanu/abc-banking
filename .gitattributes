@@ -1,0 +1,12 @@
+# Normalise text to LF in the repository whatever the committer's platform
+* text=auto
+
+# Shell script must keep LF or it fails on macOS and Linux; batch file needs CRLF
+gradlew text eol=lf
+*.bat text eol=crlf
+
+# Binary assets
+*.png binary
+*.webp binary
+*.ttf binary
+*.jar binary
