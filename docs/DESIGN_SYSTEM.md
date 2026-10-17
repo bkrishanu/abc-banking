@@ -43,6 +43,7 @@ Tokens live in `core/designsystem/theme/Color.kt` and are read via `AbcTheme.col
 | color-scrim | `scrim` | #66000000 | Behind bottom sheets and dialogs |
 | color-primary-pressed | `primaryPressed` | #2A2A2A | Pressed state of primary buttons (section 06) |
 | color-shadow | `shadow` | #1A000000 | Ambient and spot shadow of floating elements (section 05) |
+| color-card-scrim | `cardScrim` | #33000000 | Bottom of card art, fading up to transparent, so white text stays readable |
 
 Card art (bank card faces):
 
@@ -98,6 +99,9 @@ Base unit: 4dp. Only use values from this scale. Tokens in `core/designsystem/th
 | space-8 | 32dp | Above the welcome headline, large group gaps |
 | space-12 | 48dp | Bottom clearance so content scrolls above the floating bottom bar (plus bar height) |
 
+Component sizes (touch target 48dp, button 52dp, text field 56dp, keypad key 64dp, MPIN dot 12dp,
+icon 16/20/24dp, border 1dp, focus ring 2dp) live in `core/designsystem/theme/Dimens.kt` as `AbcTheme.dimens`.
+
 Layout:
 - Single column. 16dp side gutter. Content is full width minus gutters.
 - Edge-to-edge is on. Respect status bar and navigation bar insets (`WindowInsets.safeDrawing`).
@@ -149,6 +153,8 @@ Chips (`FilterChipRow`)
 
 Cards and lists
 - `ContentCard`: surface, radius-xl, padding space-4 (space-5 for charts).
+- `AbcWordmark`: the dotted mark plus "abcbank" in H2 (H3 on card art). Mark is 1.2x the text size, space-2 before the text, so it follows font scale. Tone Brand: mark and "abc" in card-sage end #6E9A5E, "bank" in text. Tone OnCard: all white. Read by TalkBack as "ABC Bank".
+- `BankCardArt`: the card face only. 1.586 aspect ratio, radius-lg, card-art gradient top-left to bottom-right, then `cardScrim` fading up from the bottom edge. Content slot for text. `BankCardView` builds on it.
 - `BankCardView`: 1.586 aspect ratio, radius-lg, card art, contactless and network icons top-left, balance, holder name, expiry, last four. Stacked cards peek 24dp below one another. Optional tag (`CardTag`, black pill, "Main card").
 - `BalanceText`: big integer part, small cents. When masked shows "••••••" with the same width class. Never logs or exposes the raw value in accessibility text while masked ("Balance hidden").
 - `TransactionRow`: 40dp leading circle (category icon on accent/positive tint, or contact avatar), title Body, timestamp Small muted, amount right-aligned. Outgoing "-$125.00" in text colour, incoming "+$38.60" in positiveText.
@@ -165,7 +171,7 @@ Navigation
 
 Inputs
 - `AbcTextField`: 56dp, surface, radius-sm, 1dp border, label always visible above (Small muted). Placeholder is a hint, never the label. Error: border danger, message below in Small danger.
-- `AmountKeypad` and `MpinPad`: 3 x 4 grid of 64dp keys, radius-md, H1 digits; MPIN shows 6 dots that fill as digits are entered. `MpinPad` submits on the sixth digit. Wrong MPIN: dots clear and a Small danger message shows the attempts left. Lockout: keys disabled and a Small muted countdown ("Try again in 24 s"). TalkBack never reads the digits entered, only "3 of 6 entered".
+- `AmountKeypad` and `MpinPad`: 3 x 4 grid of 64dp keys, radius-md, H1 digits; MPIN shows 6 dots that fill as digits are entered. Keys are 64dp tall, a third of the pad width each, 12dp (space-3) gaps, surface on background. `MpinPad` bottom row: blank, 0, delete (Lucide `delete`, 24dp, no key background). Dots are 12dp circles, 16dp (space-4) apart; filled in text colour, empty as a 1dp textMuted ring (a surfaceMuted fill was tried and is invisible on the background). `MpinPad` submits on the sixth digit. Wrong MPIN: dots clear and a Small danger message shows the attempts left. Lockout: keys disabled and a Small muted countdown ("Try again in 24 s"). TalkBack never reads the digits entered, only "3 of 6 entered".
 - `AbcSwitch`, `AbcSlider`: Material 3 components themed with primary for active track and accent thumb highlight. Slider always shows the current value as text.
 
 Charts (drawn with Compose Canvas, no chart library)
@@ -221,10 +227,19 @@ Rules:
 - Charts animate in once per screen visit (600ms sweep for the donut, left-to-right reveal for the line).
 - Balance masking cross-fades in 150ms.
 - Respect the system "Remove animations" setting: when the animator duration scale is 0, skip non-essential animation.
+- Durations live in `core/designsystem/theme/AbcMotion.kt`. Screen changes fade in and out over 350ms.
 
 ## 10 Reference screens map
 
 How the sample PNGs map to app screens. Use them for layout and feel, not as pixel specs; tokens above win on any conflict.
+
+`WelcomeScreen` layout (approved 2026-10-17):
+- Brand `AbcWordmark` at top-left, space-4 below the status bar.
+- Card stack, space-6 below: two `BankCardArt` at 78% of content width with a white H3 wordmark bottom-right. Front: card-peach, top-left, rotated -8deg. Back: card-sage, right-aligned, 48dp (space-12) lower, rotated -4deg. Decorative, hidden from TalkBack.
+- Headline "Effortless banking, simplified." in Display, space-8 below the cards. Subtext "Everyday banking, simplified, in your pocket." in Body textMuted, space-3 below.
+- Primary "Get started" pinned to the bottom; everything above it scrolls.
+
+`LoginScreen` layout: back arrow (Lucide `arrow-left`, 24dp in a 48dp target), H1 "Log in", space-6, customer ID `AbcTextField` (placeholder "8 letters or numbers"), space-6, H3 "Enter your MPIN", space-4, `MpinPad`. The pad stays disabled until the ID is recognised, then the keyboard closes.
 
 | Sample | Shows | App screen |
 | --- | --- | --- |

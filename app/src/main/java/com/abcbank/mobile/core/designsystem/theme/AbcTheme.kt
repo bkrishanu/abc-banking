@@ -13,6 +13,7 @@ private val LocalAbcTypography = staticCompositionLocalOf { DefaultAbcTypography
 private val LocalAbcSpacing = staticCompositionLocalOf { DefaultAbcSpacing }
 private val LocalAbcShapes = staticCompositionLocalOf { AbcShapes() }
 private val LocalAbcElevation = staticCompositionLocalOf { AbcElevation() }
+private val LocalAbcDimens = staticCompositionLocalOf { DefaultAbcDimens }
 
 /**
  * App theme. Composables read tokens through [AbcTheme.colors] and friends.
@@ -28,7 +29,8 @@ fun AbcTheme(content: @Composable () -> Unit) {
         LocalAbcTypography provides typography,
         LocalAbcSpacing provides DefaultAbcSpacing,
         LocalAbcShapes provides AbcShapes(),
-        LocalAbcElevation provides AbcElevation()
+        LocalAbcElevation provides AbcElevation(),
+        LocalAbcDimens provides DefaultAbcDimens
     ) {
         MaterialTheme(
             colorScheme = lightColorScheme(
@@ -83,4 +85,8 @@ object AbcTheme {
     val elevation: AbcElevation
         @Composable @ReadOnlyComposable
         get() = LocalAbcElevation.current
+
+    val dimens: AbcDimens
+        @Composable @ReadOnlyComposable
+        get() = LocalAbcDimens.current
 }

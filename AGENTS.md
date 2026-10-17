@@ -46,6 +46,7 @@ Do these in order, every session:
 - Composables: stateless where possible, state hoisted to the screen, `Modifier` as the first optional parameter, a `@Preview` for every design-system component and every screen's Content state.
 - Screens receive a `UiState` and event lambdas. They never call repositories, Firebase or `LocalContext` for business work.
 - ViewModels expose one `StateFlow<UiState>`; UiState is a sealed type with Loading, Empty, Error and Content.
+  Form screens that load no remote data (login, transfer amount entry) use only Loading and Content, with field errors inside Content.
 - Coroutines run in `viewModelScope` or an injected scope, with an injected `DispatcherProvider`. No `GlobalScope`, no `runBlocking`.
 - Money is `Money` (Long cents). Never `Double` for amounts. Format through the shared formatter only.
 - Validate every external input (forms, nav arguments, Firestore documents mapped to models) before it reaches a use case. Map Firestore DTOs to domain models in `data/`; a malformed document becomes an error, not a crash.
@@ -82,6 +83,8 @@ Run from the project root. On Windows use `.\gradlew.bat` (PowerShell) or `./gra
 ./gradlew lint                         Android Lint
 ./gradlew ktlintCheck                  formatting check (ktlintFormat to fix)
 ./gradlew testDebugUnitTest            unit tests
+./gradlew verifyPaparazziDebug         compare screen screenshots with the recorded goldens
+./gradlew recordPaparazziDebug         re-record goldens after an intended UI change (look at them first)
 ./gradlew connectedDebugAndroidTest    Compose UI tests (needs an emulator or device)
 ./gradlew signingReport                SHA-1 for registering the app in Firebase
 firebase deploy --only firestore --project abc-banking-181019

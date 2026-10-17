@@ -51,6 +51,7 @@ Firebase project abc-banking-181019
 | Charts | Compose Canvas (no library) | Two simple charts; a library would fight the design |
 | PDFs | `android.graphics.pdf.PdfDocument` to create receipts, statements and the 1099-INT; `PdfRenderer` to view them | Framework APIs, no dependency, no Storage needed |
 | Testing | JUnit 4, kotlinx-coroutines-test, Turbine, MockK, Compose UI Test | Unit tests for domain and ViewModels; UI tests for critical flows only |
+| Screenshots | Paparazzi (test-only Gradle plugin, 2.0 alpha: the only line supporting AGP 9) | Renders screens on the JVM at 360dp and 200% font. `FLAG_SECURE` blocks device screenshots, so this is how screens are checked visually. Goldens in `app/src/test/snapshots/` |
 | Formatting and lint | ktlint (Gradle plugin, `android_studio` style in `.editorconfig`) + Android Lint | One formatter, enforced in CI and locally |
 
 Do not add a dependency that overlaps with a row in this table without asking.
@@ -73,7 +74,7 @@ BankingMobileApp/
     DEMO_DATA.md                pre-loaded personas and catalog (source for assets/seed)
     Sample Screens 1.png        visual reference
     Sample Screens 2.png        visual reference
-    licenses/                   third-party licences for bundled assets (Inter-OFL.txt)
+    licenses/                   third-party licences for bundled assets (Inter-OFL.txt, Lucide-ISC.txt)
   .editorconfig                 ktlint configuration
   firebase.json                 Firebase CLI config (rules + emulators)
   .firebaserc                   default project: abc-banking-181019
@@ -109,12 +110,13 @@ BankingMobileApp/
           navigation/           AbcNavHost, route definitions, bottom bar destinations, lock gate
           core/
             designsystem/
-              theme/            Color.kt, Type.kt, Spacing.kt, Shape.kt, AbcTheme.kt
+              theme/            Color.kt, Type.kt, Spacing.kt, Shape.kt, Dimens.kt, AbcMotion.kt, AbcTheme.kt
               component/        AbcButton, ActionPill, BankCardView, TransactionRow, charts, sheets...
             model/              domain models shared across features (Money, Account, Transaction, Card...)
             common/             Result type, DispatcherProvider, Clock, formatters (pure, no Android)
             security/           SessionManager, MpinVerifier (incl. lockout),
-                                DeviceKeyManager, StepUpManager
+                                DeviceKeyManager, StepUpManager; store interfaces
+                                (MpinAttemptStore, RememberedCustomerStore) implemented in data/prefs
             data/
               firebase/         FirebaseModule, AuthDataSource, Firestore paths, DTOs and mappers
               seed/             DemoDataSeeder, PersonaCatalog (customer ID -> persona), FillerGenerator (seeded random 181019)
@@ -241,7 +243,7 @@ Dependencies flow one way: `ui -> domain <- data`, and `feature -> core`.
 Allowed:
 - `ui` imports its own feature's `domain`, `core/designsystem`, `core/model`, `core/common`.
 - `data` implements `domain` interfaces and imports `core/data/firebase`.
-- `domain` imports only `core/model` and `core/common`. Pure Kotlin.
+- `domain` imports only `core/model`, `core/common` and `core/security`. Pure Kotlin. (`core/security` is the shared MPIN and step-up logic, for example `LogInUseCase` uses `MpinVerifier`; its classes stay free of Android and Firebase imports, with storage behind interfaces.)
 - Features talk to each other only through navigation routes or `core` interfaces.
 
 Never:
