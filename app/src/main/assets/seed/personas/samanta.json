@@ -1,5 +1,5 @@
 {
-  "seedVersion": 1,
+  "seedVersion": 2,
   "profile": {
     "personaId": "samanta",
     "customerId": "SAMJOH01",
@@ -85,7 +85,8 @@
     "TRAVEL": 166000,
     "DINING": 148000,
     "GROCERIES": 124000,
-    "UTILITIES": 86000
+    "UTILITIES": 86000,
+    "HEALTH": 6500
   },
   "bills": [
     { "id": "volt-mobile", "billerId": "volt-mobile", "amountDue": 9500, "dueDate": { "dayOffset": 4 }, "autoPay": false, "status": "DUE" },

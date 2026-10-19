@@ -61,10 +61,10 @@ class SeedFilesTest {
         assertEquals(persona, PersonaCatalog.personaFor(customerId))
         assertEquals(persona.key, profile.string("personaId"))
         assertEquals(persona.key, profile.string("avatarKey"))
-        assertEquals(1L, seed.getValue("seedVersion").jsonPrimitive.long)
+        assertEquals(SEED_VERSION, seed.getValue("seedVersion").jsonPrimitive.long)
 
         val withSeedFields = profile.toFirestoreMap() +
-            mapOf("seedVersion" to 1L, "createdAt" to SEED_TIME)
+            mapOf("seedVersion" to SEED_VERSION, "createdAt" to SEED_TIME)
         assertNotNull(UserProfileDto.fromMap(withSeedFields).toUserProfile())
     }
 
@@ -189,6 +189,27 @@ class SeedFilesTest {
     }
 
     @Test
+    fun `explicit spending fits inside the filler targets`() = forEachPersona { persona, seed ->
+        val targets = seed.obj("fillerTargets").mapValues { (_, value) -> value.jsonPrimitive.long }
+        // Pending debits count (DEMO_DATA.md section 01); transfers are not spending.
+        val explicitSpending = seed.array("transactions")
+            .filter { it.string("direction") == "DEBIT" && it.string("category") !in NOT_SPENDING }
+            .filter { it.obj("createdAt").long("dayOffset") >= LAST_30_DAYS_FIRST_OFFSET }
+            .groupBy { it.string("category") }
+            .mapValues { (_, items) -> items.sumOf { it.long("amount") } }
+
+        for ((category, spent) in explicitSpending) {
+            val target = requireNotNull(targets[category]) {
+                "${persona.key}: $category has explicit debits but no target"
+            }
+            assertTrue(
+                "${persona.key}: $category explicit debits exceed the target",
+                spent <= target
+            )
+        }
+    }
+
+    @Test
     fun `ids are unique within each collection`() = forEachPersona { persona, seed ->
         for (collection in ID_COLLECTIONS) {
             val ids = seed.array(collection).map { it.string("id") }
@@ -209,7 +230,13 @@ class SeedFilesTest {
         seed.array(collection).map { it.string("id") }.toSet()
 
     private companion object {
+        const val SEED_VERSION = 2L
         val SEED_TIME = Timestamp(1_792_000_000L, 0)
+
+        // Day 0 and the 29 days before it. Every explicit transaction is newer than day -23,
+        // so this check does not depend on the exact window edge.
+        const val LAST_30_DAYS_FIRST_OFFSET = -29L
+        val NOT_SPENDING = setOf("TRANSFER", "TRANSFER_OUT")
         val ID_COLLECTIONS = listOf(
             "accounts",
             "holdings",

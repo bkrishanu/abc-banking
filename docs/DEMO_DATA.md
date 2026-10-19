@@ -24,6 +24,7 @@ Generated history:
 - The explicit transactions below are always present. The seeder adds filler for days -1 to -90 with a fixed random seed (`181019`), so every install of the same persona looks identical.
 - Filler draws merchants from the pools in section 07 and stays inside each category's amount range.
 - Filler is sized so the last 30 days of debits match the category targets in each persona's table exactly. The last filler item per category takes the remainder.
+- Pending debits count toward the targets, because they show in the transaction list (decided 2026-10-19).
 - Filler never pushes an account balance below the opening balances listed here. The balances listed here are the balances after all seeded transactions.
 
 Rules that apply to all personas:
@@ -119,8 +120,8 @@ Explicit transactions (Everyday Checking unless noted)
 | -14 | 09:30 | Volt Mobile | Utilities | -$95.00 | Posted |
 | -17 | 07:00 | Lumen Studio Payroll | Income | +$7,115.38 | Posted |
 
-Last-30-day spending targets (drives the Insights donut, total $12,480.00 = 66% of budget):
-Shopping $4,620.00 (37%), Entertainment $2,620.00 (21%), Travel $1,660.00, Dining $1,480.00, Groceries $1,240.00, Utilities $860.00.
+Last-30-day spending targets (drives the Insights donut, total $12,545.00 = 66% of budget):
+Shopping $4,620.00 (37%), Entertainment $2,620.00 (21%), Travel $1,660.00, Dining $1,480.00, Groceries $1,240.00, Utilities $860.00, Health $65.00 (the Tony's Gym payment; added 2026-10-19).
 The donut shows the top two categories plus Other.
 
 Bills
@@ -472,7 +473,7 @@ app/src/main/assets/seed/
     daniel.json         section 06
 ```
 
-Current `seedVersion`: 1 (first seed JSON added 2026-10-19; bump on every data change from now on).
+Current `seedVersion`: 2 (2026-10-19: Samanta's Health target added). Bump on every data change.
 `SeedFilesTest` checks the files against the Firestore mappers, the Luhn and ABA checksums, and the balance rules in this document.
 
 Card limit fields: debit cards use `atmDailyLimit`/`atmMaxLimit` and `retailDailyLimit`/`retailMaxLimit`.
