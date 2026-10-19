@@ -24,7 +24,10 @@ object FirestorePaths {
     const val CATALOG_PRODUCTS = "catalog/products"
     const val CATALOG_FAQS = "catalog/faqs"
 
-    /** Collections directly under `users/{uid}`, which a reseed deletes. */
+    /**
+     * Collections directly under `users/{uid}` that a reseed deletes. [DEVICES] is left out: the
+     * device key belongs to the install, not the persona, so it survives a persona switch.
+     */
     val USER_SUBCOLLECTIONS = listOf(
         ACCOUNTS,
         TRANSACTIONS,
@@ -34,8 +37,7 @@ object FirestorePaths {
         SAVINGS_GOALS,
         APPLICATIONS,
         NOTIFICATIONS,
-        SUPPORT_CASES,
-        DEVICES
+        SUPPORT_CASES
     )
 
     fun user(uid: String): String = "$USERS/${segment(uid)}"

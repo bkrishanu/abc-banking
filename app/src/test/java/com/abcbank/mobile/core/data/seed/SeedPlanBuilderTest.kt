@@ -69,7 +69,7 @@ class SeedPlanBuilderTest {
         val filler = transactions(plan).filter { it.id.startsWith("fx-") }
         assertTrue(filler.isNotEmpty())
         for (item in filler) {
-            assertTrue(dayOffset(item.createdAt) in -90..-1)
+            assertTrue(dayOffset(item.createdAt) in -122..-3)
             val pool = pools[item.category.name]?.jsonObject ?: continue
             val merchants = pool["merchants"]?.toString() ?: continue
             assertTrue("${persona.key} ${item.merchant}", "\"${item.merchant}\"" in merchants)
@@ -126,13 +126,45 @@ class SeedPlanBuilderTest {
     @Test
     fun `every document maps and every path is unique`() = forEachPersona { persona, plan ->
         assertNotNull(UserProfileDto.fromMap(plan.profile.forFirestore()).toUserProfile())
-        assertEquals(2L, plan.seedVersion)
+        assertEquals(3L, plan.seedVersion)
         documents(plan, FirestorePaths.CARDS).forEach { (id, fields) ->
             assertNotNull(CardDto.fromMap(fields).toCard(id))
         }
         val paths = plan.documents.map { it.path.joinToString("/") }
         assertEquals(persona.key, paths.size, paths.toSet().size)
         assertTrue(plan.documents.all { it.path.size % 2 == 0 })
+    }
+
+    @Test
+    fun `income repeats every month so each statement shows a salary`() = forEachPersona {
+            persona,
+            plan
+        ->
+        val income = transactions(plan).filter { it.category.name == "INCOME" }
+        val perWindow = WINDOWS.map { window -> income.count { dayOffset(it.createdAt) in window } }
+        assertTrue(
+            "${persona.key}: $perWindow",
+            perWindow.all {
+                it == perWindow.first() && it > 0
+            }
+        )
+    }
+
+    @Test
+    fun `Marcus goes below $500 at the rent payment, where his alert is dated`() {
+        val checking = transactions(plans.getValue(PersonaId.MARCUS))
+            .filter { it.accountId == "checking" && dayOffset(it.createdAt) in -29..0 }
+            .sortedWith(compareBy<Transaction> { it.createdAt }.thenBy { it.id })
+        val crossings = checking.zipWithNext().filter { (before, after) ->
+            before.runningBalance.cents >= LOW_BALANCE && after.runningBalance.cents < LOW_BALANCE
+        }
+        assertEquals(listOf("tx-003"), crossings.map { it.second.id })
+        val alert = documents(plans.getValue(PersonaId.MARCUS), FirestorePaths.NOTIFICATIONS)
+            .single { (_, fields) -> fields["title"] == "Low balance" }.second
+        assertEquals(
+            crossings.single().second.createdAt,
+            (alert.getValue("createdAt") as Timestamp).toInstant()
+        )
     }
 
     @Test
@@ -181,7 +213,8 @@ class SeedPlanBuilderTest {
     private companion object {
         val ZONE: ZoneId = ZoneOffset.UTC
         val NOW: Instant = LocalDate.of(2026, 10, 19).atTime(13, 0).toInstant(ZoneOffset.UTC)
-        val WINDOWS = listOf(-29..0, -59..-30, -90..-60)
+        const val LOW_BALANCE = 50_000L
+        val WINDOWS = listOf(-29..0, -59..-30, -89..-60, -122..-90)
 
         fun parse(file: File): JsonObject = Json.parseToJsonElement(file.readText()).jsonObject
 

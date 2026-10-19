@@ -1,5 +1,5 @@
 {
-  "seedVersion": 2,
+  "seedVersion": 3,
   "profile": {
     "personaId": "marcus",
     "customerId": "MARLEE01",
@@ -17,7 +17,7 @@
   "accounts": [
     { "id": "checking", "type": "CHECKING", "nickname": "Everyday Checking", "last4": "2087", "availableBalance": 41217, "ledgerBalance": 41217 },
     { "id": "savings", "type": "SAVINGS", "nickname": "Starter Savings", "last4": "6120", "availableBalance": 125000, "ledgerBalance": 125000, "rate": 310 },
-    { "id": "credit", "type": "CREDIT", "nickname": "Cash Back Card", "last4": "6634", "creditLimit": 300000, "ledgerBalance": 194055, "availableBalance": 105945, "statementBalance": 161230, "minimumDue": 4000, "dueDate": { "dayOffset": 3 }, "autoPayFull": false }
+    { "id": "credit", "type": "CREDIT", "nickname": "Cash Back Card", "last4": "6634", "creditLimit": 300000, "ledgerBalance": 194055, "availableBalance": 105945, "statementBalance": 288056, "minimumDue": 4000, "dueDate": { "dayOffset": 3 }, "autoPayFull": false }
   ],
   "holdings": [],
   "cards": [
@@ -52,10 +52,10 @@
   ],
   "fillerTargets": {
     "HOUSING": 145000,
-    "GROCERIES": 38000,
+    "GROCERIES": 46180,
     "SHOPPING": 31000,
     "DINING": 24000,
-    "UTILITIES": 16500,
+    "UTILITIES": 8320,
     "TRANSPORT": 12000,
     "ENTERTAINMENT": 9000
   },
@@ -71,9 +71,9 @@
     }
   ],
   "notifications": [
-    { "id": "n-001", "kind": "TRANSACTIONAL", "title": "Low balance", "body": "Everyday Checking is below $500.00.", "read": false, "createdAt": { "dayOffset": 0, "time": "12:31" } },
+    { "id": "n-001", "kind": "TRANSACTIONAL", "title": "Low balance", "body": "Everyday Checking is below $500.00.", "read": false, "createdAt": { "dayOffset": -2, "time": "08:00" } },
     { "id": "n-002", "kind": "TRANSACTIONAL", "title": "Card frozen", "body": "Your Main card ending 2087 is frozen.", "read": false, "createdAt": { "dayOffset": -1, "time": "09:00" } },
-    { "id": "n-003", "kind": "TRANSACTIONAL", "title": "Payment due soon", "body": "Cash Back Card, $40.00 minimum due in 3 days.", "read": false, "createdAt": { "dayOffset": -1, "time": "09:00" } },
+    { "id": "n-003", "kind": "TRANSACTIONAL", "title": "Payment due soon", "body": "Cash Back Card, $40.00 minimum due in 4 days.", "read": false, "createdAt": { "dayOffset": -1, "time": "09:00" } },
     { "id": "n-004", "kind": "PROMOTIONAL", "title": "You're pre-qualified", "body": "Check your personal loan rate in 2 minutes. It won't affect your score.", "read": false, "createdAt": { "dayOffset": -3, "time": "09:00" } }
   ],
   "supportCases": [],

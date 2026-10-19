@@ -1,5 +1,5 @@
 {
-  "seedVersion": 2,
+  "seedVersion": 3,
   "profile": {
     "personaId": "daniel",
     "customerId": "DANOKA01",
@@ -17,7 +17,7 @@
   "accounts": [
     { "id": "checking", "type": "CHECKING", "nickname": "Premier Checking", "last4": "5512", "availableBalance": 48625000, "ledgerBalance": 48625000 },
     { "id": "savings", "type": "SAVINGS", "nickname": "Premier Savings", "last4": "8840", "availableBalance": 120000000, "ledgerBalance": 120000000, "rate": 450 },
-    { "id": "credit", "type": "CREDIT", "nickname": "ABC Signature Rewards Card", "last4": "7316", "creditLimit": 7500000, "ledgerBalance": 1842060, "availableBalance": 5657940, "statementBalance": 1490520, "dueDate": { "dayOffset": 21 }, "autoPayFull": true },
+    { "id": "credit", "type": "CREDIT", "nickname": "ABC Signature Rewards Card", "last4": "7316", "creditLimit": 7500000, "ledgerBalance": 1842060, "availableBalance": 5657940, "statementBalance": 1588510, "dueDate": { "dayOffset": 21 }, "autoPayFull": true },
     { "id": "term-deposit", "type": "TERM_DEPOSIT", "nickname": "12-Month Term Deposit", "last4": "2259", "principal": 50000000, "rate": 435, "openedAt": { "dayOffset": -180 }, "maturesAt": { "dayOffset": 185 } },
     { "id": "investment", "type": "INVESTMENT", "nickname": "Investment Portfolio", "last4": "6673", "portfolioValue": 241256080 }
   ],
@@ -79,8 +79,8 @@
     "SHOPPING": 640000,
     "DINING": 230000,
     "ENTERTAINMENT": 190000,
-    "GROCERIES": 145000,
-    "UTILITIES": 115000,
+    "GROCERIES": 184721,
+    "UTILITIES": 75279,
     "HEALTH": 80000
   },
   "bills": [

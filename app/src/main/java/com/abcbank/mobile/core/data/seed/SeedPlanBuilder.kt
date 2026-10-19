@@ -111,7 +111,7 @@ internal class SeedPlanBuilder(
                 fields = json.toFields(resolve, except = setOf(ID))
             )
         }
-        val all = explicit + filler()
+        val all = explicit + monthlyRepeats() + filler()
 
         // References are drawn oldest first so they do not depend on how the list is shown.
         val chronological = all.sortedWith(compareBy({ it.createdAt }, { it.id }))
@@ -126,6 +126,55 @@ internal class SeedPlanBuilder(
                     TransactionDto.RUNNING_BALANCE to runningBalances.getValue(it.id)
                 )
             )
+        }
+    }
+
+    /**
+     * Income, interest and transfers from the last 30 days repeat in each older window, so every
+     * statement month shows a salary (DEMO_DATA.md section 01). Only posted items on checking and
+     * savings repeat; an internal transfer repeats only when both legs are on those accounts.
+     */
+    private fun monthlyRepeats(): List<SeedTransaction> {
+        val depositAccounts = persona.seedArray(FirestorePaths.ACCOUNTS)
+            .filter { it.seedString(AccountDto.TYPE) in DEPOSIT_TYPES }
+            .map { it.seedString(ID) }
+            .toSet()
+        val transactions = persona.seedArray(FirestorePaths.TRANSACTIONS)
+        val transferLegs = transactions.filter {
+            it.seedString(TransactionDto.CATEGORY) == TRANSFER
+        }
+            .groupBy {
+                it.seedObject(TransactionDto.CREATED_AT) to
+                    it.seedLong(TransactionDto.AMOUNT)
+            }
+        val repeated = transactions.filter { json ->
+            val category = json.seedString(TransactionDto.CATEGORY)
+            val legs = transferLegs[
+                json.seedObject(TransactionDto.CREATED_AT) to json.seedLong(TransactionDto.AMOUNT)
+            ].orEmpty()
+            category in REPEATED_CATEGORIES &&
+                json.seedString(TransactionDto.STATUS) == POSTED &&
+                json.seedString(ACCOUNT_ID) in depositAccounts &&
+                json.seedDate(
+                    TransactionDto.CREATED_AT
+                ).dayOffset in FillerGenerator.LAST_30_DAYS &&
+                (category != TRANSFER || legs.all { it.seedString(ACCOUNT_ID) in depositAccounts })
+        }
+        return FillerGenerator.OLDER_WINDOW_SHIFTS.flatMapIndexed { index, shift ->
+            repeated.map { json ->
+                val date = json.seedDate(TransactionDto.CREATED_AT)
+                val createdAt = dates.resolve(date.copy(dayOffset = date.dayOffset - shift))
+                SeedTransaction(
+                    id = "${json.seedString(ID)}$REPEAT_ID_INFIX${index + 1}",
+                    accountId = json.seedString(ACCOUNT_ID),
+                    isDebit = json.seedString(TransactionDto.DIRECTION) == DEBIT,
+                    amount = json.seedLong(TransactionDto.AMOUNT),
+                    isPosted = true,
+                    createdAt = createdAt,
+                    fields = json.toFields(resolve, except = setOf(ID)) +
+                        (TransactionDto.CREATED_AT to createdAt)
+                )
+            }
         }
     }
 
@@ -214,7 +263,9 @@ internal class SeedPlanBuilder(
                 UtilityBill(
                     billerName = billerNames[it.seedString(BILLER_ID)]
                         ?: throw MalformedSeedException("Unknown biller"),
-                    amount = it.seedLong(AMOUNT_DUE)
+                    amount = it.seedLong(AMOUNT_DUE),
+                    dueDayOffset = it.seedDate(DUE_DATE).dayOffset,
+                    autoPay = it.seedBoolean(AUTO_PAY)
                 )
             }
     }
@@ -288,6 +339,13 @@ internal class SeedPlanBuilder(
         private const val DEBIT = "DEBIT"
         private const val POSTED = "POSTED"
         private val OWED_TYPES = setOf("CREDIT", "LOAN")
+        private val DEPOSIT_TYPES = setOf("CHECKING", "SAVINGS")
+        private const val TRANSFER = "TRANSFER"
+        private val REPEATED_CATEGORIES =
+            setOf("INCOME", "INTEREST", TRANSFER, "TRANSFER_IN", "TRANSFER_OUT")
+        private const val REPEAT_ID_INFIX = "-m"
+        private const val DUE_DATE = "dueDate"
+        private const val AUTO_PAY = "autoPay"
         private const val FILLER_ID_PREFIX = "fx-"
         private const val FILLER_ID_DIGITS = 3
         private const val UUID_BYTES = 16

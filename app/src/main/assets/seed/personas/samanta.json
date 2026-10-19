@@ -1,5 +1,5 @@
 {
-  "seedVersion": 2,
+  "seedVersion": 3,
   "profile": {
     "personaId": "samanta",
     "customerId": "SAMJOH01",
@@ -17,7 +17,7 @@
   "accounts": [
     { "id": "checking", "type": "CHECKING", "nickname": "Everyday Checking", "last4": "3144", "availableBalance": 15583200, "ledgerBalance": 15620700 },
     { "id": "savings", "type": "SAVINGS", "nickname": "Travel Savings", "last4": "7720", "availableBalance": 1203200, "ledgerBalance": 1203200, "rate": 310 },
-    { "id": "credit", "type": "CREDIT", "nickname": "Signature Credit Card", "last4": "5821", "creditLimit": 5000000, "ledgerBalance": 1176500, "availableBalance": 3823500, "statementBalance": 948025, "minimumDue": 28500, "dueDate": { "dayOffset": 26 }, "autoPayFull": false },
+    { "id": "credit", "type": "CREDIT", "nickname": "Signature Credit Card", "last4": "5821", "creditLimit": 5000000, "ledgerBalance": 1176500, "availableBalance": 3823500, "statementBalance": 1176500, "minimumDue": 28500, "dueDate": { "dayOffset": 18 }, "autoPayFull": false },
     { "id": "line-of-credit", "type": "LOAN", "nickname": "Personal Line of Credit", "last4": "6608", "creditLimit": 1500000, "ledgerBalance": 250000, "availableBalance": 1250000, "rate": 925 },
     { "id": "term-deposit", "type": "TERM_DEPOSIT", "nickname": "12-Month Term Deposit", "last4": "9034", "principal": 2500000, "rate": 435, "openedAt": { "dayOffset": -245 }, "maturesAt": { "dayOffset": 120 } },
     { "id": "investment", "type": "INVESTMENT", "nickname": "Investment Portfolio", "last4": "4410", "portfolioValue": 8461240 }
@@ -75,7 +75,7 @@
     { "id": "tx-014", "accountId": "credit", "direction": "DEBIT", "amount": 124000, "merchant": "SkyWays Airlines", "category": "TRAVEL", "status": "POSTED", "createdAt": { "dayOffset": -9, "time": "13:20" } },
     { "id": "tx-015", "accountId": "checking", "direction": "DEBIT", "amount": 25000, "merchant": "Mark Robinson", "category": "TRANSFER_OUT", "status": "POSTED", "createdAt": { "dayOffset": -10, "time": "19:02" } },
     { "id": "tx-016", "accountId": "credit", "direction": "DEBIT", "amount": 42000, "merchant": "Melody Live Tickets", "category": "ENTERTAINMENT", "status": "POSTED", "disputed": true, "createdAt": { "dayOffset": -11, "time": "22:10" } },
-    { "id": "tx-017", "accountId": "savings", "direction": "CREDIT", "amount": 4127, "merchant": "Interest", "category": "INTEREST", "status": "POSTED", "createdAt": { "dayOffset": -12, "time": "00:05" } },
+    { "id": "tx-017", "accountId": "savings", "direction": "CREDIT", "amount": 3066, "merchant": "Interest", "category": "INTEREST", "status": "POSTED", "createdAt": { "dayOffset": -12, "time": "00:05" } },
     { "id": "tx-018", "accountId": "checking", "direction": "DEBIT", "amount": 9500, "merchant": "Volt Mobile", "category": "UTILITIES", "status": "POSTED", "createdAt": { "dayOffset": -14, "time": "09:30" } },
     { "id": "tx-019", "accountId": "checking", "direction": "CREDIT", "amount": 711538, "merchant": "Lumen Studio Payroll", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -17, "time": "07:00" } }
   ],
@@ -83,9 +83,9 @@
     "SHOPPING": 462000,
     "ENTERTAINMENT": 262000,
     "TRAVEL": 166000,
-    "DINING": 148000,
+    "DINING": 185931,
     "GROCERIES": 124000,
-    "UTILITIES": 86000,
+    "UTILITIES": 41569,
     "HEALTH": 6500
   },
   "bills": [
@@ -104,7 +104,7 @@
   "notifications": [
     { "id": "n-001", "kind": "TRANSACTIONAL", "title": "Money received", "body": "Helen Torres sent you $38.60.", "read": false, "createdAt": { "dayOffset": 0, "time": "08:09" } },
     { "id": "n-002", "kind": "TRANSACTIONAL", "title": "Card used", "body": "$125.00 at Aster & Vine Boutique with your Main card.", "read": false, "createdAt": { "dayOffset": 0, "time": "15:14" } },
-    { "id": "n-003", "kind": "TRANSACTIONAL", "title": "Bill due soon", "body": "Volt Mobile, $95.00, due in 4 days.", "read": false, "createdAt": { "dayOffset": -1, "time": "09:00" } },
+    { "id": "n-003", "kind": "TRANSACTIONAL", "title": "Bill due soon", "body": "Volt Mobile, $95.00, due in 5 days.", "read": false, "createdAt": { "dayOffset": -1, "time": "09:00" } },
     { "id": "n-004", "kind": "TRANSACTIONAL", "title": "Salary received", "body": "$7,115.38 paid into Everyday Checking.", "read": true, "createdAt": { "dayOffset": -3, "time": "07:00" } },
     { "id": "n-005", "kind": "PROMOTIONAL", "title": "Grow your savings", "body": "Earn 4.50% APY with ABC High-Yield Savings.", "read": false, "createdAt": { "dayOffset": -2, "time": "09:00" } },
     { "id": "n-006", "kind": "PROMOTIONAL", "title": "Dining rewards", "body": "Earn 3x points on dining with your Signature Card this month.", "read": true, "createdAt": { "dayOffset": -6, "time": "09:00" } }

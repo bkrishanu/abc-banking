@@ -1,5 +1,5 @@
 {
-  "seedVersion": 2,
+  "seedVersion": 3,
   "profile": {
     "personaId": "grace",
     "customerId": "GRAWHI01",
@@ -20,7 +20,7 @@
     { "id": "term-deposit-12m", "type": "TERM_DEPOSIT", "nickname": "12-Month Term Deposit", "last4": "7783", "principal": 15000000, "rate": 410, "maturesAt": { "dayOffset": 120 } },
     { "id": "term-deposit-24m", "type": "TERM_DEPOSIT", "nickname": "24-Month Term Deposit", "last4": "7790", "principal": 5000000, "rate": 435, "maturesAt": { "dayOffset": 300 } },
     { "id": "investment", "type": "INVESTMENT", "nickname": "Investment Portfolio", "last4": "8126", "portfolioValue": 41288015 },
-    { "id": "credit", "type": "CREDIT", "nickname": "Rewards Card", "last4": "9152", "creditLimit": 2000000, "ledgerBalance": 231540, "availableBalance": 1768460, "statementBalance": 231540, "dueDate": { "dayOffset": 18 }, "autoPayFull": true }
+    { "id": "credit", "type": "CREDIT", "nickname": "Rewards Card", "last4": "9152", "creditLimit": 2000000, "ledgerBalance": 231540, "availableBalance": 1768460, "statementBalance": 104200, "dueDate": { "dayOffset": 18 }, "autoPayFull": true }
   ],
   "holdings": [
     { "id": "total-market", "accountId": "investment", "name": "ABC Total Market Index Fund", "value": 19845000 },
@@ -60,16 +60,16 @@
     { "id": "tx-005", "accountId": "checking", "direction": "DEBIT", "amount": 14210, "merchant": "Brightline Electric", "category": "UTILITIES", "status": "POSTED", "createdAt": { "dayOffset": -5, "time": "06:00" } },
     { "id": "tx-006", "accountId": "checking", "direction": "DEBIT", "amount": 4685, "merchant": "Greenleaf Pharmacy", "category": "HEALTH", "status": "POSTED", "createdAt": { "dayOffset": -9, "time": "11:20" } },
     { "id": "tx-007", "accountId": "checking", "direction": "CREDIT", "amount": 215000, "merchant": "Social Security Benefit", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -12, "time": "07:00" } },
-    { "id": "tx-008", "accountId": "savings", "direction": "CREDIT", "amount": 35688, "merchant": "Interest", "category": "INTEREST", "status": "POSTED", "createdAt": { "dayOffset": -15, "time": "00:05" } },
+    { "id": "tx-008", "accountId": "savings", "direction": "CREDIT", "amount": 35692, "merchant": "Interest", "category": "INTEREST", "status": "POSTED", "createdAt": { "dayOffset": -15, "time": "00:05" } },
     { "id": "tx-009", "accountId": "checking", "direction": "DEBIT", "amount": 50000, "merchant": "Emily Whitfield", "category": "TRANSFER_OUT", "status": "POSTED", "createdAt": { "dayOffset": -20, "time": "13:00" } }
   ],
   "fillerTargets": {
     "TRAVEL": 125000,
-    "GROCERIES": 62000,
+    "GROCERIES": 61996,
     "SHOPPING": 52000,
     "DINING": 41000,
     "HEALTH": 38000,
-    "UTILITIES": 35200,
+    "UTILITIES": 35204,
     "ENTERTAINMENT": 16000
   },
   "bills": [

@@ -230,7 +230,7 @@ State:
 Auth and session:
 - First launch: Firebase anonymous sign-in, Welcome, then the login screen (customer ID + MPIN).
 - `PersonaCatalog` validates the customer ID (exactly 8 alphanumeric characters, trimmed, case-insensitive) and maps it to a personaId. A wrong format or an unknown ID is an inline error; the MPIN is checked by `MpinVerifier` in `core/security`.
-- On login, if `users/{uid}` holds a different personaId (or none), `DemoDataSeeder` deletes the subtree (in batches of 500) and writes the chosen persona from `assets/seed/personas/`, resolving relative dates and generating filler as described in DEMO_DATA.md section 01. The same customer ID keeps its data and is reseeded only if the bundled `seedVersion` is newer than the stored one.
+- On login, if `users/{uid}` holds a different personaId (or none), `DemoDataSeeder` deletes the subtree except `devices` (in batches of 500) and writes the chosen persona from `assets/seed/personas/`, resolving relative dates and generating filler as described in DEMO_DATA.md section 01. The same customer ID keeps its data and is reseeded only if the bundled `seedVersion` is newer than the stored one.
 - The login screen reads the stored persona when it opens (signing in anonymously first if needed) and keeps the MPIN pad disabled until that read finishes. If a recognised customer ID belongs to another persona, a warning line under the field names whose data will be replaced; entering the MPIN confirms. If the read fails, there is no warning and the login itself reports the problem.
 - The decision (keep or seed) is `PrepareDemoDataUseCase` in `feature/auth/domain`; `LogInUseCase` runs it after a correct MPIN and remembers the customer ID only once the data is ready. If seeding fails, the MPIN pad shows an error and entering the MPIN again retries.
 - A seed reads the existing subtree from the server first, so it fails straight away when offline. It then deletes the user document before the subtree and writes the user document last, so a seed that stops halfway leaves no persona on record and the next login seeds again. A seed that takes longer than 45 s is reported as offline.
@@ -245,7 +245,7 @@ Deposit check clearing:
 - A check deposit is written as a PENDING credit transaction with `clearsAt = createdAt + 30 s`; balances do not change.
 - `ClearDueDepositsUseCase` (`feature/payments/domain`) runs in an injected application scope: on app start, on return to foreground, and on a timer for each pending deposit while the app is open. For each due deposit, one Firestore transaction sets it to POSTED, credits the account and writes a "Deposit cleared" notification.
 - `MainActivity` sets `FLAG_SECURE`, so screenshots and the app switcher preview are blank.
-- Device binding: `DeviceKeyManager` creates an EC P-256 key in Android Keystore on first launch and stores the public key in `users/{uid}/devices`.
+- Device binding: `DeviceKeyManager` creates an EC P-256 key in Android Keystore on first launch and stores the public key in `users/{uid}/devices`. A reseed keeps `devices`: the key belongs to the install, not the persona.
 
 Errors:
 - Validation errors return to the form as field messages from string resources.

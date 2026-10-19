@@ -6,8 +6,13 @@ import kotlin.random.Random
 /** One category's merchant pool and per-item range in cents (DEMO_DATA.md section 07). */
 internal data class FillerPool(val merchants: List<String>, val min: Long, val max: Long)
 
-/** A utility bill the persona pays: the biller's name and the bill amount in cents. */
-internal data class UtilityBill(val billerName: String, val amount: Long)
+/** A monthly utility bill: who it is from, the amount in cents, and when the current one is due. */
+internal data class UtilityBill(
+    val billerName: String,
+    val amount: Long,
+    val dueDayOffset: Int,
+    val autoPay: Boolean
+)
 
 /** An explicit spending debit from the persona file, as the generator needs to see it. */
 internal data class ExplicitSpend(
@@ -28,9 +33,11 @@ internal data class FillerItem(
 )
 
 /**
- * Generates the filler history described in DEMO_DATA.md section 01 (Filler rules): in each of the
- * three windows, every category's debits add up exactly to its target. Draws only from [random],
- * so the same seed always gives the same history.
+ * Generates the spending history described in DEMO_DATA.md section 01 (Filler rules): in each
+ * 30-day window, every category's debits add up exactly to its target. Bills (Utilities, and
+ * Housing, which has no merchant pool) are paid once a month and repeat in older windows; other
+ * categories are drawn from their merchant pool. Draws only from [random], so the same seed always
+ * gives the same history.
  */
 internal class FillerGenerator(private val random: Random) {
 
@@ -39,23 +46,84 @@ internal class FillerGenerator(private val random: Random) {
         pools: Map<String, FillerPool>,
         utilityBills: List<UtilityBill>,
         explicit: List<ExplicitSpend>
-    ): List<FillerItem> = WINDOWS.flatMapIndexed { index, window ->
-        targets.flatMap { (category, target) ->
-            val alreadySpent = explicit
-                .filter { it.category == category && it.dayOffset in window.days }
-                .sumOf { it.amount }
-            val remaining = target - alreadySpent
-            if (remaining < 0) {
-                throw MalformedSeedException("$category explicit debits exceed the target")
-            }
-            when {
-                remaining == 0L -> emptyList()
-                category == UTILITIES -> utilities(remaining, utilityBills, window)
-                category in pools ->
-                    fromPool(category, remaining, pools.getValue(category), window)
-                else -> repeatExplicit(category, remaining, explicit, monthsBack = index)
+    ): List<FillerItem> {
+        val latestBills = targets.flatMap { (category, target) ->
+            if (category in
+                pools
+            ) {
+                emptyList()
+            } else {
+                latestBills(category, target, utilityBills, explicit)
             }
         }
+        val latestWindow =
+            latestBills.filter { it.isGenerated } + targets.flatMap { (category, target) ->
+                pools[category]?.let { pool ->
+                    val remaining = target - spent(explicit, category, WINDOWS[0].days)
+                    fromPool(category, remaining, pool, WINDOWS[0])
+                }.orEmpty()
+            }
+        val olderWindows = WINDOWS.drop(1).flatMapIndexed { index, window ->
+            val monthsBack = index + 1
+            val bills = latestBills.map {
+                it.item.copy(dayOffset = it.item.dayOffset - monthsBack * DAYS_PER_WINDOW)
+            }
+            val discretionary = targets.flatMap { (category, target) ->
+                pools[category]?.let { fromPool(category, target, it, window) }.orEmpty()
+            }
+            bills + discretionary.map { it.item }
+        }
+        return latestWindow.map { it.item } + olderWindows
+    }
+
+    /**
+     * The latest month's payments for a bill category: the explicit ones plus, for Utilities, one
+     * payment for each bill not paid explicitly, made 30 days before the current bill is due.
+     */
+    private fun latestBills(
+        category: String,
+        target: Long,
+        utilityBills: List<UtilityBill>,
+        explicit: List<ExplicitSpend>
+    ): List<PlannedItem> {
+        val window = WINDOWS[0]
+        val paid = explicit.filter { it.category == category && it.dayOffset in window.days }
+        val explicitPayments = paid.map {
+            PlannedItem(
+                FillerItem(
+                    category,
+                    it.merchant,
+                    it.amount,
+                    it.dayOffset,
+                    it.time ?: LocalTime.NOON
+                ),
+                isGenerated = false
+            )
+        }
+        val generated = if (category != UTILITIES) {
+            emptyList()
+        } else {
+            val paidBillers = paid.map { it.merchant }.toSet()
+            utilityBills.filter { it.billerName !in paidBillers }.map { bill ->
+                val day = (bill.dueDayOffset - DAYS_PER_WINDOW)
+                    .coerceIn(window.fillerDays.first, window.fillerDays.last)
+                PlannedItem(
+                    FillerItem(
+                        category = category,
+                        merchant = bill.billerName,
+                        amount = bill.amount,
+                        dayOffset = day,
+                        time = if (bill.autoPay) AUTOPAY_TIME else randomTime()
+                    ),
+                    isGenerated = true
+                )
+            }
+        }
+        val payments = explicitPayments + generated
+        if (payments.sumOf { it.item.amount } != target) {
+            throw MalformedSeedException("$category target is not one month of its bills")
+        }
+        return payments
     }
 
     private fun fromPool(
@@ -63,7 +131,9 @@ internal class FillerGenerator(private val random: Random) {
         total: Long,
         pool: FillerPool,
         window: Window
-    ): List<FillerItem> {
+    ): List<PlannedItem> {
+        if (total < 0) throw MalformedSeedException("$category explicit debits exceed the target")
+        if (total == 0L) return emptyList()
         val count = itemCount(total, pool)
         var left = total
         return List(count) { index ->
@@ -77,7 +147,14 @@ internal class FillerGenerator(private val random: Random) {
                 else -> random.nextLong(low, high + 1)
             }
             left -= amount
-            item(category, pool.merchants.random(random), amount, window)
+            val item = FillerItem(
+                category = category,
+                merchant = pool.merchants.random(random),
+                amount = amount,
+                dayOffset = random.nextInt(window.fillerDays.first, window.fillerDays.last + 1),
+                time = randomTime()
+            )
+            PlannedItem(item, isGenerated = true)
         }
     }
 
@@ -90,49 +167,17 @@ internal class FillerGenerator(private val random: Random) {
         return typical.coerceIn(fewest, most).coerceAtLeast(1).toInt()
     }
 
-    private fun utilities(total: Long, bills: List<UtilityBill>, window: Window): List<FillerItem> {
-        if (bills.isEmpty()) throw MalformedSeedException("Utilities target but no utility bills")
-        val cycle = bills.shuffled(random)
-        var left = total
-        val items = mutableListOf<FillerItem>()
-        while (left > 0) {
-            val bill = cycle[items.size % cycle.size]
-            val amount = if (bill.amount >= left) left else bill.amount
-            items += item(UTILITIES, bill.billerName, amount, window)
-            left -= amount
-        }
-        return items
-    }
-
-    /** Housing has no merchant pool: the persona's explicit payment repeats one month back per window. */
-    private fun repeatExplicit(
-        category: String,
-        total: Long,
-        explicit: List<ExplicitSpend>,
-        monthsBack: Int
-    ): List<FillerItem> {
-        val latest = explicit.filter { it.category == category && it.dayOffset in WINDOWS[0].days }
-        if (monthsBack == 0 || latest.sumOf { it.amount } != total) {
-            throw MalformedSeedException("$category has no merchant pool to fill $total cents")
-        }
-        return latest.map {
-            FillerItem(
-                category = category,
-                merchant = it.merchant,
-                amount = it.amount,
-                dayOffset = it.dayOffset - monthsBack * DAYS_PER_WINDOW,
-                time = it.time ?: LocalTime.NOON
-            )
-        }
-    }
-
-    private fun item(category: String, merchant: String, amount: Long, window: Window) = FillerItem(
-        category = category,
-        merchant = merchant,
-        amount = amount,
-        dayOffset = random.nextInt(window.fillerDays.first, window.fillerDays.last + 1),
-        time = FIRST_TIME.plusMinutes(random.nextLong(TIME_SPAN_MINUTES + 1))
+    private fun randomTime(): LocalTime = FIRST_TIME.plusMinutes(
+        random.nextLong(
+            TIME_SPAN_MINUTES + 1
+        )
     )
+
+    private fun spent(explicit: List<ExplicitSpend>, category: String, days: IntRange): Long =
+        explicit.filter { it.category == category && it.dayOffset in days }.sumOf { it.amount }
+
+    /** [isGenerated] is false for the persona file's own transactions, which are not added again. */
+    private data class PlannedItem(val item: FillerItem, val isGenerated: Boolean)
 
     /** [days] is what counts toward the targets; filler lands on [fillerDays] only. */
     private data class Window(val days: IntRange, val fillerDays: IntRange)
@@ -141,15 +186,23 @@ internal class FillerGenerator(private val random: Random) {
         const val UTILITIES = "UTILITIES"
         const val DAYS_PER_WINDOW = 30
 
-        /** Day 0 and the 29 days before it, then two older windows back to day -90. */
+        /** Day 0 and the 29 days before it. */
         val LAST_30_DAYS: IntRange = -29..0
 
+        /** How far back older windows sit, in days; recurring items repeat at these shifts. */
+        val OLDER_WINDOW_SHIFTS: List<Int> = listOf(30, 60, 90)
+
+        // Filler stays off the last two days so their explicit items decide the latest balances,
+        // such as the moment Marcus's checking crosses below $500. The oldest window runs to day
+        // -122 so the three calendar months before the seed month are always covered.
         private val WINDOWS = listOf(
-            Window(days = LAST_30_DAYS, fillerDays = -29..-1),
+            Window(days = LAST_30_DAYS, fillerDays = -29..-3),
             Window(days = -59..-30, fillerDays = -59..-30),
-            Window(days = -90..-60, fillerDays = -90..-60)
+            Window(days = -89..-60, fillerDays = -89..-60),
+            Window(days = -122..-90, fillerDays = -122..-90)
         )
         private val FIRST_TIME: LocalTime = LocalTime.of(7, 0)
+        private val AUTOPAY_TIME: LocalTime = LocalTime.of(6, 0)
         private const val TIME_SPAN_MINUTES = 15 * 60L
 
         private fun ceilDiv(a: Long, b: Long): Long = (a + b - 1) / b

@@ -24,6 +24,9 @@ internal fun JsonObject.seedString(name: String): String =
 internal fun JsonObject.seedLong(name: String): Long =
     (this[name] as? JsonPrimitive)?.takeIf { !it.isString }?.longOrNull ?: malformed(name)
 
+internal fun JsonObject.seedBoolean(name: String): Boolean =
+    (this[name] as? JsonPrimitive)?.takeIf { !it.isString }?.booleanOrNull ?: malformed(name)
+
 internal fun JsonObject.seedObject(name: String): JsonObject =
     this[name] as? JsonObject ?: malformed(name)
 

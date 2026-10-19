@@ -11,35 +11,32 @@ same commit. Every person, company, bank and number below is fictional.
 
 - Four demo personas ship with the app. After Get started, the presenter logs in with a persona's customer ID (section 02) and the MPIN.
 - `DemoDataSeeder` writes that persona's data under `users/{uid}` (the install's anonymous Firebase user) and stores `personaId`, `customerId` and `seedVersion` on the user document.
-- Logging in with a different customer ID, and the hidden Reset demo data action in Profile (current persona), delete the `users/{uid}` subtree and seed again. The login screen warns before replacing another persona's data, and the reset confirmation dialog says so. These are the only data deletions in the app. Logging in again with the same customer ID keeps its data.
+- Logging in with a different customer ID, and the hidden Reset demo data action in Profile (current persona), delete the `users/{uid}` subtree (except `devices`, which belongs to the install, not the persona) and seed again. The login screen warns before replacing another persona's data, and the reset confirmation dialog says so. These are the only data deletions in the app. Logging in again with the same customer ID keeps its data.
 - Shared reference data (`catalog/*`) is created once per Firebase project by a person (ARCHITECTURE.md section 08). Personas only reference it by id.
 - The MPIN for every persona is `123456`. It is also the step-up factor; there is no OTP (PRD section 08).
 
 Dates are relative so the demo always looks current:
 - Every dated item has `dayOffset` (0 = seed day, -1 = yesterday, +9 = nine days ahead) and a local `time`.
 - An item with `dayOffset: 0` whose time is still in the future when the seed runs is moved to 10 minutes before now.
-- Statements cover the 6 calendar months before the seed month. The 1099-INT is for the previous tax year.
+- Statements cover the 3 calendar months before the seed month, which the generated history always covers. The 1099-INT is for the previous tax year.
 
-Generated history:
-- The explicit transactions below are always present. The seeder adds filler for days -1 to -90 with a fixed random seed (`181019`), so every install of the same persona looks identical.
-- Filler draws merchants from the pools in section 07 and stays inside each category's amount range.
-- Filler is sized so the last 30 days of debits match the category targets in each persona's table exactly. The last filler item per category takes the remainder.
-- Pending debits count toward the targets, because they show in the transaction list (decided 2026-10-19).
-- Spending means debits in every category except Transfer and Transfer out, on any account. "Last 30 days" is day 0 and the 29 days before it.
+Generated history (revised 2026-10-19):
+- The explicit transactions below are always present. The seeder adds generated history back to day -122 with a fixed random seed (`181019`), so every install of the same persona looks identical.
+- History is four windows: days 0 to -29 ("the last 30 days"), -30 to -59, -60 to -89 and -90 to -122. In each window, spending matches the persona's category targets exactly.
+- Spending means debits in every category except Transfer and Transfer out, on any account. Pending debits count, because they show in the transaction list.
+- In the last 30 days the explicit transactions count first and generated items fill the rest, on days -3 to -29. Nothing is generated on days 0 to -2, so the explicit items there decide the latest balances (for example, the moment Marcus goes below $500.00).
+- Utilities are one payment per monthly utility bill. A bill without an explicit payment in the last 30 days is paid 30 days before its current due date, at the bill amount (06:00 when it is on auto-pay). So each persona's Utilities target is the sum of their utility bills' latest payments.
+- Housing has no merchant pool; it is the explicit rent or upkeep payment.
+- Older windows repeat the last 30 days' bills (Housing and Utilities) and posted income, interest and transfers on checking and savings, 30, 60 and 90 days earlier, so every statement month shows a salary. An internal transfer repeats only when both legs are on checking or savings; card payments do not repeat.
+- Other categories draw merchants from the pools in section 07: as many items as the target needs at a typical amount, each inside the pool's range (the last item takes the remainder, also inside the range). Times are on the minute between 07:00 and 22:00.
+- All generated debits post to the Main card's linked account (Everyday Checking, or Premier Checking for daniel).
+- Running balances are worked back from the closing balances in this document, which are the balances after all seeded transactions. Pending items do not change the balance. Checking and savings never go below $0.00 and cards never go above their limit; the tests check this for every persona.
 
-Filler rules (decided 2026-10-19):
-- All filler posts to the Main card's linked account (Everyday Checking, or Premier Checking for daniel), as posted debits.
-- History is three windows: days 0 to -29, -30 to -59 and -60 to -90. Each window's debits meet the same category targets.
-  In the first window the explicit transactions count first and filler fills the rest, on days -1 to -29.
-  The older windows are filler only; there is no generated income, so balances only rise going back in time.
-- A category with a merchant pool gets as many items as its target needs at a typical amount. Every item, including
-  the remainder, stays inside the pool's range, unless the whole remainder is smaller than the range minimum.
-- A category with no merchant pool (Housing) repeats that persona's explicit payment of the category, 30 or 60 days earlier.
-- Utilities use the persona's utility bills: billers and amounts in a shuffled cycle, and the last item takes the remainder.
-- Filler times are on the minute between 07:00 and 22:00. Merchants, days, times and amounts come from one random
-  generator seeded with `181019`, so the output is identical on every install.
-- Running balances are worked back from the closing balances in this document. Pending items do not change the balance.
-- Filler never pushes an account balance below the opening balances listed here. The balances listed here are the balances after all seeded transactions.
+Consistency rules for the values in this document (2026-10-19):
+- Savings interest for a month is the closing balance x APY x 30/365, rounded to the cent.
+- Credit card statements close 25 days before the due date. Current balance = statement balance + card debits - card credits posted after the statement closed.
+- "Due in N days" and "matures in N days" in notifications count from the notification's date.
+- Each persona's last-30-day spending total and budget percentage stay as documented; when a category target changed, Dining or Groceries absorbed the difference.
 
 Rules that apply to all personas:
 - Money is in USD and stored as cents. The tables show dollars for readability.
@@ -82,7 +79,7 @@ Accounts
 | --- | --- | --- | --- |
 | Everyday Checking | CHECKING | 3144 | Available $155,832.00, ledger $156,207.00 (one pending debit of $375.00) |
 | Travel Savings | SAVINGS | 7720 | Available and ledger $12,032.00, 3.10% APY |
-| Signature Credit Card | CREDIT | 5821 | Limit $50,000.00, current balance $11,765.00, available $38,235.00, statement balance $9,480.25, minimum due $285.00, due in 26 days |
+| Signature Credit Card | CREDIT | 5821 | Limit $50,000.00, current balance $11,765.00, available $38,235.00, statement balance $11,765.00, minimum due $285.00, due in 18 days |
 | Personal Line of Credit | LOAN | 6608 | Limit $15,000.00, drawn $2,500.00, available $12,500.00, 9.25% APR |
 | 12-Month Term Deposit | TERM_DEPOSIT | 9034 | Principal $25,000.00, 4.35% APY, opened day -245, matures day +120 |
 | Investment Portfolio | INVESTMENT | 4410 | Total $84,612.40: ABC Total Market Index Fund $52,300.00, ABC Bond Income Fund $21,412.40, cash $10,900.00 |
@@ -130,12 +127,12 @@ Explicit transactions (Everyday Checking unless noted)
 | -9 | 13:20 | SkyWays Airlines (Signature Credit Card) | Travel | -$1,240.00 | Posted |
 | -10 | 19:02 | Mark Robinson | Transfer out | -$250.00 | Posted |
 | -11 | 22:10 | Melody Live Tickets (Signature Credit Card) | Entertainment | -$420.00 | Posted, disputed |
-| -12 | 00:05 | Interest (Travel Savings) | Interest | +$41.27 | Posted |
+| -12 | 00:05 | Interest (Travel Savings) | Interest | +$30.66 | Posted |
 | -14 | 09:30 | Volt Mobile | Utilities | -$95.00 | Posted |
 | -17 | 07:00 | Lumen Studio Payroll | Income | +$7,115.38 | Posted |
 
-Last-30-day spending targets (drives the Insights donut, total $12,545.00 = 66% of budget):
-Shopping $4,620.00 (37%), Entertainment $2,620.00 (21%), Travel $1,660.00, Dining $1,480.00, Groceries $1,240.00, Utilities $860.00, Health $65.00 (the Tony's Gym payment; added 2026-10-19).
+Last-30-day spending targets (drives the Insights donut, total $12,480.00 = 66% of budget, as in the sample screen):
+Shopping $4,620.00 (37%), Entertainment $2,620.00 (21%), Dining $1,859.31, Travel $1,660.00, Groceries $1,240.00, Utilities $415.69 (one payment per bill), Health $65.00 (the Tony's Gym payment).
 The donut shows the top two categories plus Other.
 
 Bills
@@ -158,7 +155,7 @@ Notifications
 | --- | --- | --- | --- | --- |
 | 0 | Transactional | Money received | Helen Torres sent you $38.60. | no |
 | 0 | Transactional | Card used | $125.00 at Aster & Vine Boutique with your Main card. | no |
-| -1 | Transactional | Bill due soon | Volt Mobile, $95.00, due in 4 days. | no |
+| -1 | Transactional | Bill due soon | Volt Mobile, $95.00, due in 5 days. | no |
 | -3 | Transactional | Salary received | $7,115.38 paid into Everyday Checking. | yes |
 | -2 | Promotional | Grow your savings | Earn 4.50% APY with ABC High-Yield Savings. | no |
 | -6 | Promotional | Dining rewards | Earn 3x points on dining with your Signature Card this month. | yes |
@@ -167,7 +164,7 @@ Support cases
 - One open dispute on Melody Live Tickets, -$420.00, topic "I didn't make this purchase", status In review, opened day -10, two messages (customer report, bank acknowledgement).
 
 Documents
-- Monthly statements for Everyday Checking and Signature Credit Card, 6 months.
+- Monthly statements for Everyday Checking and Signature Credit Card, 3 months.
 - 1099-INT for the previous tax year: interest $412.86.
 
 ## 04 Persona: Marcus Lee (`marcus`)
@@ -189,7 +186,7 @@ Accounts
 | --- | --- | --- | --- |
 | Everyday Checking | CHECKING | 2087 | Available and ledger $412.17 (below the $500 threshold, shows low balance warning) |
 | Starter Savings | SAVINGS | 6120 | $1,250.00, 3.10% APY |
-| Cash Back Card | CREDIT | 6634 | Limit $3,000.00, current balance $1,940.55, available $1,059.45, statement balance $1,612.30, minimum due $40.00, due in 3 days |
+| Cash Back Card | CREDIT | 6634 | Limit $3,000.00, current balance $1,940.55, available $1,059.45, statement balance $2,880.56, minimum due $40.00, due in 3 days |
 
 No term deposit, investment or line of credit. Home shows the empty state "No investments yet" with the action "Explore products".
 
@@ -221,7 +218,7 @@ Explicit transactions (Everyday Checking unless noted)
 
 The day -3 and day -16 outflows were added 2026-10-19 so his checking history never goes below $0.00 (lowest point $22.67, before filler).
 
-Last-30-day spending targets (total $2,755.00): Housing $1,450.00, Groceries $380.00, Shopping $310.00, Dining $240.00, Utilities $165.00, Transport $120.00, Entertainment $90.00.
+Last-30-day spending targets (total $2,755.00): Housing $1,450.00, Groceries $461.80, Shopping $310.00, Dining $240.00, Utilities $83.20, Transport $120.00, Entertainment $90.00.
 
 Bills: Volt Mobile $45.00 due day +2 (auto-pay off), Metro Gas Co. $38.20 due day +8 (auto-pay off).
 
@@ -231,12 +228,12 @@ Notifications
 
 | Day | Kind | Title | Body | Read |
 | --- | --- | --- | --- | --- |
-| 0 | Transactional | Low balance | Everyday Checking is below $500.00. | no |
+| -2 | Transactional | Low balance | Everyday Checking is below $500.00. (08:00, at the rent payment) | no |
 | -1 | Transactional | Card frozen | Your Main card ending 2087 is frozen. | no |
-| -1 | Transactional | Payment due soon | Cash Back Card, $40.00 minimum due in 3 days. | no |
+| -1 | Transactional | Payment due soon | Cash Back Card, $40.00 minimum due in 4 days. | no |
 | -3 | Promotional | You're pre-qualified | Check your personal loan rate in 2 minutes. It won't affect your score. | no |
 
-Support cases: none (shows the support empty state). Documents: 6 monthly statements for checking and the credit card; no 1099-INT (interest under $10).
+Support cases: none (shows the support empty state). Documents: 3 monthly statements for checking and the credit card; no 1099-INT (interest under $10).
 
 ## 05 Persona: Grace Whitfield (`grace`)
 
@@ -260,7 +257,7 @@ Accounts
 | 12-Month Term Deposit | TERM_DEPOSIT | 7783 | Principal $150,000.00, 4.10% APY, matures day +120 |
 | 24-Month Term Deposit | TERM_DEPOSIT | 7790 | Principal $50,000.00, 4.35% APY, matures day +300 |
 | Investment Portfolio | INVESTMENT | 8126 | Total $412,880.15: ABC Total Market Index Fund $198,450.00, ABC Bond Income Fund $164,230.15, ABC Dividend Growth Fund $50,200.00 |
-| Rewards Card | CREDIT | 9152 | Limit $20,000.00, current and statement balance $2,315.40, available $17,684.60, auto-pay full balance, due in 18 days |
+| Rewards Card | CREDIT | 9152 | Limit $20,000.00, current balance $2,315.40, statement balance $1,042.00, available $17,684.60, auto-pay full balance, due in 18 days |
 
 Cards
 
@@ -282,10 +279,10 @@ Explicit transactions (Everyday Checking unless noted)
 | -5 | 06:00 | Brightline Electric (autopay) | Utilities | -$142.10 | Posted |
 | -9 | 11:20 | Greenleaf Pharmacy | Health | -$46.85 | Posted |
 | -12 | 07:00 | Social Security Benefit | Income | +$2,150.00 | Posted |
-| -15 | 00:05 | Interest (High-Yield Savings) | Interest | +$356.88 | Posted |
+| -15 | 00:05 | Interest (High-Yield Savings) | Interest | +$356.92 | Posted |
 | -20 | 13:00 | Emily Whitfield | Transfer out | -$500.00 | Posted |
 
-Last-30-day spending targets (total $3,692.00): Travel $1,250.00, Groceries $620.00, Shopping $520.00, Dining $410.00, Health $380.00, Utilities $352.00, Entertainment $160.00.
+Last-30-day spending targets (total $3,692.00): Travel $1,250.00, Groceries $619.96, Shopping $520.00, Dining $410.00, Health $380.00, Utilities $352.04, Entertainment $160.00.
 
 Bills (all auto-pay on): Brightline Electric $142.10 due day +25, City Water & Sewer $61.20 day +16, Metro Gas Co. $88.75 day +19, StreamNet Fiber $59.99 day +11, Fairview County Treasurer (property tax) $3,420.00 scheduled for day +25.
 
@@ -300,7 +297,7 @@ Notifications
 | -4 | Transactional | Term deposit maturing | Your 12-Month Term Deposit matures in 124 days. | yes |
 | -7 | Promotional | Ladder your deposits | Lock in 4.35% APY on a 24-month term deposit. | yes |
 
-Support cases: none. Documents: 6 monthly statements for checking, savings and the credit card; 1099-INT for the previous tax year, interest $9,846.12.
+Support cases: none. Documents: 3 monthly statements for checking, savings and the credit card; 1099-INT for the previous tax year, interest $9,846.12.
 
 ## 06 Persona: Daniel Okafor (`daniel`, high net worth)
 
@@ -325,7 +322,7 @@ Accounts
 | --- | --- | --- | --- |
 | Premier Checking | CHECKING | 5512 | Available and ledger $486,250.00 |
 | Premier Savings | SAVINGS | 8840 | $1,200,000.00, 4.50% APY |
-| ABC Signature Rewards Card | CREDIT | 7316 | Limit $75,000.00, current balance $18,420.60, available $56,579.40, statement balance $14,905.20, auto-pay full balance, due in 21 days |
+| ABC Signature Rewards Card | CREDIT | 7316 | Limit $75,000.00, current balance $18,420.60, available $56,579.40, statement balance $15,885.10, auto-pay full balance, due in 21 days |
 | 12-Month Term Deposit | TERM_DEPOSIT | 2259 | Principal $500,000.00, 4.35% APY, opened day -180, matures day +185 |
 | Investment Portfolio | INVESTMENT | 6673 | Total $2,412,560.80: ABC Total Market Index Fund $1,350,000.00, ABC Bond Income Fund $612,560.80, ABC Dividend Growth Fund $400,000.00, cash $50,000.00 |
 
@@ -369,7 +366,7 @@ Explicit transactions (Premier Checking unless noted)
 | -20 | 10:00 | Okafor Freight Partners (owner distribution) | Income | +$45,000.00 | Posted |
 | -22 | 18:15 | Harbourfront Hotel (Signature Card) | Travel | -$1,860.00 | Posted |
 
-Last-30-day spending targets (total $32,000.00 = 80% of budget): Travel $11,200.00, Housing $6,800.00, Shopping $6,400.00, Dining $2,300.00, Entertainment $1,900.00, Groceries $1,450.00, Utilities $1,150.00, Health $800.00.
+Last-30-day spending targets (total $32,000.00 = 80% of budget): Travel $11,200.00, Housing $6,800.00, Shopping $6,400.00, Dining $2,300.00, Entertainment $1,900.00, Groceries $1,847.21, Utilities $752.79, Health $800.00.
 
 Bills
 
@@ -392,7 +389,7 @@ Notifications
 | -2 | Transactional | Card used | $2,349.00 at Pixel & Plug Electronics with your Signature Card. | yes |
 | -4 | Promotional | Travel rewards | Earn 3x points on travel with your Signature Card this month. | no |
 
-Support cases: none. Documents: 6 monthly statements for checking, savings and the credit card; 1099-INT for the previous tax year, interest $48,215.40.
+Support cases: none. Documents: 3 monthly statements for checking, savings and the credit card; 1099-INT for the previous tax year, interest $48,215.40.
 
 ## 07 Shared catalog (`catalog/*`)
 
@@ -491,7 +488,7 @@ app/src/main/assets/seed/
     daniel.json         section 06
 ```
 
-Current `seedVersion`: 2 (2026-10-19: Samanta's Health target and Marcus's two outflows, before any install was seeded). Bump on every data change.
+Current `seedVersion`: 3 (2026-10-19: consistency pass across all four personas). Bump on every data change.
 `SeedFilesTest` checks the files against the Firestore mappers, the Luhn and ABA checksums, and the balance rules in this document.
 
 Card limit fields: debit cards use `atmDailyLimit`/`atmMaxLimit` and `retailDailyLimit`/`retailMaxLimit`.
@@ -514,7 +511,7 @@ File format (decided 2026-10-19):
   replaced with the short date of day +n ("Oct 29").
 - `fillerMerchants` in `catalog.json` is read by the seeder only; it is not created in the console.
   Utilities filler uses the utility billers' names, with amounts taken from the persona's bills.
-- `documents`: `statementAccountIds` (the accounts that get 6 monthly statements) and `interest1099` (cents, or null for no 1099-INT).
+- `documents`: `statementAccountIds` (the accounts that get 3 monthly statements) and `interest1099` (cents, or null for no 1099-INT).
 
 Values not given in the persona sections above (approved 2026-10-19):
 - Notification times: the time of the related transaction where there is one, otherwise 09:00.

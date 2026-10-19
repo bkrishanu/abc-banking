@@ -210,6 +210,89 @@ class SeedFilesTest {
     }
 
     @Test
+    fun `interest is a month at the account's APY`() = forEachPersona { persona, seed ->
+        val accounts = seed.array("accounts").associateBy { it.string("id") }
+        for (interest in seed.array("transactions").filter {
+            it.string("category") == "INTEREST"
+        }) {
+            val account = accounts.getValue(interest.string("accountId"))
+            // Closing balance x APY x 30/365, as DEMO_DATA.md section 01 states.
+            val expected = Math.round(
+                account.long("ledgerBalance") * account.long("rate") / 10_000.0 * 30 / 365
+            )
+            assertEquals(
+                "${persona.key}: ${interest.string("id")}",
+                expected,
+                interest.long("amount")
+            )
+        }
+    }
+
+    @Test
+    fun `card balances follow the statement cycle`() = forEachPersona { persona, seed ->
+        for (card in seed.array("accounts").filter { it.string("type") == "CREDIT" }) {
+            // Statements close 25 days before the due date (DEMO_DATA.md section 01).
+            val closesOn = card.obj("dueDate").long("dayOffset") - STATEMENT_TO_DUE_DAYS
+            val sinceStatement = seed.array("transactions")
+                .filter {
+                    it.string("accountId") == card.string("id") &&
+                        it.obj("createdAt").long("dayOffset") > closesOn
+                }
+                .sumOf {
+                    if (it.string("direction") ==
+                        "DEBIT"
+                    ) {
+                        it.long("amount")
+                    } else {
+                        -it.long("amount")
+                    }
+                }
+            assertEquals(
+                "${persona.key}: ${card.string("id")} current = statement + newer activity",
+                card.long("statementBalance") + sinceStatement,
+                card.long("ledgerBalance")
+            )
+        }
+    }
+
+    @Test
+    fun `day counts in notifications are counted from the notification date`() = forEachPersona {
+            persona,
+            seed
+        ->
+        val billerNames = catalog.array("billers").associate {
+            it.string("id") to it.string("name")
+        }
+        val dueDays = seed.array("bills").associate {
+            billerNames.getValue(it.string("billerId")) to it.obj("dueDate").long("dayOffset")
+        } + seed.array("accounts").filter { "dueDate" in it.jsonObject }.associate {
+            it.string("nickname") to it.obj("dueDate").long("dayOffset")
+        }
+        val maturityDays = seed.array("accounts").filter { "maturesAt" in it.jsonObject }
+            .associate { it.string("nickname") to it.obj("maturesAt").long("dayOffset") }
+        for (notification in seed.array("notifications")) {
+            val body = notification.string("body")
+            val sentOn = notification.obj("createdAt").long("dayOffset")
+            DUE_IN.matchEntire(body)?.let { match ->
+                val (name, days) = match.destructured
+                assertEquals(
+                    "${persona.key}: $body",
+                    dueDays.getValue(name) - sentOn,
+                    days.toLong()
+                )
+            }
+            MATURES_IN.matchEntire(body)?.let { match ->
+                val (name, days) = match.destructured
+                assertEquals(
+                    "${persona.key}: $body",
+                    maturityDays.getValue(name) - sentOn,
+                    days.toLong()
+                )
+            }
+        }
+    }
+
+    @Test
     fun `ids are unique within each collection`() = forEachPersona { persona, seed ->
         for (collection in ID_COLLECTIONS) {
             val ids = seed.array(collection).map { it.string("id") }
@@ -230,13 +313,16 @@ class SeedFilesTest {
         seed.array(collection).map { it.string("id") }.toSet()
 
     private companion object {
-        const val SEED_VERSION = 2L
+        const val SEED_VERSION = 3L
         val SEED_TIME = Timestamp(1_792_000_000L, 0)
 
         // Day 0 and the 29 days before it. Every explicit transaction is newer than day -23,
         // so this check does not depend on the exact window edge.
         const val LAST_30_DAYS_FIRST_OFFSET = -29L
         val NOT_SPENDING = setOf("TRANSFER", "TRANSFER_OUT")
+        const val STATEMENT_TO_DUE_DAYS = 25L
+        val DUE_IN = Regex("""(.+?), \$[\d,.]+,? (?:minimum )?due in (\d+) days\.""")
+        val MATURES_IN = Regex("""Your (.+) matures in (\d+) days\.""")
         val ID_COLLECTIONS = listOf(
             "accounts",
             "holdings",
