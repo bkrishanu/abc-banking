@@ -162,6 +162,16 @@ Where new code belongs:
 Money is always `Long` minor units (cents) wrapped in a `Money` value class, USD only.
 Timestamps are Firestore `Timestamp` (UTC), shown in the device time zone.
 
+Field encodings (DTOs in `core/data/firebase`, one `<Name>Dto.kt` per document type):
+- Enum fields store the Kotlin enum name in upper case: `type`, `direction`, `status`, `network` (MASTERCARD|VISA),
+  `artKey` (PEACH|SAGE|GRAPHITE), `category` (SHOPPING, DINING, GROCERIES, ENTERTAINMENT, TRAVEL, TRANSPORT, HEALTH,
+  UTILITIES, HOUSING, INCOME, INTEREST, TRANSFER, TRANSFER_IN, TRANSFER_OUT, DEPOSIT).
+- `rate` is basis points as an integer (310 = 3.10%), never a floating-point number.
+- Accounts: for CREDIT and LOAN, `ledgerBalance` is the amount owed and `availableBalance` what can still be spent or drawn.
+- Cards: `expiry` is the string "MM/YY". `pan` and `cvv` map only to `CardSecrets`, never to `Card`.
+- Documents are read field by field from the snapshot map, not with `toObject()`, so there is no reflection and no R8 keep rule.
+  A missing or wrongly typed field makes the mapper return null, which the repository reports as `DataError.MALFORMED_DATA`.
+
 Firestore layout:
 
 ```
