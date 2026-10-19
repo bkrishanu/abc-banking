@@ -35,4 +35,59 @@
         <item quantity="other">Wrong MPIN. %d attempts left.</item>
     </plurals>
     <string name="mpin_locked_countdown">Try again in %d s</string>
+
+    <!-- Shared actions and states -->
+    <string name="action_retry">Try again</string>
+    <string name="action_view_all">View all</string>
+    <string name="state_offline">You\'re offline. Showing saved data.</string>
+    <string name="state_offline_no_data">You\'re offline. Connect to the internet and try again.</string>
+    <string name="cd_balance_hidden">Balance hidden</string>
+    <string name="cd_more_actions">More actions</string>
+    <string name="cd_notifications">Notifications</string>
+    <plurals name="cd_notifications_unread">
+        <item quantity="one">Notifications, %d unread</item>
+        <item quantity="other">Notifications, %d unread</item>
+    </plurals>
+
+    <!-- Transactions -->
+    <string name="transaction_debit">debit</string>
+    <string name="transaction_credit">credit</string>
+    <string name="cd_transaction">%1$s, %2$s, %3$s, %4$s</string>
+    <string name="cd_transaction_hidden">%1$s, %2$s, amount hidden</string>
+    <string name="transaction_today">Today, %1$s</string>
+    <string name="transaction_yesterday">Yesterday, %1$s</string>
+    <string name="transaction_on_date">%1$s, %2$s</string>
+    <string name="transaction_pending">%1$s · Pending</string>
+
+    <!-- Accounts -->
+    <string name="account_last4">••%1$s</string>
+    <string name="account_low_balance">Below %1$s</string>
+    <string name="account_apy">%1$s APY</string>
+    <string name="account_apr">%1$s APR</string>
+    <string name="account_ledger">Ledger %1$s</string>
+    <string name="account_available_label">Available</string>
+    <string name="account_available">Available %1$s</string>
+    <string name="account_statement">Statement %1$s</string>
+    <string name="account_due">Due %1$s</string>
+    <string name="account_matures">Matures %1$s</string>
+    <string name="account_portfolio">Portfolio value</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Hello, %1$s</string>
+    <string name="home_wallet_balance">Wallet balance</string>
+    <string name="cd_show_balances">Show balances</string>
+    <string name="cd_hide_balances">Hide balances</string>
+    <string name="cd_money_in">Money in, last 30 days, %1$s</string>
+    <string name="cd_money_out">Money out, last 30 days, %1$s</string>
+    <string name="cd_money_in_hidden">Money in, last 30 days, hidden</string>
+    <string name="cd_money_out_hidden">Money out, last 30 days, hidden</string>
+    <string name="home_action_transfer">Transfer</string>
+    <string name="home_action_pay_bills">Pay bills</string>
+    <string name="home_accounts">Accounts</string>
+    <string name="home_latest_transactions">Latest transactions</string>
+    <string name="home_no_investments">No investments yet</string>
+    <string name="home_explore_products">Explore products</string>
+    <string name="home_no_transactions">No transactions in the last 30 days.</string>
+    <string name="home_empty">Your accounts will show here.</string>
+    <string name="home_error">We couldn\'t load your accounts.</string>
 </resources>

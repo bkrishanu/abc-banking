@@ -17,7 +17,13 @@ data class AbcDimens(
     val buttonProgress: Dp = 20.dp,
     val textFieldHeight: Dp = 56.dp,
     val keypadKeyHeight: Dp = 64.dp,
-    val mpinDot: Dp = 12.dp
+    val mpinDot: Dp = 12.dp,
+    val avatarSmall: Dp = 32.dp,
+    val iconCircle: Dp = 40.dp,
+    val actionPillHeight: Dp = 56.dp,
+    val actionPillOverlap: Dp = 28.dp,
+    val unreadDot: Dp = 8.dp,
+    val skeletonLine: Dp = 16.dp
 )
 
 internal val DefaultAbcDimens = AbcDimens()

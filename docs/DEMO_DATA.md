@@ -85,7 +85,7 @@ Accounts
 | Investment Portfolio | INVESTMENT | 4410 | Total $84,612.40: ABC Total Market Index Fund $52,300.00, ABC Bond Income Fund $21,412.40, cash $10,900.00 |
 
 Home wallet balance = the Main card's linked account available balance ($155,832.00), as in the sample screens. The Accounts section below it lists every account.
-In/out chips on Home show last-30-day credits and debits.
+In/out chips on Home show the last 30 days of credits and debits on that wallet account, pending items included (2026-10-20).
 
 Cards (Cards tab stack order)
 

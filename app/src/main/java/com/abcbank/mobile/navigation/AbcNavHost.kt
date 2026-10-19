@@ -13,7 +13,8 @@ import androidx.navigation.compose.rememberNavController
 import com.abcbank.mobile.core.designsystem.theme.AbcMotion
 import com.abcbank.mobile.feature.auth.ui.LoginRoute
 import com.abcbank.mobile.feature.auth.ui.WelcomeScreen
-import com.abcbank.mobile.feature.home.ui.HomeScreen
+import com.abcbank.mobile.feature.home.ui.HomeActions
+import com.abcbank.mobile.feature.home.ui.HomeRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -52,7 +53,9 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
             )
         }
         composable<HomeDestination> {
-            HomeScreen()
+            // Notifications, transfer, bill pay and products are not built yet; their actions
+            // are no-ops until each destination exists.
+            HomeRoute(actions = HomeActions())
         }
     }
 }

@@ -163,10 +163,12 @@ Cards and lists
 - `FeatureTile`: 140 x 120dp, radius-lg, surface, illustration top, Body title bottom.
 - `SectionHeader`: H3 title left, Ghost "View all" or "Filter" with icon right. "View all" is underlined Small muted.
 - `StatusBadge`: Small label in a radius-full pill (Pending, Frozen, Scheduled).
+- `AdaptiveRow`: a label on the start side and an amount on the end side (account and transaction rows). Side by side when the amount fits unwrapped and no word of the label has to break; otherwise the amount moves below the label, end-aligned, so money never splits across lines at 200% font scale.
+- `CategoryIcon`: the `TransactionRow` leading circle for businesses: accent fill for money out, positive fill for money in, Lucide category icon in `text` colour (white on accent fails contrast). People (Transfer in/out) get `InitialsAvatar` instead: 40dp, initials in Label on surfaceMuted.
 
 Navigation
 - `AbcBottomBar`: floating black pill, 64dp tall, 16dp from screen sides and 12dp above the navigation bar inset. Four destinations: Home, Cards, Insights, Profile. White 24dp icons, active item has a 4dp white dot below. Icons have contentDescription equal to the destination name.
-- `AbcTopBar`: transparent, H3 title left or centred greeting with avatar ("Hello, Samanta"), trailing icon buttons (notifications bell with unread dot, filter).
+- `AbcTopBar`: transparent, H3 title left or centred greeting with avatar ("Hello, Samanta"), trailing icon buttons (notifications bell with unread dot, filter). `GreetingTopBar` is the greeting form: 32dp `ProfileAvatar`, Body greeting, bell with an 8dp accent unread dot; TalkBack reads "Notifications, 4 unread".
 - Flows that leave the tabs (transfer, bill pay, applications) hide the bottom bar and show a back arrow and step indicator ("Step 2 of 5").
 
 Inputs
@@ -189,6 +191,7 @@ States (every data-driven screen)
 - Empty: one line saying what belongs here, plus one primary action. Never a blank panel.
 - Error: one line in plain words, plus Retry. Never vendor or Firebase error text.
 - Offline: a Small banner "You're offline. Showing saved data." Firestore cache keeps screens readable.
+- Shared pieces in `ScreenStates.kt`: `SkeletonBlock` (pulsing surfaceMuted block), `OfflineBanner` (Small textMuted on a surface pill), `ErrorState` (Body line plus Primary "Try again"). Offline with nothing cached shows "You're offline. Connect to the internet and try again."
 
 ## 07 Icons
 
@@ -240,6 +243,17 @@ How the sample PNGs map to app screens. Use them for layout and feel, not as pix
 - Primary "Get started" pinned to the bottom; everything above it scrolls.
 
 `LoginScreen` layout: back arrow (Lucide `arrow-left`, 24dp in a 48dp target), H1 "Log in", space-6, customer ID `AbcTextField` (placeholder "8 letters or numbers"), space-6, H3 "Enter your MPIN", space-4, `MpinPad`. The pad stays disabled until the ID is recognised, then the keyboard closes.
+
+`HomeScreen` layout (2026-10-20):
+- `GreetingTopBar`, then the offline banner when reading from the cache.
+- Balance header, space-4 below: card-sage gradient, radius-xl, padding space-5. "Wallet balance" (Small) with the eye toggle (Lucide `eye-off` to hide, `eye` to show, 48dp target), `BalanceText`, then two chips: arrow-up "+$x" in positiveText and arrow-down "-$y" in text, Label on surface pills, last-30-day money in and out of the wallet account. Header text is `text` colour, not white: white fails contrast on the light end of the sage gradient, and `text` passes on both ends.
+- Action pills overlap the header's bottom edge by 28dp: `ActionPill` Transfer (`arrow-up-right`), `ActionPill` Pay bills (`receipt`), `GridPill`. One row at 360dp; at narrower widths or large fonts they wrap downward.
+- space-6, `SectionHeader` "Accounts", one `ContentCard` with a row per account (dividers between): nickname and "••last4" on the start side; the amount in Body tabular on the end side with Small muted details: checking "Available" or "Ledger $x" when a pending item makes them differ, savings APY, card current balance with available, statement and due date, line of credit amount owed with available and APR, term deposit principal with APY and maturity date, investments portfolio value. A low balance adds "Below $500.00" in warning.
+- With no investment account (marcus): a `ContentCard` "No investments yet" with Secondary "Explore products".
+- space-6, `SectionHeader` "Latest transactions" with "View all", one `ContentCard` with the 5 newest `TransactionRow`s on any account ("Today, 3:14 pm", "Yesterday, 9:21 pm", "Oct 16, 7:00 am", plus " · Pending").
+- Eye toggle masks every amount on the screen; the choice lasts for the session (`SessionManager`, in memory).
+- Loading: skeleton of the top bar, header and three cards. Error: `ErrorState` "We couldn't load your accounts." Empty (no accounts): "Your accounts will show here." with Explore products.
+- No bottom bar yet: it arrives with the Cards tab, so it never offers tabs that do not exist. Until their screens are built, the bell, pills, View all and Explore products do nothing.
 
 | Sample | Shows | App screen |
 | --- | --- | --- |
