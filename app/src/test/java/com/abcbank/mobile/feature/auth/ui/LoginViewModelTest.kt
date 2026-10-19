@@ -2,16 +2,23 @@ package com.abcbank.mobile.feature.auth.ui
 
 import androidx.lifecycle.SavedStateHandle
 import com.abcbank.mobile.core.common.Clock
+import com.abcbank.mobile.core.common.DataError
+import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.security.MpinAttempts
 import com.abcbank.mobile.core.security.MpinVerifier
 import com.abcbank.mobile.feature.auth.data.CatalogPersonaDirectory
 import com.abcbank.mobile.feature.auth.domain.CheckCustomerIdUseCase
+import com.abcbank.mobile.feature.auth.domain.GetStoredDemoDataUseCase
 import com.abcbank.mobile.feature.auth.domain.LogInUseCase
+import com.abcbank.mobile.feature.auth.domain.PrepareDemoDataUseCase
+import com.abcbank.mobile.feature.auth.domain.StoredDemoData
+import com.abcbank.mobile.testing.FakeDemoDataRepository
 import com.abcbank.mobile.testing.FakeMpinAttemptStore
 import com.abcbank.mobile.testing.FakeRememberedCustomerStore
 import com.abcbank.mobile.testing.MainDispatcherRule
 import com.abcbank.mobile.testing.SchedulerClock
 import com.abcbank.mobile.testing.TEST_START
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -30,6 +37,7 @@ class LoginViewModelTest {
 
     private val attemptStore = FakeMpinAttemptStore()
     private val rememberedStore = FakeRememberedCustomerStore()
+    private val demoData = FakeDemoDataRepository()
 
     private fun TestScope.createViewModel(
         savedStateHandle: SavedStateHandle = SavedStateHandle()
@@ -40,7 +48,13 @@ class LoginViewModelTest {
         return LoginViewModel(
             savedStateHandle = savedStateHandle,
             checkCustomerId = check,
-            logIn = LogInUseCase(check, verifier, rememberedStore),
+            logIn = LogInUseCase(
+                check,
+                verifier,
+                rememberedStore,
+                PrepareDemoDataUseCase(demoData)
+            ),
+            getStoredDemoData = GetStoredDemoDataUseCase(demoData),
             mpinVerifier = verifier,
             clock = clock
         )
@@ -206,5 +220,95 @@ class LoginViewModelTest {
         assertEquals("GRAWHI01", viewModel.content.customerId)
         assertEquals(MpinMessage.LockedOut(secondsLeft = 10), viewModel.content.mpinMessage)
         assertFalse(viewModel.content.isMpinEnabled)
+    }
+
+    @Test
+    fun `the pad waits until the stored data has been checked`() = runTest {
+        demoData.storedGate = CompletableDeferred()
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onCustomerIdChange("SAMJOH01")
+        assertFalse(viewModel.content.isMpinEnabled)
+
+        demoData.storedGate?.complete(Unit)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.content.isMpinEnabled)
+    }
+
+    @Test
+    fun `another persona's data shows the replace warning`() = runTest {
+        demoData.stored = StoredDemoData(PersonaId.SAMANTA, "Samanta Johns", seedVersion = 2L)
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onCustomerIdChange("MARLEE01")
+        assertEquals("Samanta Johns", viewModel.content.replacesDataOf)
+
+        viewModel.onCustomerIdChange("SAMJOH01")
+        assertNull(viewModel.content.replacesDataOf)
+
+        viewModel.onCustomerIdChange("SAMJ")
+        assertNull(viewModel.content.replacesDataOf)
+    }
+
+    @Test
+    fun `no warning when the stored data cannot be read`() = runTest {
+        demoData.stored = StoredDemoData(PersonaId.SAMANTA, "Samanta Johns", seedVersion = 2L)
+        demoData.failWith = DataError.OFFLINE
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onCustomerIdChange("MARLEE01")
+
+        assertNull(viewModel.content.replacesDataOf)
+        assertTrue(viewModel.content.isMpinEnabled)
+    }
+
+    @Test
+    fun `the correct MPIN shows setting up, then seeds and logs in`() = runTest {
+        demoData.seedGate = CompletableDeferred()
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onCustomerIdChange("GRAWHI01")
+
+        viewModel.enterMpin("123456")
+        advanceUntilIdle()
+
+        assertEquals(MpinMessage.SettingUp, viewModel.content.mpinMessage)
+        assertEquals(0, viewModel.content.mpinEntered)
+        assertFalse(viewModel.content.isMpinEnabled)
+        assertNull(rememberedStore.remembered)
+
+        demoData.seedGate?.complete(Unit)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.content.isLoggedIn)
+        assertEquals(listOf(PersonaId.GRACE), demoData.seeded)
+        assertEquals("GRAWHI01", rememberedStore.remembered?.value)
+    }
+
+    @Test
+    fun `a failed setup asks for the MPIN again and does not log in`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onCustomerIdChange("SAMJOH01")
+        demoData.failWith = DataError.OFFLINE
+
+        viewModel.enterMpin("123456")
+        advanceUntilIdle()
+
+        assertEquals(MpinMessage.SetupFailed, viewModel.content.mpinMessage)
+        assertTrue(viewModel.content.isMpinEnabled)
+        assertFalse(viewModel.content.isLoggedIn)
+        assertNull(rememberedStore.remembered)
+
+        demoData.failWith = null
+        viewModel.enterMpin("1")
+        assertNull(viewModel.content.mpinMessage)
+        viewModel.enterMpin("23456")
+        advanceUntilIdle()
+
+        assertTrue(viewModel.content.isLoggedIn)
     }
 }

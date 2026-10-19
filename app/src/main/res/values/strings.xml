@@ -25,6 +25,9 @@
     <string name="login_customer_id_error_format">Customer ID is 8 letters or numbers.</string>
     <string name="login_customer_id_error_unknown">We don\'t recognise this customer ID.</string>
     <string name="login_mpin_label">Enter your MPIN</string>
+    <string name="login_replaces_data">Logging in replaces %1$s\'s demo data.</string>
+    <string name="login_setting_up">Setting up your demo data…</string>
+    <string name="login_setup_failed">We couldn\'t set up your demo data. Check your connection and enter your MPIN again.</string>
 
     <!-- MPIN pad messages -->
     <plurals name="mpin_wrong_attempts_left">

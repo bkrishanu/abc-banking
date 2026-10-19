@@ -5,11 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abcbank.mobile.core.common.Clock
 import com.abcbank.mobile.core.model.CustomerId
+import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.security.MpinVerifier
 import com.abcbank.mobile.feature.auth.domain.CheckCustomerIdUseCase
 import com.abcbank.mobile.feature.auth.domain.CustomerIdCheck
+import com.abcbank.mobile.feature.auth.domain.GetStoredDemoDataUseCase
 import com.abcbank.mobile.feature.auth.domain.LogInResult
 import com.abcbank.mobile.feature.auth.domain.LogInUseCase
+import com.abcbank.mobile.feature.auth.domain.StoredDemoData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.Instant
@@ -27,6 +30,7 @@ class LoginViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val checkCustomerId: CheckCustomerIdUseCase,
     private val logIn: LogInUseCase,
+    private val getStoredDemoData: GetStoredDemoDataUseCase,
     private val mpinVerifier: MpinVerifier,
     private val clock: Clock
 ) : ViewModel() {
@@ -41,7 +45,12 @@ class LoginViewModel @Inject constructor(
     private var ready = false
     private var customerId = ""
     private var customerIdError: CustomerIdError? = null
-    private var recognised = false
+    private var recognisedPersona: PersonaId? = null
+    private var storedDemoData: StoredDemoData? = null
+
+    // The replace warning must be on screen before an MPIN can be entered, so the pad waits for
+    // this check. A failed check means no warning; the login itself then reports the problem.
+    private var storedDataChecked = false
     private var mpinMessage: MpinMessage? = null
     private var lockedUntil: Instant? = null
     private var verifying = false
@@ -55,6 +64,11 @@ class LoginViewModel @Inject constructor(
             mpinVerifier.lockedUntil()?.let(::startCountdown)
             render()
         }
+        viewModelScope.launch {
+            storedDemoData = getStoredDemoData()
+            storedDataChecked = true
+            render()
+        }
     }
 
     fun onCustomerIdChange(input: String) {
@@ -62,7 +76,7 @@ class LoginViewModel @Inject constructor(
         val value = input.trim().uppercase(Locale.ROOT).take(CustomerId.LENGTH)
         if (value == customerId) return
         clearMpin()
-        if (mpinMessage is MpinMessage.WrongMpin) mpinMessage = null
+        if (mpinMessage.isClearedByTyping()) mpinMessage = null
         applyCustomerId(value)
         render()
     }
@@ -79,7 +93,7 @@ class LoginViewModel @Inject constructor(
     fun onMpinDigit(digit: Int) {
         if (!isMpinEnabled() || mpinCount >= mpin.size || digit !in 0..9) return
         mpin[mpinCount++] = '0' + digit
-        if (mpinMessage is MpinMessage.WrongMpin) mpinMessage = null
+        if (mpinMessage.isClearedByTyping()) mpinMessage = null
         render()
         if (mpinCount == mpin.size) submit()
     }
@@ -94,7 +108,7 @@ class LoginViewModel @Inject constructor(
         customerId = value
         savedStateHandle[KEY_CUSTOMER_ID] = value
         val check = checkCustomerId(value)
-        recognised = check is CustomerIdCheck.Recognised
+        recognisedPersona = (check as? CustomerIdCheck.Recognised)?.personaId
         customerIdError = when (check) {
             CustomerIdCheck.WrongFormat -> CustomerIdError.WrongFormat
             CustomerIdCheck.Unknown -> CustomerIdError.Unknown
@@ -107,7 +121,7 @@ class LoginViewModel @Inject constructor(
         render()
         viewModelScope.launch {
             val result = try {
-                logIn(customerId, mpin)
+                logIn(customerId, mpin, onMpinAccepted = ::showSettingUp)
             } finally {
                 clearMpin()
             }
@@ -116,13 +130,21 @@ class LoginViewModel @Inject constructor(
                 is LogInResult.LoggedIn -> loggedIn = true
                 is LogInResult.WrongMpin -> mpinMessage = MpinMessage.WrongMpin(result.attemptsLeft)
                 is LogInResult.LockedOut -> startCountdown(result.until)
+                is LogInResult.SetupFailed -> mpinMessage = MpinMessage.SetupFailed
                 LogInResult.InvalidCustomerId -> {
-                    recognised = false
+                    recognisedPersona = null
                     customerIdError = CustomerIdError.Unknown
                 }
             }
             render()
         }
+    }
+
+    private fun showSettingUp() {
+        // The MPIN is verified; its digits are not needed while the data loads.
+        clearMpin()
+        mpinMessage = MpinMessage.SettingUp
+        render()
     }
 
     private fun startCountdown(until: Instant) {
@@ -149,8 +171,12 @@ class LoginViewModel @Inject constructor(
         return (millis + COUNTDOWN_TICK_MS - 1) / COUNTDOWN_TICK_MS
     }
 
-    private fun isMpinEnabled(): Boolean =
-        ready && recognised && lockedUntil == null && !verifying && !loggedIn
+    private fun isMpinEnabled(): Boolean = ready &&
+        storedDataChecked &&
+        recognisedPersona != null &&
+        lockedUntil == null &&
+        !verifying &&
+        !loggedIn
 
     private fun clearMpin() {
         mpin.fill(Char.MIN_VALUE)
@@ -162,6 +188,7 @@ class LoginViewModel @Inject constructor(
         _uiState.value = LoginUiState.Content(
             customerId = customerId,
             customerIdError = customerIdError,
+            replacesDataOf = recognisedPersona?.let { storedDemoData?.replacedNameFor(it) },
             isMpinEnabled = isMpinEnabled(),
             mpinEntered = mpinCount,
             mpinLength = mpin.size,
@@ -169,6 +196,9 @@ class LoginViewModel @Inject constructor(
             isLoggedIn = loggedIn
         )
     }
+
+    private fun MpinMessage?.isClearedByTyping(): Boolean =
+        this is MpinMessage.WrongMpin || this is MpinMessage.SetupFailed
 
     override fun onCleared() {
         clearMpin()

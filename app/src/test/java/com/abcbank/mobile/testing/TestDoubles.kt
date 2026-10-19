@@ -1,11 +1,17 @@
 package com.abcbank.mobile.testing
 
 import com.abcbank.mobile.core.common.Clock
+import com.abcbank.mobile.core.common.DataError
+import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.CustomerId
+import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.security.MpinAttemptStore
 import com.abcbank.mobile.core.security.MpinAttempts
 import com.abcbank.mobile.core.security.RememberedCustomerStore
+import com.abcbank.mobile.feature.auth.domain.DemoDataRepository
+import com.abcbank.mobile.feature.auth.domain.StoredDemoData
 import java.time.Instant
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
@@ -43,6 +49,37 @@ class FakeRememberedCustomerStore : RememberedCustomerStore {
     }
 
     override suspend fun rememberedCustomer(): CustomerId? = remembered
+}
+
+/**
+ * Keeps "seeded" data in memory. Set [failWith] to make every call fail, or a gate to hold a call
+ * until the test completes it.
+ */
+class FakeDemoDataRepository(
+    var stored: StoredDemoData? = null,
+    var bundledVersion: Long = 2L,
+    var failWith: DataError? = null,
+    private val names: Map<PersonaId, String> = PersonaId.entries.associateWith { it.key }
+) : DemoDataRepository {
+    val seeded = mutableListOf<PersonaId>()
+    var storedGate: CompletableDeferred<Unit>? = null
+    var seedGate: CompletableDeferred<Unit>? = null
+
+    override suspend fun storedDemoData(): DataResult<StoredDemoData?> {
+        storedGate?.await()
+        return failWith?.let { DataResult.Failure(it) } ?: DataResult.Success(stored)
+    }
+
+    override suspend fun bundledSeedVersion(personaId: PersonaId): DataResult<Long> =
+        failWith?.let { DataResult.Failure(it) } ?: DataResult.Success(bundledVersion)
+
+    override suspend fun seedDemoData(personaId: PersonaId): DataResult<Unit> {
+        seedGate?.await()
+        failWith?.let { return DataResult.Failure(it) }
+        seeded += personaId
+        stored = StoredDemoData(personaId, names.getValue(personaId), bundledVersion)
+        return DataResult.Success(Unit)
+    }
 }
 
 class MainDispatcherRule(val dispatcher: TestDispatcher = StandardTestDispatcher()) :

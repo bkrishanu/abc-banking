@@ -119,7 +119,9 @@ BankingMobileApp/
                                 (MpinAttemptStore, RememberedCustomerStore) implemented in data/prefs
             data/
               firebase/         FirebaseModule, AuthDataSource, Firestore paths, DTOs and mappers
-              seed/             DemoDataSeeder, PersonaCatalog (customer ID -> persona), FillerGenerator (seeded random 181019)
+              seed/             DemoDataSeeder (Firestore delete + write), SeedPlanBuilder (persona JSON -> documents,
+                                running balances, references), FillerGenerator (seeded random 181019), SeedDates,
+                                SeedAssetReader, PersonaCatalog (customer ID -> persona)
               prefs/            DataStore-backed SettingsRepository
             di/                 Hilt modules that bind core interfaces
           feature/
@@ -229,6 +231,10 @@ Auth and session:
 - First launch: Firebase anonymous sign-in, Welcome, then the login screen (customer ID + MPIN).
 - `PersonaCatalog` validates the customer ID (exactly 8 alphanumeric characters, trimmed, case-insensitive) and maps it to a personaId. A wrong format or an unknown ID is an inline error; the MPIN is checked by `MpinVerifier` in `core/security`.
 - On login, if `users/{uid}` holds a different personaId (or none), `DemoDataSeeder` deletes the subtree (in batches of 500) and writes the chosen persona from `assets/seed/personas/`, resolving relative dates and generating filler as described in DEMO_DATA.md section 01. The same customer ID keeps its data and is reseeded only if the bundled `seedVersion` is newer than the stored one.
+- The login screen reads the stored persona when it opens (signing in anonymously first if needed) and keeps the MPIN pad disabled until that read finishes. If a recognised customer ID belongs to another persona, a warning line under the field names whose data will be replaced; entering the MPIN confirms. If the read fails, there is no warning and the login itself reports the problem.
+- The decision (keep or seed) is `PrepareDemoDataUseCase` in `feature/auth/domain`; `LogInUseCase` runs it after a correct MPIN and remembers the customer ID only once the data is ready. If seeding fails, the MPIN pad shows an error and entering the MPIN again retries.
+- A seed reads the existing subtree from the server first, so it fails straight away when offline. It then deletes the user document before the subtree and writes the user document last, so a seed that stops halfway leaves no persona on record and the next login seeds again. A seed that takes longer than 45 s is reported as offline.
+- Not written yet: the persona file's `documents` block (statement accounts, 1099-INT interest). Section 04 has no field for it; the statements feature decides where it lives.
 - The remembered customer ID lives in DataStore. Log out (Profile) clears it and returns to the login screen; the Firestore data stays until a different ID logs in.
 - Hidden Reset demo data (long-press the app version in Profile, then confirm) deletes the subtree and reseeds the current persona.
 - The MPIN (`123456`, every persona) is the only factor: for login, the lock screen and step-up. No biometrics.

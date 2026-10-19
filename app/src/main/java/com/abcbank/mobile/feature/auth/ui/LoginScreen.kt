@@ -145,6 +145,14 @@ private fun LoginContent(
             }),
             modifier = Modifier.fillMaxWidth()
         )
+        if (state.replacesDataOf != null && state.customerIdError == null) {
+            Spacer(Modifier.height(spacing.space1))
+            Text(
+                text = stringResource(R.string.login_replaces_data, state.replacesDataOf),
+                style = AbcTheme.typography.small,
+                color = AbcTheme.colors.warning
+            )
+        }
         Spacer(Modifier.height(spacing.space6))
         Text(
             text = stringResource(R.string.login_mpin_label),
@@ -159,7 +167,8 @@ private fun LoginContent(
             onDelete = onMpinDelete,
             enabled = state.isMpinEnabled,
             supportingText = state.mpinMessage?.let { mpinMessageText(it) },
-            isError = state.mpinMessage is MpinMessage.WrongMpin,
+            isError = state.mpinMessage is MpinMessage.WrongMpin ||
+                state.mpinMessage is MpinMessage.SetupFailed,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(spacing.space6))
@@ -180,17 +189,21 @@ private fun mpinMessageText(message: MpinMessage): String = when (message) {
         message.attemptsLeft
     )
     is MpinMessage.LockedOut -> stringResource(R.string.mpin_locked_countdown, message.secondsLeft)
+    MpinMessage.SettingUp -> stringResource(R.string.login_setting_up)
+    MpinMessage.SetupFailed -> stringResource(R.string.login_setup_failed)
 }
 
 private fun previewContent(
     customerId: String = "SAMJOH01",
     customerIdError: CustomerIdError? = null,
+    replacesDataOf: String? = null,
     isMpinEnabled: Boolean = true,
     mpinEntered: Int = 0,
     mpinMessage: MpinMessage? = null
 ) = LoginUiState.Content(
     customerId = customerId,
     customerIdError = customerIdError,
+    replacesDataOf = replacesDataOf,
     isMpinEnabled = isMpinEnabled,
     mpinEntered = mpinEntered,
     mpinLength = 6,
@@ -241,6 +254,22 @@ private fun LoginWrongMpinPreview() =
 private fun LoginLockedPreview() = LoginPreview(
     previewContent(isMpinEnabled = false, mpinMessage = MpinMessage.LockedOut(secondsLeft = 24))
 )
+
+@Preview(widthDp = 360, heightDp = 800)
+@Composable
+private fun LoginReplacesDataPreview() = LoginPreview(
+    previewContent(customerId = "MARLEE01", replacesDataOf = "Samanta Johns", mpinEntered = 2)
+)
+
+@Preview(widthDp = 360, heightDp = 800)
+@Composable
+private fun LoginSettingUpPreview() =
+    LoginPreview(previewContent(isMpinEnabled = false, mpinMessage = MpinMessage.SettingUp))
+
+@Preview(widthDp = 360, heightDp = 800)
+@Composable
+private fun LoginSetupFailedPreview() =
+    LoginPreview(previewContent(mpinMessage = MpinMessage.SetupFailed))
 
 @Preview(widthDp = 360, heightDp = 800, fontScale = 2f)
 @Composable
