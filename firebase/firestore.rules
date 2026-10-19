@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Source of truth for Firestore authorisation (ARCHITECTURE.md sections 01 and 04).
+// Each install signs in anonymously and may read and write only its own users/{uid} tree.
+// The client writing its own seed data is intentional for this demo (ARCHITECTURE.md section 06).
+// Never widen these rules to make a feature work; ask first (AGENTS.md section 05).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // Shared reference data, created by a person in the console (ARCHITECTURE.md section 08).
+    match /catalog/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Anything not matched above is denied by default.
+  }
+}
