@@ -472,7 +472,8 @@ app/src/main/assets/seed/
     daniel.json         section 06
 ```
 
-Current `seedVersion`: 1 (no seed JSON has shipped yet; bump on every data change after the first release).
+Current `seedVersion`: 1 (first seed JSON added 2026-10-19; bump on every data change from now on).
+`SeedFilesTest` checks the files against the Firestore mappers, the Luhn and ABA checksums, and the balance rules in this document.
 
 Card limit fields: debit cards use `atmDailyLimit`/`atmMaxLimit` and `retailDailyLimit`/`retailMaxLimit`.
 Credit cards store the cash advance limit in the `atm*` fields and leave `retail*` unset; the app shows retail as the linked account's available credit.
@@ -481,3 +482,28 @@ Each persona file has: `seedVersion`, `profile` (including `customerId`), `accou
 `beneficiaries`, `transactions`, `fillerTargets`, `bills`, `savingsGoals`, `notifications`,
 `supportCases`, `documents`. Field names match ARCHITECTURE.md section 04.
 Full card numbers and CVVs live only in the seed JSON and the `cards` documents of this demo. A real app would never store them.
+
+File format (decided 2026-10-19):
+- Money is whole cents (`15583200` = $155,832.00); rates are basis points (`310` = 3.10%). No decimals anywhere.
+- Enum values use the codes in ARCHITECTURE.md section 04 (`CHECKING`, `PEACH`, `TRANSFER_IN`).
+- Every record has a stable `id` (`checking`, `main-card`, `tx-001`), used as its Firestore document id.
+- Dates are `{ "dayOffset": n, "time": "HH:mm" }`; `time` is omitted for date-only fields (due, maturity, travel dates)
+  and means 00:00 local.
+- `holdings` carry their `accountId`; travel notices are nested in their card.
+- Not in the files, computed by the seeder: transaction `reference` (UUID from the fixed random seed), `runningBalance`,
+  filler transactions, profile `seedVersion`/`createdAt`, and `{date:+n}` tokens in notification text,
+  replaced with the short date of day +n ("Oct 29").
+- `fillerMerchants` in `catalog.json` is read by the seeder only; it is not created in the console.
+  Utilities filler uses the utility billers' names, with amounts taken from the persona's bills.
+- `documents`: `statementAccountIds` (the accounts that get 6 monthly statements) and `interest1099` (cents, or null for no 1099-INT).
+
+Values not given in the persona sections above (approved 2026-10-19):
+- Notification times: the time of the related transaction where there is one, otherwise 09:00.
+- Bill `status`: `DUE`, or `SCHEDULED` when `scheduledFor` is set. Grace's property tax is due and scheduled on day +25.
+- Savings goals for marcus, grace and daniel start on day -90, with 13 weekly points rising evenly from 30% of the
+  saved amount to the saved amount.
+- Samanta's dispute: opened day -10 09:00, status `IN_REVIEW`. Customer: "I didn't make this purchase at Melody Live
+  Tickets." Bank (09:05): "Thanks for letting us know. We're reviewing this charge and will update you here within
+  5 business days."
+- An internal transfer is two records: the debit on the source account and a matching credit named
+  "From {source nickname} ••{last4}" on the destination.

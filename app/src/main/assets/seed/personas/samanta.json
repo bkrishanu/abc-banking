@@ -1,0 +1,125 @@
+{
+  "seedVersion": 1,
+  "profile": {
+    "personaId": "samanta",
+    "customerId": "SAMJOH01",
+    "name": "Samanta Johns",
+    "holderName": "SAMANTA JOHNS",
+    "email": "samanta.johns@example.com",
+    "phone": "+1 (555) 010-2231",
+    "avatarKey": "samanta",
+    "employment": "Employed, Product Design Lead at Lumen Studio",
+    "annualIncome": 18500000,
+    "monthlyBudget": 1890000,
+    "creditScore": 792,
+    "checkDepositLimit": 1000000
+  },
+  "accounts": [
+    { "id": "checking", "type": "CHECKING", "nickname": "Everyday Checking", "last4": "3144", "availableBalance": 15583200, "ledgerBalance": 15620700 },
+    { "id": "savings", "type": "SAVINGS", "nickname": "Travel Savings", "last4": "7720", "availableBalance": 1203200, "ledgerBalance": 1203200, "rate": 310 },
+    { "id": "credit", "type": "CREDIT", "nickname": "Signature Credit Card", "last4": "5821", "creditLimit": 5000000, "ledgerBalance": 1176500, "availableBalance": 3823500, "statementBalance": 948025, "minimumDue": 28500, "dueDate": { "dayOffset": 26 }, "autoPayFull": false },
+    { "id": "line-of-credit", "type": "LOAN", "nickname": "Personal Line of Credit", "last4": "6608", "creditLimit": 1500000, "ledgerBalance": 250000, "availableBalance": 1250000, "rate": 925 },
+    { "id": "term-deposit", "type": "TERM_DEPOSIT", "nickname": "12-Month Term Deposit", "last4": "9034", "principal": 2500000, "rate": 435, "openedAt": { "dayOffset": -245 }, "maturesAt": { "dayOffset": 120 } },
+    { "id": "investment", "type": "INVESTMENT", "nickname": "Investment Portfolio", "last4": "4410", "portfolioValue": 8461240 }
+  ],
+  "holdings": [
+    { "id": "total-market", "accountId": "investment", "name": "ABC Total Market Index Fund", "value": 5230000 },
+    { "id": "bond-income", "accountId": "investment", "name": "ABC Bond Income Fund", "value": 2141240 },
+    { "id": "cash", "accountId": "investment", "name": "Cash", "value": 1090000 }
+  ],
+  "cards": [
+    {
+      "id": "main-card", "accountId": "checking", "tag": "Main card", "network": "MASTERCARD", "artKey": "PEACH",
+      "holderName": "SAMANTA JOHNS", "pan": "5399000000093144", "cvv": "314", "last4": "3144", "expiry": "08/29", "frozen": false,
+      "atmDailyLimit": 100000, "atmMaxLimit": 250000, "retailDailyLimit": 500000, "retailMaxLimit": 1000000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 0, "travelNotices": []
+    },
+    {
+      "id": "signature-card", "accountId": "credit", "tag": "Signature Card", "network": "VISA", "artKey": "SAGE",
+      "holderName": "SAMANTA JOHNS", "pan": "4999000000015821", "cvv": "582", "last4": "5821", "expiry": "11/28", "frozen": false,
+      "atmDailyLimit": 50000, "atmMaxLimit": 200000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 1, "travelNotices": []
+    },
+    {
+      "id": "travel-card", "accountId": "savings", "tag": "Travel card", "network": "MASTERCARD", "artKey": "GRAPHITE",
+      "holderName": "SAMANTA JOHNS", "pan": "5399000000027720", "cvv": "772", "last4": "7720", "expiry": "03/30", "frozen": false,
+      "atmDailyLimit": 80000, "atmMaxLimit": 250000, "retailDailyLimit": 300000, "retailMaxLimit": 1000000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 2,
+      "travelNotices": [
+        { "id": "lisbon", "destination": "Lisbon, Portugal", "startDate": { "dayOffset": 21 }, "endDate": { "dayOffset": 35 } }
+      ]
+    }
+  ],
+  "beneficiaries": [
+    { "id": "mark-robinson", "name": "Mark Robinson", "shortName": "Mark R.", "bankName": "Northfield Bank", "routingNumber": "500000021", "accountLast4": "1180", "isRecent": true, "recentOrder": 0 },
+    { "id": "kris-patel", "name": "Kris Patel", "shortName": "Kris", "bankName": "Harbor State Bank", "routingNumber": "500000034", "accountLast4": "2290", "isRecent": true, "recentOrder": 1 },
+    { "id": "helen-torres", "name": "Helen Torres", "shortName": "Helen T.", "bankName": "ABC Bank", "routingNumber": "500000018", "accountLast4": "5532", "isRecent": true, "recentOrder": 2 },
+    { "id": "tonys-gym", "name": "Tony's Gym", "shortName": "Tony Gym", "bankName": "Pinecrest Credit Union", "routingNumber": "500000047", "accountLast4": "7001", "isRecent": true, "recentOrder": 3 },
+    { "id": "oakwood-properties", "name": "Oakwood Properties", "bankName": "Summit National Bank", "routingNumber": "500000050", "accountLast4": "3305", "isRecent": false },
+    { "id": "daniel-kim", "name": "Daniel Kim", "bankName": "Lakeview Savings", "routingNumber": "500000063", "accountLast4": "8814", "isRecent": false }
+  ],
+  "transactions": [
+    { "id": "tx-001", "accountId": "checking", "direction": "DEBIT", "amount": 12500, "merchant": "Aster & Vine Boutique", "category": "SHOPPING", "status": "POSTED", "createdAt": { "dayOffset": 0, "time": "15:14" } },
+    { "id": "tx-002", "accountId": "checking", "direction": "DEBIT", "amount": 37500, "merchant": "Northwind Furniture", "category": "SHOPPING", "status": "PENDING", "createdAt": { "dayOffset": 0, "time": "11:40" } },
+    { "id": "tx-003", "accountId": "checking", "direction": "CREDIT", "amount": 3860, "merchant": "Helen Torres", "category": "TRANSFER_IN", "status": "POSTED", "createdAt": { "dayOffset": 0, "time": "08:09" } },
+    { "id": "tx-004", "accountId": "checking", "direction": "DEBIT", "amount": 7200, "merchant": "Olive & Ember", "category": "DINING", "status": "POSTED", "createdAt": { "dayOffset": -1, "time": "21:21" } },
+    { "id": "tx-005", "accountId": "checking", "direction": "DEBIT", "amount": 645, "merchant": "Bluebird Coffee", "category": "DINING", "status": "POSTED", "createdAt": { "dayOffset": -1, "time": "09:05" } },
+    { "id": "tx-006", "accountId": "checking", "direction": "DEBIT", "amount": 14218, "merchant": "Fresh Market Co.", "category": "GROCERIES", "status": "POSTED", "createdAt": { "dayOffset": -2, "time": "18:30" } },
+    { "id": "tx-007", "accountId": "checking", "direction": "CREDIT", "amount": 711538, "merchant": "Lumen Studio Payroll", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -3, "time": "07:00" } },
+    { "id": "tx-008", "accountId": "checking", "direction": "DEBIT", "amount": 100000, "merchant": "To Travel Savings ••7720", "category": "TRANSFER", "status": "POSTED", "createdAt": { "dayOffset": -3, "time": "12:00" } },
+    { "id": "tx-009", "accountId": "savings", "direction": "CREDIT", "amount": 100000, "merchant": "From Everyday Checking ••3144", "category": "TRANSFER", "status": "POSTED", "createdAt": { "dayOffset": -3, "time": "12:00" } },
+    { "id": "tx-010", "accountId": "checking", "direction": "DEBIT", "amount": 4800, "merchant": "Cineplex Grand", "category": "ENTERTAINMENT", "status": "POSTED", "createdAt": { "dayOffset": -4, "time": "20:00" } },
+    { "id": "tx-011", "accountId": "checking", "direction": "DEBIT", "amount": 18640, "merchant": "Brightline Electric", "category": "UTILITIES", "status": "POSTED", "createdAt": { "dayOffset": -5, "time": "10:15" } },
+    { "id": "tx-012", "accountId": "checking", "direction": "DEBIT", "amount": 7999, "merchant": "StreamNet Fiber", "category": "UTILITIES", "status": "POSTED", "createdAt": { "dayOffset": -6, "time": "06:00" } },
+    { "id": "tx-013", "accountId": "checking", "direction": "DEBIT", "amount": 6500, "merchant": "Tony's Gym", "category": "HEALTH", "status": "POSTED", "createdAt": { "dayOffset": -7, "time": "18:45" } },
+    { "id": "tx-014", "accountId": "credit", "direction": "DEBIT", "amount": 124000, "merchant": "SkyWays Airlines", "category": "TRAVEL", "status": "POSTED", "createdAt": { "dayOffset": -9, "time": "13:20" } },
+    { "id": "tx-015", "accountId": "checking", "direction": "DEBIT", "amount": 25000, "merchant": "Mark Robinson", "category": "TRANSFER_OUT", "status": "POSTED", "createdAt": { "dayOffset": -10, "time": "19:02" } },
+    { "id": "tx-016", "accountId": "credit", "direction": "DEBIT", "amount": 42000, "merchant": "Melody Live Tickets", "category": "ENTERTAINMENT", "status": "POSTED", "disputed": true, "createdAt": { "dayOffset": -11, "time": "22:10" } },
+    { "id": "tx-017", "accountId": "savings", "direction": "CREDIT", "amount": 4127, "merchant": "Interest", "category": "INTEREST", "status": "POSTED", "createdAt": { "dayOffset": -12, "time": "00:05" } },
+    { "id": "tx-018", "accountId": "checking", "direction": "DEBIT", "amount": 9500, "merchant": "Volt Mobile", "category": "UTILITIES", "status": "POSTED", "createdAt": { "dayOffset": -14, "time": "09:30" } },
+    { "id": "tx-019", "accountId": "checking", "direction": "CREDIT", "amount": 711538, "merchant": "Lumen Studio Payroll", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -17, "time": "07:00" } }
+  ],
+  "fillerTargets": {
+    "SHOPPING": 462000,
+    "ENTERTAINMENT": 262000,
+    "TRAVEL": 166000,
+    "DINING": 148000,
+    "GROCERIES": 124000,
+    "UTILITIES": 86000
+  },
+  "bills": [
+    { "id": "volt-mobile", "billerId": "volt-mobile", "amountDue": 9500, "dueDate": { "dayOffset": 4 }, "autoPay": false, "status": "DUE" },
+    { "id": "brightline-electric", "billerId": "brightline-electric", "amountDue": 19275, "dueDate": { "dayOffset": 9 }, "autoPay": false, "status": "DUE" },
+    { "id": "streamnet", "billerId": "streamnet", "amountDue": 7999, "dueDate": { "dayOffset": 12 }, "autoPay": true, "status": "DUE" },
+    { "id": "city-water", "billerId": "city-water", "amountDue": 5430, "dueDate": { "dayOffset": 15 }, "autoPay": false, "scheduledFor": { "dayOffset": 14 }, "status": "SCHEDULED" }
+  ],
+  "savingsGoals": [
+    {
+      "id": "summer-in-lisbon", "name": "Summer in Lisbon", "target": 400000, "saved": 365000, "accountId": "savings",
+      "startedAt": { "dayOffset": -90 },
+      "weeklyHistory": [120000, 135000, 190000, 150000, 178000, 165000, 162000, 170000, 248000, 220000, 240000, 356000, 365000]
+    }
+  ],
+  "notifications": [
+    { "id": "n-001", "kind": "TRANSACTIONAL", "title": "Money received", "body": "Helen Torres sent you $38.60.", "read": false, "createdAt": { "dayOffset": 0, "time": "08:09" } },
+    { "id": "n-002", "kind": "TRANSACTIONAL", "title": "Card used", "body": "$125.00 at Aster & Vine Boutique with your Main card.", "read": false, "createdAt": { "dayOffset": 0, "time": "15:14" } },
+    { "id": "n-003", "kind": "TRANSACTIONAL", "title": "Bill due soon", "body": "Volt Mobile, $95.00, due in 4 days.", "read": false, "createdAt": { "dayOffset": -1, "time": "09:00" } },
+    { "id": "n-004", "kind": "TRANSACTIONAL", "title": "Salary received", "body": "$7,115.38 paid into Everyday Checking.", "read": true, "createdAt": { "dayOffset": -3, "time": "07:00" } },
+    { "id": "n-005", "kind": "PROMOTIONAL", "title": "Grow your savings", "body": "Earn 4.50% APY with ABC High-Yield Savings.", "read": false, "createdAt": { "dayOffset": -2, "time": "09:00" } },
+    { "id": "n-006", "kind": "PROMOTIONAL", "title": "Dining rewards", "body": "Earn 3x points on dining with your Signature Card this month.", "read": true, "createdAt": { "dayOffset": -6, "time": "09:00" } }
+  ],
+  "supportCases": [
+    {
+      "id": "dispute-melody-live", "transactionId": "tx-016", "topic": "I didn't make this purchase", "status": "IN_REVIEW",
+      "createdAt": { "dayOffset": -10, "time": "09:00" },
+      "messages": [
+        { "from": "CUSTOMER", "body": "I didn't make this purchase at Melody Live Tickets.", "sentAt": { "dayOffset": -10, "time": "09:00" } },
+        { "from": "BANK", "body": "Thanks for letting us know. We're reviewing this charge and will update you here within 5 business days.", "sentAt": { "dayOffset": -10, "time": "09:05" } }
+      ]
+    }
+  ],
+  "documents": {
+    "statementAccountIds": ["checking", "credit"],
+    "interest1099": 41286
+  }
+}

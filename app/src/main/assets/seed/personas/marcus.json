@@ -1,0 +1,81 @@
+{
+  "seedVersion": 1,
+  "profile": {
+    "personaId": "marcus",
+    "customerId": "MARLEE01",
+    "name": "Marcus Lee",
+    "holderName": "MARCUS LEE",
+    "email": "marcus.lee@example.com",
+    "phone": "+1 (555) 010-4478",
+    "avatarKey": "marcus",
+    "employment": "Employed, Software Engineer I at Brightpath Software",
+    "annualIncome": 6800000,
+    "monthlyBudget": 300000,
+    "creditScore": 688,
+    "checkDepositLimit": 1000000
+  },
+  "accounts": [
+    { "id": "checking", "type": "CHECKING", "nickname": "Everyday Checking", "last4": "2087", "availableBalance": 41217, "ledgerBalance": 41217 },
+    { "id": "savings", "type": "SAVINGS", "nickname": "Starter Savings", "last4": "6120", "availableBalance": 125000, "ledgerBalance": 125000, "rate": 310 },
+    { "id": "credit", "type": "CREDIT", "nickname": "Cash Back Card", "last4": "6634", "creditLimit": 300000, "ledgerBalance": 194055, "availableBalance": 105945, "statementBalance": 161230, "minimumDue": 4000, "dueDate": { "dayOffset": 3 }, "autoPayFull": false }
+  ],
+  "holdings": [],
+  "cards": [
+    {
+      "id": "main-card", "accountId": "checking", "tag": "Main card", "network": "MASTERCARD", "artKey": "PEACH",
+      "holderName": "MARCUS LEE", "pan": "5399000000002087", "cvv": "208", "last4": "2087", "expiry": "05/28", "frozen": true,
+      "atmDailyLimit": 50000, "atmMaxLimit": 100000, "retailDailyLimit": 200000, "retailMaxLimit": 500000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 0, "travelNotices": []
+    },
+    {
+      "id": "cash-back-card", "accountId": "credit", "tag": "Cash Back", "network": "VISA", "artKey": "SAGE",
+      "holderName": "MARCUS LEE", "pan": "4999000000066634", "cvv": "663", "last4": "6634", "expiry": "10/27", "frozen": false,
+      "atmDailyLimit": 20000, "atmMaxLimit": 60000,
+      "international": false, "online": true, "contactless": false, "stackOrder": 1, "travelNotices": []
+    }
+  ],
+  "beneficiaries": [
+    { "id": "sarah-lee", "name": "Sarah Lee", "bankName": "Lakeview Savings", "routingNumber": "500000063", "accountLast4": "4402", "isRecent": true, "recentOrder": 0 }
+  ],
+  "transactions": [
+    { "id": "tx-001", "accountId": "checking", "direction": "DEBIT", "amount": 1480, "merchant": "Campus Deli", "category": "DINING", "status": "POSTED", "createdAt": { "dayOffset": 0, "time": "12:31" } },
+    { "id": "tx-002", "accountId": "checking", "direction": "DEBIT", "amount": 1825, "merchant": "QuickRide", "category": "TRANSPORT", "status": "POSTED", "createdAt": { "dayOffset": -1, "time": "19:44" } },
+    { "id": "tx-003", "accountId": "checking", "direction": "DEBIT", "amount": 145000, "merchant": "Oakwood Properties", "category": "HOUSING", "status": "POSTED", "createdAt": { "dayOffset": -2, "time": "08:00" } },
+    { "id": "tx-004", "accountId": "checking", "direction": "CREDIT", "amount": 210846, "merchant": "Brightpath Software Payroll", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -4, "time": "07:00" } },
+    { "id": "tx-005", "accountId": "checking", "direction": "DEBIT", "amount": 6437, "merchant": "Fresh Market Co.", "category": "GROCERIES", "status": "POSTED", "createdAt": { "dayOffset": -6, "time": "16:10" } },
+    { "id": "tx-006", "accountId": "credit", "direction": "DEBIT", "amount": 5999, "merchant": "GameVault", "category": "ENTERTAINMENT", "status": "POSTED", "createdAt": { "dayOffset": -8, "time": "21:05" } },
+    { "id": "tx-007", "accountId": "checking", "direction": "CREDIT", "amount": 12000, "merchant": "Sarah Lee", "category": "TRANSFER_IN", "status": "POSTED", "createdAt": { "dayOffset": -13, "time": "11:00" } },
+    { "id": "tx-008", "accountId": "checking", "direction": "CREDIT", "amount": 210846, "merchant": "Brightpath Software Payroll", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -18, "time": "07:00" } }
+  ],
+  "fillerTargets": {
+    "HOUSING": 145000,
+    "GROCERIES": 38000,
+    "SHOPPING": 31000,
+    "DINING": 24000,
+    "UTILITIES": 16500,
+    "TRANSPORT": 12000,
+    "ENTERTAINMENT": 9000
+  },
+  "bills": [
+    { "id": "volt-mobile", "billerId": "volt-mobile", "amountDue": 4500, "dueDate": { "dayOffset": 2 }, "autoPay": false, "status": "DUE" },
+    { "id": "metro-gas", "billerId": "metro-gas", "amountDue": 3820, "dueDate": { "dayOffset": 8 }, "autoPay": false, "status": "DUE" }
+  ],
+  "savingsGoals": [
+    {
+      "id": "emergency-fund", "name": "Emergency fund", "target": 300000, "saved": 125000, "accountId": "savings",
+      "startedAt": { "dayOffset": -90 },
+      "weeklyHistory": [38000, 45000, 52000, 59000, 67000, 74000, 81000, 89000, 96000, 103000, 110000, 118000, 125000]
+    }
+  ],
+  "notifications": [
+    { "id": "n-001", "kind": "TRANSACTIONAL", "title": "Low balance", "body": "Everyday Checking is below $500.00.", "read": false, "createdAt": { "dayOffset": 0, "time": "12:31" } },
+    { "id": "n-002", "kind": "TRANSACTIONAL", "title": "Card frozen", "body": "Your Main card ending 2087 is frozen.", "read": false, "createdAt": { "dayOffset": -1, "time": "09:00" } },
+    { "id": "n-003", "kind": "TRANSACTIONAL", "title": "Payment due soon", "body": "Cash Back Card, $40.00 minimum due in 3 days.", "read": false, "createdAt": { "dayOffset": -1, "time": "09:00" } },
+    { "id": "n-004", "kind": "PROMOTIONAL", "title": "You're pre-qualified", "body": "Check your personal loan rate in 2 minutes. It won't affect your score.", "read": false, "createdAt": { "dayOffset": -3, "time": "09:00" } }
+  ],
+  "supportCases": [],
+  "documents": {
+    "statementAccountIds": ["checking", "credit"],
+    "interest1099": null
+  }
+}

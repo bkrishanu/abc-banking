@@ -1,0 +1,58 @@
+{
+  "banks": [
+    { "routingNumber": "500000018", "name": "ABC Bank" },
+    { "routingNumber": "500000021", "name": "Northfield Bank" },
+    { "routingNumber": "500000034", "name": "Harbor State Bank" },
+    { "routingNumber": "500000047", "name": "Pinecrest Credit Union" },
+    { "routingNumber": "500000050", "name": "Summit National Bank" },
+    { "routingNumber": "500000063", "name": "Lakeview Savings" }
+  ],
+  "billers": [
+    { "id": "brightline-electric", "name": "Brightline Electric", "category": "Electricity" },
+    { "id": "city-water", "name": "City Water & Sewer", "category": "Water" },
+    { "id": "metro-gas", "name": "Metro Gas Co.", "category": "Gas" },
+    { "id": "streamnet", "name": "StreamNet Fiber", "category": "Internet" },
+    { "id": "volt-mobile", "name": "Volt Mobile", "category": "Mobile" },
+    { "id": "skyline-tv", "name": "Skyline TV", "category": "Cable TV" },
+    { "id": "harbor-mutual", "name": "Harbor Mutual Insurance", "category": "Insurance" },
+    { "id": "fairview-county", "name": "Fairview County Treasurer", "category": "Property tax" }
+  ],
+  "products": [
+    {
+      "id": "hysa", "name": "ABC High-Yield Savings", "kind": "SAVINGS",
+      "apy": 450, "minimumBalance": 0, "monthlyFee": 0
+    },
+    {
+      "id": "signature-rewards", "name": "ABC Signature Rewards Card", "kind": "CREDIT",
+      "annualFee": 9500, "annualFeeWaivedFirstYear": true,
+      "pointsPerDollar": { "DINING": 3, "TRAVEL": 3, "OTHER": 1 },
+      "aprMin": 2124, "aprMax": 2824
+    },
+    {
+      "id": "personal-loan", "name": "ABC Personal Loan", "kind": "LOAN",
+      "amountMin": 200000, "amountMax": 5000000, "termMonthsMin": 12, "termMonthsMax": 60,
+      "aprMin": 799, "aprMax": 1799, "originationFee": 0,
+      "calculatorDefaults": { "amount": 1000000, "termMonths": 36 }
+    }
+  ],
+  "faqs": [
+    { "id": "freeze-card", "question": "How do I freeze my card?", "keywords": ["freeze", "lock", "lost", "stolen"], "answer": "Go to Cards, choose the card and turn on Freeze card. You can turn it off at any time." },
+    { "id": "standard-transfer-time", "question": "How long does a standard transfer take?", "keywords": ["ach", "standard", "how long"], "answer": "Standard transfers arrive in 1 to 2 business days. Instant transfers arrive in minutes for a small fee." },
+    { "id": "instant-transfer-fee", "question": "What is the instant transfer fee?", "keywords": ["fee", "instant", "cost"], "answer": "1.5% of the amount, at least $0.25 and at most $15.00." },
+    { "id": "dispute-transaction", "question": "How do I dispute a transaction?", "keywords": ["dispute", "charge", "didn't make", "fraud"], "answer": "Open the transaction and tap Dispute transaction. We'll keep you updated in Support." },
+    { "id": "statements", "question": "Where are my statements?", "keywords": ["statement", "pdf", "tax", "1099"], "answer": "Go to Profile, then Statements and documents." },
+    { "id": "card-limits", "question": "How do I change my card limits?", "keywords": ["limit", "atm", "withdrawal"], "answer": "Go to Cards, choose the card and open Limits. You'll confirm it's you first." },
+    { "id": "card-abroad", "question": "Can I use my card abroad?", "keywords": ["travel", "abroad", "international"], "answer": "Yes. Add a travel notice in Cards so we don't block your payments." },
+    { "id": "add-beneficiary", "question": "How do I add someone to pay?", "keywords": ["beneficiary", "payee", "add contact"], "answer": "Go to Send, tap Add new, and enter their routing and account number." }
+  ],
+  "fillerMerchants": {
+    "SHOPPING": { "merchants": ["Aster & Vine Boutique", "Northwind Furniture", "Urban Thread", "Pixel & Plug Electronics"], "min": 2500, "max": 40000 },
+    "DINING": { "merchants": ["Olive & Ember", "Bluebird Coffee", "Campus Deli", "Saffron House"], "min": 500, "max": 12000 },
+    "GROCERIES": { "merchants": ["Fresh Market Co.", "Green Basket", "Corner Grocer"], "min": 2000, "max": 18000 },
+    "ENTERTAINMENT": { "merchants": ["Cineplex Grand", "Melody Live Tickets", "GameVault", "StreamBox"], "min": 1000, "max": 45000 },
+    "TRAVEL": { "merchants": ["SkyWays Airlines", "Harbourfront Hotel", "QuickRide"], "min": 1500, "max": 130000 },
+    "TRANSPORT": { "merchants": ["QuickRide", "Metro Transit", "FuelStop"], "min": 300, "max": 7000 },
+    "HEALTH": { "merchants": ["Greenleaf Pharmacy", "Tony's Gym", "Brightsmile Dental"], "min": 1000, "max": 20000 },
+    "UTILITIES": { "billerIds": ["brightline-electric", "city-water", "metro-gas", "streamnet", "volt-mobile", "skyline-tv"], "amountFromBills": true }
+  }
+}

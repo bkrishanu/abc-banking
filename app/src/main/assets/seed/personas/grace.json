@@ -1,0 +1,100 @@
+{
+  "seedVersion": 1,
+  "profile": {
+    "personaId": "grace",
+    "customerId": "GRAWHI01",
+    "name": "Grace Whitfield",
+    "holderName": "GRACE WHITFIELD",
+    "email": "grace.whitfield@example.com",
+    "phone": "+1 (555) 010-7315",
+    "avatarKey": "grace",
+    "employment": "Retired",
+    "annualIncome": 7716000,
+    "monthlyBudget": 500000,
+    "creditScore": 760,
+    "checkDepositLimit": 1000000
+  },
+  "accounts": [
+    { "id": "checking", "type": "CHECKING", "nickname": "Everyday Checking", "last4": "4471", "availableBalance": 1824066, "ledgerBalance": 1824066 },
+    { "id": "savings", "type": "SAVINGS", "nickname": "High-Yield Savings", "last4": "3019", "availableBalance": 9650000, "ledgerBalance": 9650000, "rate": 450 },
+    { "id": "term-deposit-12m", "type": "TERM_DEPOSIT", "nickname": "12-Month Term Deposit", "last4": "7783", "principal": 15000000, "rate": 410, "maturesAt": { "dayOffset": 120 } },
+    { "id": "term-deposit-24m", "type": "TERM_DEPOSIT", "nickname": "24-Month Term Deposit", "last4": "7790", "principal": 5000000, "rate": 435, "maturesAt": { "dayOffset": 300 } },
+    { "id": "investment", "type": "INVESTMENT", "nickname": "Investment Portfolio", "last4": "8126", "portfolioValue": 41288015 },
+    { "id": "credit", "type": "CREDIT", "nickname": "Rewards Card", "last4": "9152", "creditLimit": 2000000, "ledgerBalance": 231540, "availableBalance": 1768460, "statementBalance": 231540, "dueDate": { "dayOffset": 18 }, "autoPayFull": true }
+  ],
+  "holdings": [
+    { "id": "total-market", "accountId": "investment", "name": "ABC Total Market Index Fund", "value": 19845000 },
+    { "id": "bond-income", "accountId": "investment", "name": "ABC Bond Income Fund", "value": 16423015 },
+    { "id": "dividend-growth", "accountId": "investment", "name": "ABC Dividend Growth Fund", "value": 5020000 }
+  ],
+  "cards": [
+    {
+      "id": "main-card", "accountId": "checking", "tag": "Main card", "network": "MASTERCARD", "artKey": "SAGE",
+      "holderName": "GRACE WHITFIELD", "pan": "5399000000004471", "cvv": "447", "last4": "4471", "expiry": "12/27", "frozen": false,
+      "atmDailyLimit": 100000, "atmMaxLimit": 250000, "retailDailyLimit": 500000, "retailMaxLimit": 1000000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 0,
+      "travelNotices": [
+        { "id": "toronto", "destination": "Toronto, Canada", "startDate": { "dayOffset": -3 }, "endDate": { "dayOffset": 10 } }
+      ]
+    },
+    {
+      "id": "rewards-card", "accountId": "credit", "tag": "Rewards Card", "network": "VISA", "artKey": "GRAPHITE",
+      "holderName": "GRACE WHITFIELD", "pan": "4999000000029152", "cvv": "915", "last4": "9152", "expiry": "07/29", "frozen": false,
+      "atmDailyLimit": 50000, "atmMaxLimit": 200000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 1,
+      "travelNotices": [
+        { "id": "toronto", "destination": "Toronto, Canada", "startDate": { "dayOffset": -3 }, "endDate": { "dayOffset": 10 } }
+      ]
+    }
+  ],
+  "beneficiaries": [
+    { "id": "emily-whitfield", "name": "Emily Whitfield", "bankName": "ABC Bank", "routingNumber": "500000018", "accountLast4": "6610", "isRecent": true, "recentOrder": 0 },
+    { "id": "james-whitfield", "name": "James Whitfield", "bankName": "Harbor State Bank", "routingNumber": "500000034", "accountLast4": "0937", "isRecent": true, "recentOrder": 1 },
+    { "id": "lakeside-garden-club", "name": "Lakeside Garden Club", "bankName": "Pinecrest Credit Union", "routingNumber": "500000047", "accountLast4": "2214", "isRecent": false }
+  ],
+  "transactions": [
+    { "id": "tx-001", "accountId": "credit", "direction": "DEBIT", "amount": 2340, "merchant": "Maple Leaf Café, Toronto", "category": "DINING", "status": "POSTED", "createdAt": { "dayOffset": 0, "time": "10:05" } },
+    { "id": "tx-002", "accountId": "checking", "direction": "CREDIT", "amount": 428000, "merchant": "State Teachers Pension", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -1, "time": "07:00" } },
+    { "id": "tx-003", "accountId": "credit", "direction": "DEBIT", "amount": 61200, "merchant": "Harbourfront Hotel, Toronto", "category": "TRAVEL", "status": "POSTED", "createdAt": { "dayOffset": -2, "time": "14:30" } },
+    { "id": "tx-004", "accountId": "credit", "direction": "DEBIT", "amount": 63800, "merchant": "SkyWays Airlines", "category": "TRAVEL", "status": "POSTED", "createdAt": { "dayOffset": -3, "time": "06:15" } },
+    { "id": "tx-005", "accountId": "checking", "direction": "DEBIT", "amount": 14210, "merchant": "Brightline Electric", "category": "UTILITIES", "status": "POSTED", "createdAt": { "dayOffset": -5, "time": "06:00" } },
+    { "id": "tx-006", "accountId": "checking", "direction": "DEBIT", "amount": 4685, "merchant": "Greenleaf Pharmacy", "category": "HEALTH", "status": "POSTED", "createdAt": { "dayOffset": -9, "time": "11:20" } },
+    { "id": "tx-007", "accountId": "checking", "direction": "CREDIT", "amount": 215000, "merchant": "Social Security Benefit", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -12, "time": "07:00" } },
+    { "id": "tx-008", "accountId": "savings", "direction": "CREDIT", "amount": 35688, "merchant": "Interest", "category": "INTEREST", "status": "POSTED", "createdAt": { "dayOffset": -15, "time": "00:05" } },
+    { "id": "tx-009", "accountId": "checking", "direction": "DEBIT", "amount": 50000, "merchant": "Emily Whitfield", "category": "TRANSFER_OUT", "status": "POSTED", "createdAt": { "dayOffset": -20, "time": "13:00" } }
+  ],
+  "fillerTargets": {
+    "TRAVEL": 125000,
+    "GROCERIES": 62000,
+    "SHOPPING": 52000,
+    "DINING": 41000,
+    "HEALTH": 38000,
+    "UTILITIES": 35200,
+    "ENTERTAINMENT": 16000
+  },
+  "bills": [
+    { "id": "brightline-electric", "billerId": "brightline-electric", "amountDue": 14210, "dueDate": { "dayOffset": 25 }, "autoPay": true, "status": "DUE" },
+    { "id": "city-water", "billerId": "city-water", "amountDue": 6120, "dueDate": { "dayOffset": 16 }, "autoPay": true, "status": "DUE" },
+    { "id": "metro-gas", "billerId": "metro-gas", "amountDue": 8875, "dueDate": { "dayOffset": 19 }, "autoPay": true, "status": "DUE" },
+    { "id": "streamnet", "billerId": "streamnet", "amountDue": 5999, "dueDate": { "dayOffset": 11 }, "autoPay": true, "status": "DUE" },
+    { "id": "fairview-county", "billerId": "fairview-county", "amountDue": 342000, "dueDate": { "dayOffset": 25 }, "autoPay": true, "scheduledFor": { "dayOffset": 25 }, "status": "SCHEDULED" }
+  ],
+  "savingsGoals": [
+    {
+      "id": "college-gift", "name": "Grandkids' college gift", "target": 2000000, "saved": 1430000, "accountId": "savings",
+      "startedAt": { "dayOffset": -90 },
+      "weeklyHistory": [429000, 512000, 596000, 679000, 763000, 846000, 930000, 1013000, 1096000, 1180000, 1263000, 1347000, 1430000]
+    }
+  ],
+  "notifications": [
+    { "id": "n-001", "kind": "TRANSACTIONAL", "title": "Pension received", "body": "$4,280.00 paid into Everyday Checking.", "read": false, "createdAt": { "dayOffset": -1, "time": "07:00" } },
+    { "id": "n-002", "kind": "TRANSACTIONAL", "title": "Travel notice active", "body": "Your Main and Rewards cards are set for Canada until {date:+10}.", "read": true, "createdAt": { "dayOffset": -3, "time": "09:00" } },
+    { "id": "n-003", "kind": "TRANSACTIONAL", "title": "Term deposit maturing", "body": "Your 12-Month Term Deposit matures in 124 days.", "read": true, "createdAt": { "dayOffset": -4, "time": "09:00" } },
+    { "id": "n-004", "kind": "PROMOTIONAL", "title": "Ladder your deposits", "body": "Lock in 4.35% APY on a 24-month term deposit.", "read": true, "createdAt": { "dayOffset": -7, "time": "09:00" } }
+  ],
+  "supportCases": [],
+  "documents": {
+    "statementAccountIds": ["checking", "savings", "credit"],
+    "interest1099": 984612
+  }
+}

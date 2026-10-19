@@ -1,0 +1,111 @@
+{
+  "seedVersion": 1,
+  "profile": {
+    "personaId": "daniel",
+    "customerId": "DANOKA01",
+    "name": "Daniel Okafor",
+    "holderName": "DANIEL OKAFOR",
+    "email": "daniel.okafor@example.com",
+    "phone": "+1 (555) 010-5590",
+    "avatarKey": "daniel",
+    "employment": "Self-employed, Founder and CEO of Okafor Freight Partners",
+    "annualIncome": 125000000,
+    "monthlyBudget": 4000000,
+    "creditScore": 815,
+    "checkDepositLimit": 10000000
+  },
+  "accounts": [
+    { "id": "checking", "type": "CHECKING", "nickname": "Premier Checking", "last4": "5512", "availableBalance": 48625000, "ledgerBalance": 48625000 },
+    { "id": "savings", "type": "SAVINGS", "nickname": "Premier Savings", "last4": "8840", "availableBalance": 120000000, "ledgerBalance": 120000000, "rate": 450 },
+    { "id": "credit", "type": "CREDIT", "nickname": "ABC Signature Rewards Card", "last4": "7316", "creditLimit": 7500000, "ledgerBalance": 1842060, "availableBalance": 5657940, "statementBalance": 1490520, "dueDate": { "dayOffset": 21 }, "autoPayFull": true },
+    { "id": "term-deposit", "type": "TERM_DEPOSIT", "nickname": "12-Month Term Deposit", "last4": "2259", "principal": 50000000, "rate": 435, "openedAt": { "dayOffset": -180 }, "maturesAt": { "dayOffset": 185 } },
+    { "id": "investment", "type": "INVESTMENT", "nickname": "Investment Portfolio", "last4": "6673", "portfolioValue": 241256080 }
+  ],
+  "holdings": [
+    { "id": "total-market", "accountId": "investment", "name": "ABC Total Market Index Fund", "value": 135000000 },
+    { "id": "bond-income", "accountId": "investment", "name": "ABC Bond Income Fund", "value": 61256080 },
+    { "id": "dividend-growth", "accountId": "investment", "name": "ABC Dividend Growth Fund", "value": 40000000 },
+    { "id": "cash", "accountId": "investment", "name": "Cash", "value": 5000000 }
+  ],
+  "cards": [
+    {
+      "id": "main-card", "accountId": "checking", "tag": "Main card", "network": "MASTERCARD", "artKey": "GRAPHITE",
+      "holderName": "DANIEL OKAFOR", "pan": "5399000000085512", "cvv": "551", "last4": "5512", "expiry": "09/30", "frozen": false,
+      "atmDailyLimit": 500000, "atmMaxLimit": 1000000, "retailDailyLimit": 2500000, "retailMaxLimit": 5000000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 0, "travelNotices": []
+    },
+    {
+      "id": "signature-card", "accountId": "credit", "tag": "Signature Card", "network": "VISA", "artKey": "PEACH",
+      "holderName": "DANIEL OKAFOR", "pan": "4999000000097316", "cvv": "731", "last4": "7316", "expiry": "02/30", "frozen": false,
+      "atmDailyLimit": 250000, "atmMaxLimit": 1000000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 1, "travelNotices": []
+    },
+    {
+      "id": "travel-card", "accountId": "savings", "tag": "Travel card", "network": "MASTERCARD", "artKey": "SAGE",
+      "holderName": "DANIEL OKAFOR", "pan": "5399000000058840", "cvv": "884", "last4": "8840", "expiry": "06/31", "frozen": false,
+      "atmDailyLimit": 300000, "atmMaxLimit": 1000000, "retailDailyLimit": 1500000, "retailMaxLimit": 5000000,
+      "international": true, "online": true, "contactless": true, "stackOrder": 2,
+      "travelNotices": [
+        { "id": "singapore", "destination": "Singapore", "startDate": { "dayOffset": 30 }, "endDate": { "dayOffset": 40 } }
+      ]
+    }
+  ],
+  "beneficiaries": [
+    { "id": "ngozi-okafor", "name": "Ngozi Okafor", "shortName": "Ngozi O.", "bankName": "ABC Bank", "routingNumber": "500000018", "accountLast4": "4127", "isRecent": true, "recentOrder": 0 },
+    { "id": "tobi-okafor", "name": "Tobi Okafor", "shortName": "Tobi O.", "bankName": "Lakeview Savings", "routingNumber": "500000063", "accountLast4": "7745", "isRecent": true, "recentOrder": 1 },
+    { "id": "okafor-freight", "name": "Okafor Freight Partners", "shortName": "Okafor Freight", "bankName": "Summit National Bank", "routingNumber": "500000050", "accountLast4": "9081", "isRecent": true, "recentOrder": 2 },
+    { "id": "ridgecrest", "name": "Ridgecrest Property Mgmt", "shortName": "Ridgecrest", "bankName": "Northfield Bank", "routingNumber": "500000021", "accountLast4": "3368", "isRecent": true, "recentOrder": 3 },
+    { "id": "westbrook-academy", "name": "Westbrook Academy", "bankName": "Pinecrest Credit Union", "routingNumber": "500000047", "accountLast4": "6012", "isRecent": false }
+  ],
+  "transactions": [
+    { "id": "tx-001", "accountId": "credit", "direction": "DEBIT", "amount": 18650, "merchant": "Saffron House", "category": "DINING", "status": "POSTED", "createdAt": { "dayOffset": 0, "time": "13:05" } },
+    { "id": "tx-002", "accountId": "checking", "direction": "CREDIT", "amount": 4500000, "merchant": "Okafor Freight Partners", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": 0, "time": "10:20" } },
+    { "id": "tx-003", "accountId": "checking", "direction": "DEBIT", "amount": 250000, "merchant": "Tobi Okafor", "category": "TRANSFER_OUT", "status": "POSTED", "createdAt": { "dayOffset": -1, "time": "09:30" } },
+    { "id": "tx-004", "accountId": "credit", "direction": "DEBIT", "amount": 234900, "merchant": "Pixel & Plug Electronics", "category": "SHOPPING", "status": "POSTED", "createdAt": { "dayOffset": -2, "time": "16:45" } },
+    { "id": "tx-005", "accountId": "checking", "direction": "DEBIT", "amount": 680000, "merchant": "Ridgecrest Property Mgmt", "category": "HOUSING", "status": "POSTED", "createdAt": { "dayOffset": -3, "time": "08:00" } },
+    { "id": "tx-006", "accountId": "credit", "direction": "DEBIT", "amount": 114000, "merchant": "Melody Live Tickets", "category": "ENTERTAINMENT", "status": "POSTED", "createdAt": { "dayOffset": -5, "time": "19:30" } },
+    { "id": "tx-007", "accountId": "credit", "direction": "DEBIT", "amount": 842000, "merchant": "SkyWays Airlines", "category": "TRAVEL", "status": "POSTED", "createdAt": { "dayOffset": -6, "time": "07:10" } },
+    { "id": "tx-008", "accountId": "checking", "direction": "DEBIT", "amount": 5000000, "merchant": "To Premier Savings ••8840", "category": "TRANSFER", "status": "POSTED", "createdAt": { "dayOffset": -8, "time": "12:00" } },
+    { "id": "tx-009", "accountId": "savings", "direction": "CREDIT", "amount": 5000000, "merchant": "From Premier Checking ••5512", "category": "TRANSFER", "status": "POSTED", "createdAt": { "dayOffset": -8, "time": "12:00" } },
+    { "id": "tx-010", "accountId": "checking", "direction": "DEBIT", "amount": 1475000, "merchant": "Westbrook Academy", "category": "TRANSFER_OUT", "status": "POSTED", "createdAt": { "dayOffset": -10, "time": "11:00" } },
+    { "id": "tx-011", "accountId": "savings", "direction": "CREDIT", "amount": 443836, "merchant": "Interest", "category": "INTEREST", "status": "POSTED", "createdAt": { "dayOffset": -12, "time": "00:05" } },
+    { "id": "tx-012", "accountId": "checking", "direction": "DEBIT", "amount": 41280, "merchant": "Brightline Electric", "category": "UTILITIES", "status": "POSTED", "createdAt": { "dayOffset": -15, "time": "06:00" } },
+    { "id": "tx-013", "accountId": "checking", "direction": "CREDIT", "amount": 4500000, "merchant": "Okafor Freight Partners", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -20, "time": "10:00" } },
+    { "id": "tx-014", "accountId": "credit", "direction": "DEBIT", "amount": 186000, "merchant": "Harbourfront Hotel", "category": "TRAVEL", "status": "POSTED", "createdAt": { "dayOffset": -22, "time": "18:15" } }
+  ],
+  "fillerTargets": {
+    "TRAVEL": 1120000,
+    "HOUSING": 680000,
+    "SHOPPING": 640000,
+    "DINING": 230000,
+    "ENTERTAINMENT": 190000,
+    "GROCERIES": 145000,
+    "UTILITIES": 115000,
+    "HEALTH": 80000
+  },
+  "bills": [
+    { "id": "volt-mobile", "billerId": "volt-mobile", "amountDue": 21000, "dueDate": { "dayOffset": 5 }, "autoPay": false, "status": "DUE" },
+    { "id": "streamnet", "billerId": "streamnet", "amountDue": 12999, "dueDate": { "dayOffset": 6 }, "autoPay": true, "status": "DUE" },
+    { "id": "brightline-electric", "billerId": "brightline-electric", "amountDue": 41860, "dueDate": { "dayOffset": 10 }, "autoPay": true, "status": "DUE" },
+    { "id": "harbor-mutual", "billerId": "harbor-mutual", "amountDue": 284000, "dueDate": { "dayOffset": 14 }, "autoPay": false, "scheduledFor": { "dayOffset": 12 }, "status": "SCHEDULED" },
+    { "id": "fairview-county", "billerId": "fairview-county", "amountDue": 1875000, "dueDate": { "dayOffset": 28 }, "autoPay": false, "status": "DUE" }
+  ],
+  "savingsGoals": [
+    {
+      "id": "lake-house", "name": "Lake house renovation", "target": 15000000, "saved": 11250000, "accountId": "savings",
+      "startedAt": { "dayOffset": -90 },
+      "weeklyHistory": [3375000, 4031000, 4688000, 5344000, 6000000, 6656000, 7313000, 7969000, 8625000, 9281000, 9938000, 10594000, 11250000]
+    }
+  ],
+  "notifications": [
+    { "id": "n-001", "kind": "TRANSACTIONAL", "title": "Money received", "body": "Okafor Freight Partners sent you $45,000.00.", "read": false, "createdAt": { "dayOffset": 0, "time": "10:20" } },
+    { "id": "n-002", "kind": "TRANSACTIONAL", "title": "Bill due soon", "body": "Volt Mobile, $210.00, due in 5 days.", "read": false, "createdAt": { "dayOffset": 0, "time": "09:00" } },
+    { "id": "n-003", "kind": "TRANSACTIONAL", "title": "Card used", "body": "$2,349.00 at Pixel & Plug Electronics with your Signature Card.", "read": true, "createdAt": { "dayOffset": -2, "time": "16:45" } },
+    { "id": "n-004", "kind": "PROMOTIONAL", "title": "Travel rewards", "body": "Earn 3x points on travel with your Signature Card this month.", "read": false, "createdAt": { "dayOffset": -4, "time": "09:00" } }
+  ],
+  "supportCases": [],
+  "documents": {
+    "statementAccountIds": ["checking", "savings", "credit"],
+    "interest1099": 4821540
+  }
+}
