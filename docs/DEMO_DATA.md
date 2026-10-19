@@ -9,9 +9,9 @@ same commit. Every person, company, bank and number below is fictional.
 
 ## 01 How seed data works
 
-- Four demo personas ship with the app. After Get started, the presenter logs in with a persona's customer ID (section 02) and the MPIN.
+- Four demo personas ship with the app. After Get Started, the presenter logs in with a persona's customer ID (section 02) and the MPIN.
 - `DemoDataSeeder` writes that persona's data under `users/{uid}` (the install's anonymous Firebase user) and stores `personaId`, `customerId` and `seedVersion` on the user document.
-- Logging in with a different customer ID, and the hidden Reset demo data action in Profile (current persona), delete the `users/{uid}` subtree (except `devices`, which belongs to the install, not the persona) and seed again. The login screen warns before replacing another persona's data, and the reset confirmation dialog says so. These are the only data deletions in the app. Logging in again with the same customer ID keeps its data.
+- Logging in with a different customer ID, and the hidden Reset Demo Data action in Profile (current persona), delete the `users/{uid}` subtree (except `devices`, which belongs to the install, not the persona) and seed again. The login screen warns before replacing another persona's data, and the reset confirmation dialog says so. These are the only data deletions in the app. Logging in again with the same customer ID keeps its data.
 - Shared reference data (`catalog/*`) is created once per Firebase project by a person (ARCHITECTURE.md section 08). Personas only reference it by id.
 - The MPIN for every persona is `123456`. It is also the step-up factor; there is no OTP (PRD section 08).
 
@@ -188,7 +188,7 @@ Accounts
 | Starter Savings | SAVINGS | 6120 | $1,250.00, 3.10% APY |
 | Cash Back Card | CREDIT | 6634 | Limit $3,000.00, current balance $1,940.55, available $1,059.45, statement balance $2,880.56, minimum due $40.00, due in 3 days |
 
-No term deposit, investment or line of credit. Home shows the empty state "No investments yet" with the action "Explore products".
+No term deposit, investment or line of credit. Home shows the empty state "No investments yet" with the action "Explore Products".
 
 Cards
 

@@ -144,9 +144,9 @@ private fun AbcButtonPreview() {
             modifier = Modifier.padding(AbcTheme.spacing.space4),
             verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space3)
         ) {
-            AbcButton(text = "Get started", onClick = {})
+            AbcButton(text = "Get Started", onClick = {})
             AbcButton(text = "Download receipt", onClick = {}, variant = AbcButtonVariant.Secondary)
-            AbcButton(text = "View all", onClick = {}, variant = AbcButtonVariant.Ghost)
+            AbcButton(text = "View All", onClick = {}, variant = AbcButtonVariant.Ghost)
             AbcButton(text = "Freeze card", onClick = {}, variant = AbcButtonVariant.Danger)
             AbcButton(text = "Confirm transfer", onClick = {}, loading = true)
             AbcButton(text = "Confirm transfer", onClick = {}, enabled = false)

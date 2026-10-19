@@ -16,15 +16,15 @@
     <!-- Welcome -->
     <string name="welcome_headline">Effortless banking, simplified.</string>
     <string name="welcome_subtext">Everyday banking, simplified, in your pocket.</string>
-    <string name="welcome_get_started">Get started</string>
+    <string name="welcome_get_started">Get Started</string>
 
     <!-- Login -->
-    <string name="login_title">Log in</string>
+    <string name="login_title">Log In</string>
     <string name="login_customer_id_label">Customer ID</string>
     <string name="login_customer_id_placeholder">8 letters or numbers</string>
     <string name="login_customer_id_error_format">Customer ID is 8 letters or numbers.</string>
     <string name="login_customer_id_error_unknown">We don\'t recognise this customer ID.</string>
-    <string name="login_mpin_label">Enter your MPIN</string>
+    <string name="login_mpin_label">Enter Your MPIN</string>
     <string name="login_replaces_data">Logging in replaces %1$s\'s demo data.</string>
     <string name="login_setting_up">Setting up your demo data…</string>
     <string name="login_setup_failed">We couldn\'t set up your demo data. Check your connection and enter your MPIN again.</string>
@@ -37,8 +37,8 @@
     <string name="mpin_locked_countdown">Try again in %d s</string>
 
     <!-- Shared actions and states -->
-    <string name="action_retry">Try again</string>
-    <string name="action_view_all">View all</string>
+    <string name="action_retry">Try Again</string>
+    <string name="action_view_all">View All</string>
     <string name="state_offline">You\'re offline. Showing saved data.</string>
     <string name="state_offline_no_data">You\'re offline. Connect to the internet and try again.</string>
     <string name="cd_balance_hidden">Balance hidden</string>
@@ -70,11 +70,11 @@
     <string name="account_statement">Statement %1$s</string>
     <string name="account_due">Due %1$s</string>
     <string name="account_matures">Matures %1$s</string>
-    <string name="account_portfolio">Portfolio value</string>
+    <string name="account_portfolio">Portfolio Value</string>
 
     <!-- Home -->
     <string name="home_greeting">Hello, %1$s</string>
-    <string name="home_wallet_balance">Wallet balance</string>
+    <string name="home_wallet_balance">Wallet Balance</string>
     <string name="cd_show_balances">Show balances</string>
     <string name="cd_hide_balances">Hide balances</string>
     <string name="cd_money_in">Money in, last 30 days, %1$s</string>
@@ -82,11 +82,11 @@
     <string name="cd_money_in_hidden">Money in, last 30 days, hidden</string>
     <string name="cd_money_out_hidden">Money out, last 30 days, hidden</string>
     <string name="home_action_transfer">Transfer</string>
-    <string name="home_action_pay_bills">Pay bills</string>
+    <string name="home_action_pay_bills">Pay Bills</string>
     <string name="home_accounts">Accounts</string>
-    <string name="home_latest_transactions">Latest transactions</string>
+    <string name="home_latest_transactions">Latest Transactions</string>
     <string name="home_no_investments">No investments yet</string>
-    <string name="home_explore_products">Explore products</string>
+    <string name="home_explore_products">Explore Products</string>
     <string name="home_no_transactions">No transactions in the last 30 days.</string>
     <string name="home_empty">Your accounts will show here.</string>
     <string name="home_error">We couldn\'t load your accounts.</string>

@@ -28,7 +28,7 @@ import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 
 /**
  * `ActionPill` from DESIGN_SYSTEM.md section 06: a white floating pill with a black icon circle
- * and a Body label (Transfer and Pay bills on Home).
+ * and a Body label (Transfer and Pay Bills on Home).
  */
 @Composable
 fun ActionPill(
@@ -111,7 +111,7 @@ private fun ActionPillPreview() {
             horizontalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space2)
         ) {
             ActionPill(label = "Transfer", icon = R.drawable.ic_arrow_up_right, onClick = {})
-            ActionPill(label = "Pay bills", icon = R.drawable.ic_receipt, onClick = {})
+            ActionPill(label = "Pay Bills", icon = R.drawable.ic_receipt, onClick = {})
             GridPill(contentDescription = "More actions", onClick = {})
         }
     }

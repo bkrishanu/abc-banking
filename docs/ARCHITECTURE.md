@@ -235,8 +235,8 @@ Auth and session:
 - The decision (keep or seed) is `PrepareDemoDataUseCase` in `feature/auth/domain`; `LogInUseCase` runs it after a correct MPIN and remembers the customer ID only once the data is ready. If seeding fails, the MPIN pad shows an error and entering the MPIN again retries.
 - A seed reads the existing subtree from the server first, so it fails straight away when offline. It then deletes the user document before the subtree and writes the user document last, so a seed that stops halfway leaves no persona on record and the next login seeds again. A seed that takes longer than 45 s is reported as offline.
 - Not written yet: the persona file's `documents` block (statement accounts, 1099-INT interest). Section 04 has no field for it; the statements feature decides where it lives.
-- The remembered customer ID lives in DataStore. Log out (Profile) clears it and returns to the login screen; the Firestore data stays until a different ID logs in.
-- Hidden Reset demo data (long-press the app version in Profile, then confirm) deletes the subtree and reseeds the current persona.
+- The remembered customer ID lives in DataStore. Log Out (Profile) clears it and returns to the login screen; the Firestore data stays until a different ID logs in.
+- Hidden Reset Demo Data (long-press the app version in Profile, then confirm) deletes the subtree and reseeds the current persona.
 - The MPIN (`123456`, every persona) is the only factor: for login, the lock screen and step-up. No biometrics.
 - `MpinVerifier` locks MPIN entry for 30 s after 5 wrong entries, counted across login, lock screen and step-up. The lockout expiry is stored in DataStore so restarting the app does not clear it.
 - `SessionManager` locks the app after 30 min without touch input in the foreground or 300 s in the background (ProcessLifecycleOwner). Locked = navigation shows the lock screen (greeting with the remembered name, MPIN pad, "Not you?" back to full login); data listeners pause.

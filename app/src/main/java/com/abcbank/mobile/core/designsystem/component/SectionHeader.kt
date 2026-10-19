@@ -19,7 +19,7 @@ import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 
 /**
  * `SectionHeader` from DESIGN_SYSTEM.md section 06: H3 title, and an optional underlined Small
- * muted action ("View all") with a full touch target.
+ * muted action ("View All") with a full touch target.
  */
 @Composable
 fun SectionHeader(
@@ -67,8 +67,8 @@ fun SectionHeader(
 private fun SectionHeaderPreview() {
     AbcTheme {
         SectionHeader(
-            title = "Latest transactions",
-            actionLabel = "View all",
+            title = "Latest Transactions",
+            actionLabel = "View All",
             modifier = Modifier.padding(AbcTheme.spacing.space4)
         )
     }

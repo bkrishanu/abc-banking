@@ -11,7 +11,12 @@ and the matching Kotlin token file in the same commit, never a screen.
 ## 01 Brand identity
 
 - Personality: calm, warm, confident.
-- Tone in UI copy: plain, short sentences, sentence case, no exclamation marks.
+- Tone in UI copy: plain, short sentences, no exclamation marks.
+- Capitalisation (decided 2026-10-20): labels use Title Case: buttons, action pills, screen titles, section headers,
+  field labels, tabs, chips and short captions ("Wallet Balance", "Pay Bills", "View All", "Get Started").
+  Sentences stay in sentence case: messages, errors, hints, empty-state lines and notification text
+  ("No investments yet", "We couldn't load your accounts."). Small words (a, an, the, and, or, of, to, in, on, for)
+  stay lower case unless first.
   The sample screens break this rule ("You're doing good!", "Simlified"). Ship the corrected copy:
   "Effortless banking, simplified." and "You're on track. You've almost reached your goal."
 - Feel: light, spacious, soft. White cards floating on a warm light-grey background,
@@ -114,7 +119,7 @@ Tokens in `core/designsystem/theme/Shape.kt`.
 | Token | Value | Use |
 | --- | --- | --- |
 | radius-sm | 8dp | Inputs, small tags, chart value labels |
-| radius-md | 12dp | Full-width buttons (Get started), keypad keys |
+| radius-md | 12dp | Full-width buttons (Get Started), keypad keys |
 | radius-lg | 20dp | Bank cards, feature tiles |
 | radius-xl | 28dp | Content cards (transactions panel, chart cards), bottom sheets (top corners), Home balance header |
 | radius-full | 50% | Pills, chips, avatars, icon circles, bottom bar |
@@ -133,9 +138,9 @@ Buttons (`AbcButton`)
 
 | Variant | Background | Content | Use |
 | --- | --- | --- | --- |
-| Primary | primary | onPrimary | One per screen, the main action (Get started, Confirm transfer) |
+| Primary | primary | onPrimary | One per screen, the main action (Get Started, Confirm Transfer) |
 | Secondary | surface | text, 1dp border | Supporting actions (Download receipt) |
-| Ghost | transparent | text | Low emphasis (View all, Filter) |
+| Ghost | transparent | text | Low emphasis (View All, Filter) |
 | Danger | danger | onPrimary | Destructive actions, always confirm first (Freeze card, Dispute) |
 
 - Height 52dp, full width, radius-md, Body 500.
@@ -161,7 +166,7 @@ Cards and lists
 - `ContactAvatar`: 48dp circle with initials on surfaceMuted (beneficiaries have no photos, see DEMO_DATA.md section 01), name Small below.
 - `ProfileAvatar`: the signed-in persona's photo (`avatar_{personaId}`) cropped to a circle with `ContentScale.Crop`; 32dp in `AbcTopBar`, 72dp on the lock screen and Profile. Falls back to initials on surfaceMuted. Decorative next to the name (contentDescription null), otherwise "Profile photo". Add contact is a 48dp accent circle with a plus.
 - `FeatureTile`: 140 x 120dp, radius-lg, surface, illustration top, Body title bottom.
-- `SectionHeader`: H3 title left, Ghost "View all" or "Filter" with icon right. "View all" is underlined Small muted.
+- `SectionHeader`: H3 title left, Ghost "View All" or "Filter" with icon right. "View All" is underlined Small muted.
 - `StatusBadge`: Small label in a radius-full pill (Pending, Frozen, Scheduled).
 - `AdaptiveRow`: a label on the start side and an amount on the end side (account and transaction rows). Side by side when the amount fits unwrapped and no word of the label has to break; otherwise the amount moves below the label, end-aligned, so money never splits across lines at 200% font scale.
 - `CategoryIcon`: the `TransactionRow` leading circle for businesses: accent fill for money out, positive fill for money in, Lucide category icon in `text` colour (white on accent fails contrast). People (Transfer in/out) get `InitialsAvatar` instead: 40dp, initials in Label on surfaceMuted.
@@ -183,7 +188,7 @@ Charts (drawn with Compose Canvas, no chart library)
 
 Sheets and dialogs
 - `AbcBottomSheet`: surface, top radius-xl, drag handle, scrim. Used for step-up, More actions, filters, disclaimers.
-- `StepUpSheet`: title "Enter your MPIN", reason line ("Confirm it's you to send $1,500.00"), `MpinPad`, cancel. No OTP or biometric.
+- `StepUpSheet`: title "Enter Your MPIN", reason line ("Confirm it's you to send $1,500.00"), `MpinPad`, cancel. No OTP or biometric.
 - Dialogs only for destructive confirmation. Always a cancel option.
 
 States (every data-driven screen)
@@ -191,7 +196,7 @@ States (every data-driven screen)
 - Empty: one line saying what belongs here, plus one primary action. Never a blank panel.
 - Error: one line in plain words, plus Retry. Never vendor or Firebase error text.
 - Offline: a Small banner "You're offline. Showing saved data." Firestore cache keeps screens readable.
-- Shared pieces in `ScreenStates.kt`: `SkeletonBlock` (pulsing surfaceMuted block), `OfflineBanner` (Small textMuted on a surface pill), `ErrorState` (Body line plus Primary "Try again"). Offline with nothing cached shows "You're offline. Connect to the internet and try again."
+- Shared pieces in `ScreenStates.kt`: `SkeletonBlock` (pulsing surfaceMuted block), `OfflineBanner` (Small textMuted on a surface pill), `ErrorState` (Body line plus Primary "Try Again"). Offline with nothing cached shows "You're offline. Connect to the internet and try again."
 
 ## 07 Icons
 
@@ -240,26 +245,26 @@ How the sample PNGs map to app screens. Use them for layout and feel, not as pix
 - Brand `AbcWordmark` at top-left, space-4 below the status bar.
 - Card stack, space-6 below: two `BankCardArt` at 78% of content width with a white H3 wordmark bottom-right. Front: card-peach, top-left, rotated -8deg. Back: card-sage, right-aligned, 48dp (space-12) lower, rotated -4deg. Decorative, hidden from TalkBack.
 - Headline "Effortless banking, simplified." in Display, space-8 below the cards. Subtext "Everyday banking, simplified, in your pocket." in Body textMuted, space-3 below.
-- Primary "Get started" pinned to the bottom; everything above it scrolls.
+- Primary "Get Started" pinned to the bottom; everything above it scrolls.
 
-`LoginScreen` layout: back arrow (Lucide `arrow-left`, 24dp in a 48dp target), H1 "Log in", space-6, customer ID `AbcTextField` (placeholder "8 letters or numbers"), space-6, H3 "Enter your MPIN", space-4, `MpinPad`. The pad stays disabled until the ID is recognised, then the keyboard closes.
+`LoginScreen` layout: back arrow (Lucide `arrow-left`, 24dp in a 48dp target), H1 "Log In", space-6, customer ID `AbcTextField` (placeholder "8 letters or numbers"), space-6, H3 "Enter Your MPIN", space-4, `MpinPad`. The pad stays disabled until the ID is recognised, then the keyboard closes.
 
 `HomeScreen` layout (2026-10-20):
 - `GreetingTopBar`, then the offline banner when reading from the cache.
-- Balance header, space-4 below: card-sage gradient, radius-xl, padding space-5. "Wallet balance" (Small) with the eye toggle (Lucide `eye-off` to hide, `eye` to show, 48dp target), `BalanceText`, then two chips: arrow-up "+$x" in positiveText and arrow-down "-$y" in text, Label on surface pills, last-30-day money in and out of the wallet account. Header text is `text` colour, not white: white fails contrast on the light end of the sage gradient, and `text` passes on both ends.
-- Action pills overlap the header's bottom edge by 28dp: `ActionPill` Transfer (`arrow-up-right`), `ActionPill` Pay bills (`receipt`), `GridPill`. One row at 360dp; at narrower widths or large fonts they wrap downward.
+- Balance header, space-4 below: card-sage gradient, radius-xl, padding space-5. "Wallet Balance" (Small) with the eye toggle (Lucide `eye-off` to hide, `eye` to show, 48dp target), `BalanceText`, then two chips: arrow-up "+$x" in positiveText and arrow-down "-$y" in text, Label on surface pills, last-30-day money in and out of the wallet account. Header text is `text` colour, not white: white fails contrast on the light end of the sage gradient, and `text` passes on both ends.
+- Action pills overlap the header's bottom edge by 28dp: `ActionPill` Transfer (`arrow-up-right`), `ActionPill` Pay Bills (`receipt`), `GridPill`. One row at 360dp; at narrower widths or large fonts they wrap downward.
 - space-6, `SectionHeader` "Accounts", one `ContentCard` with a row per account (dividers between): nickname and "••last4" on the start side; the amount in Body tabular on the end side with Small muted details: checking "Available" or "Ledger $x" when a pending item makes them differ, savings APY, card current balance with available, statement and due date, line of credit amount owed with available and APR, term deposit principal with APY and maturity date, investments portfolio value. A low balance adds "Below $500.00" in warning.
-- With no investment account (marcus): a `ContentCard` "No investments yet" with Secondary "Explore products".
-- space-6, `SectionHeader` "Latest transactions" with "View all", one `ContentCard` with the 5 newest `TransactionRow`s on any account ("Today, 3:14 pm", "Yesterday, 9:21 pm", "Oct 16, 7:00 am", plus " · Pending").
+- With no investment account (marcus): a `ContentCard` "No investments yet" with Secondary "Explore Products".
+- space-6, `SectionHeader` "Latest Transactions" with "View All", one `ContentCard` with the 5 newest `TransactionRow`s on any account ("Today, 3:14 pm", "Yesterday, 9:21 pm", "Oct 16, 7:00 am", plus " · Pending").
 - Eye toggle masks every amount on the screen; the choice lasts for the session (`SessionManager`, in memory).
-- Loading: skeleton of the top bar, header and three cards. Error: `ErrorState` "We couldn't load your accounts." Empty (no accounts): "Your accounts will show here." with Explore products.
-- No bottom bar yet: it arrives with the Cards tab, so it never offers tabs that do not exist. Until their screens are built, the bell, pills, View all and Explore products do nothing.
+- Loading: skeleton of the top bar, header and three cards. Error: `ErrorState` "We couldn't load your accounts." Empty (no accounts): "Your accounts will show here." with Explore Products.
+- No bottom bar yet: it arrives with the Cards tab, so it never offers tabs that do not exist. Until their screens are built, the bell, pills, View All and Explore Products do nothing.
 
 | Sample | Shows | App screen |
 | --- | --- | --- |
-| Sample 1, left | Wordmark, stacked card art, headline, Get started | `WelcomeScreen`, then `LoginScreen` (no sample: H1 "Log in", `AbcTextField` labelled "Customer ID" (8 characters, upper case, no autocorrect, max length 8), then `MpinPad`; a wrong format or unknown ID shows the field error) and `LockScreen` (no sample: `ProfileAvatar`, "Welcome back, Samanta" in H1, `MpinPad`, Ghost "Not you?") |
+| Sample 1, left | Wordmark, stacked card art, headline, Get Started | `WelcomeScreen`, then `LoginScreen` (no sample: H1 "Log In", `AbcTextField` labelled "Customer ID" (8 characters, upper case, no autocorrect, max length 8), then `MpinPad`; a wrong format or unknown ID shows the field error) and `LockScreen` (no sample: `ProfileAvatar`, "Welcome back, Samanta" in H1, `MpinPad`, Ghost "Not you?") |
 | Sample 1, middle | Card stack with Main card tag, Deposit/Send/More, Quick transfer contacts, Transactions with All/Spendings/Earnings | `CardsScreen` (Cards tab) |
 | Sample 1, right | Spendings donut by month, savings line chart | `InsightsScreen` (Insights tab) |
-| Sample 2, phone | Greeting, wallet balance with in/out totals, action pills, Features carousel, Latest transactions | `HomeScreen` (Home tab). Withdraw is replaced by Pay bills (see PRD out of scope). |
+| Sample 2, phone | Greeting, wallet balance with in/out totals, action pills, Features carousel, Latest transactions | `HomeScreen` (Home tab). Withdraw is replaced by Pay Bills (see PRD out of scope). |
 | Sample 2, right top | Savings chart card with goal message | `SavingsChartCard` on Insights |
 | Sample 2, right bottom | Card stack with balances per card | `BankCardStack` on Cards |

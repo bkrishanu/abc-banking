@@ -66,7 +66,7 @@ Must ship in v1. Details for each are in the matching MobileBuild.md section.
 
 | # | Feature | What the user can do | Done when |
 | --- | --- | --- | --- |
-| 1 | Welcome and customer ID + MPIN login (1.1) | Open the app, tap Get started, enter a demo customer ID (`SAMJOH01`, `MARLEE01`, `GRAWHI01` or `DANOKA01`) and MPIN `123456` | The persona for that customer ID (DEMO_DATA.md) is seeded and Home shows it. Unknown ID or wrong MPIN shows an inline error. 5 wrong MPINs lock entry for 30 s. Logging in with a different ID wipes the data and seeds that persona; the same ID keeps its data. Profile > Log out returns to login. No biometric unlock. |
+| 1 | Welcome and customer ID + MPIN login (1.1) | Open the app, tap Get Started, enter a demo customer ID (`SAMJOH01`, `MARLEE01`, `GRAWHI01` or `DANOKA01`) and MPIN `123456` | The persona for that customer ID (DEMO_DATA.md) is seeded and Home shows it. Unknown ID or wrong MPIN shows an inline error. 5 wrong MPINs lock entry for 30 s. Logging in with a different ID wipes the data and seeds that persona; the same ID keeps its data. Profile > Log Out returns to login. No biometric unlock. |
 | 2 | Session security (1.1) | Leave the app idle or in the background | App re-locks after 30 min foreground idle or 300 s in background. The lock screen remembers the customer and asks for the MPIN only, with "Not you?" to log in with another ID. App switcher shows a blank screen, never balances. |
 | 3 | Device binding (1.1) | First launch registers the device | A Keystore key pair exists and its public key is stored in Firestore under the user's devices. |
 | 4 | Step-up authentication (1.2) | Add a beneficiary, send more than $1,000, change card limits, reveal card details | A step-up sheet asks for the MPIN again and the action only completes after a correct entry. Wrong entries count towards the same 5-attempt lockout. |
@@ -84,7 +84,7 @@ Must ship in v1. Details for each are in the matching MobileBuild.md section.
 | 16 | Deposit check (2.3) | Enter an amount ($1.00 up to the persona's limit), pick a checking or savings account, optionally attach placeholder cheque images, confirm | A Pending credit appears in transactions, then posts and updates the balance 30 s later (on next app open if the app was closed), with a "Deposit cleared" alert. |
 
 Key user flow (the demo script):
-1. Presenter opens the app on the Welcome screen and taps Get started.
+1. Presenter opens the app on the Welcome screen and taps Get Started.
 2. Logs in as `SAMJOH01` with MPIN 123456 and lands on Home with the wallet balance ($155,832.00) and quick actions.
 3. Sends $1,500 to a saved contact with Instant speed, passes step-up, sees the receipt.
 4. Opens Cards, freezes the main card, reveals the card number after step-up.
@@ -134,7 +134,7 @@ These were open questions. They are now decided; the other docs follow them.
 | Deposit check | Enter amount, pick account, placeholder cheque images optional (confirm works without them). Pending credit, posted 30 s later with a "Deposit cleared" alert. |
 | Fonts and card artwork | Open-licence substitutes from DESIGN_SYSTEM.md (Inter, gradient card art) now; swap in ABC Bank assets later without screen changes. |
 | Firebase plan | Spark (free). No Cloud Functions, no Cloud Storage. Statement and 1099-INT PDFs are generated in the app. |
-| Login and demo reset | Login with a per-persona customer ID (exactly 8 alphanumeric characters, e.g. `SAMJOH01`) plus MPIN; this replaces the demo profile picker. A different ID reseeds; the same ID keeps its data. Lock screen asks for MPIN only. Hidden "Reset demo data" in Profile reseeds the current persona. |
+| Login and demo reset | Login with a per-persona customer ID (exactly 8 alphanumeric characters, e.g. `SAMJOH01`) plus MPIN; this replaces the demo profile picker. A different ID reseeds; the same ID keeps its data. Lock screen asks for MPIN only. Hidden "Reset Demo Data" in Profile reseeds the current persona. |
 | Personas | Keep the three in DEMO_DATA.md with their names and stories, and add a fourth: Daniel Okafor (`DANOKA01`), high net worth, approved 2026-10-17. |
 | Profile photos | Supplied 2026-10-17 in `images/`. Bundled as `drawable-nodpi/avatar_{personaId}.webp`; beneficiaries keep initials. |
 | Low balance alert | Below $500.00: available balance for checking and savings, available credit for credit cards and lines of credit. Term deposits and investments never alert. Fires once when an account crosses below the threshold. |
