@@ -25,6 +25,20 @@ Generated history:
 - Filler draws merchants from the pools in section 07 and stays inside each category's amount range.
 - Filler is sized so the last 30 days of debits match the category targets in each persona's table exactly. The last filler item per category takes the remainder.
 - Pending debits count toward the targets, because they show in the transaction list (decided 2026-10-19).
+- Spending means debits in every category except Transfer and Transfer out, on any account. "Last 30 days" is day 0 and the 29 days before it.
+
+Filler rules (decided 2026-10-19):
+- All filler posts to the Main card's linked account (Everyday Checking, or Premier Checking for daniel), as posted debits.
+- History is three windows: days 0 to -29, -30 to -59 and -60 to -90. Each window's debits meet the same category targets.
+  In the first window the explicit transactions count first and filler fills the rest, on days -1 to -29.
+  The older windows are filler only; there is no generated income, so balances only rise going back in time.
+- A category with a merchant pool gets as many items as its target needs at a typical amount. Every item, including
+  the remainder, stays inside the pool's range, unless the whole remainder is smaller than the range minimum.
+- A category with no merchant pool (Housing) repeats that persona's explicit payment of the category, 30 or 60 days earlier.
+- Utilities use the persona's utility bills: billers and amounts in a shuffled cycle, and the last item takes the remainder.
+- Filler times are on the minute between 07:00 and 22:00. Merchants, days, times and amounts come from one random
+  generator seeded with `181019`, so the output is identical on every install.
+- Running balances are worked back from the closing balances in this document. Pending items do not change the balance.
 - Filler never pushes an account balance below the opening balances listed here. The balances listed here are the balances after all seeded transactions.
 
 Rules that apply to all personas:
@@ -197,11 +211,15 @@ Explicit transactions (Everyday Checking unless noted)
 | 0 | 12:31 | Campus Deli | Dining | -$14.80 | Posted |
 | -1 | 19:44 | QuickRide | Transport | -$18.25 | Posted |
 | -2 | 08:00 | Oakwood Properties (rent) | Housing | -$1,450.00 | Posted |
+| -3 | 12:00 | Sarah Lee | Transfer out | -$1,400.00 | Posted |
 | -4 | 07:00 | Brightpath Software Payroll | Income | +$2,108.46 | Posted |
 | -6 | 16:10 | Fresh Market Co. | Groceries | -$64.37 | Posted |
 | -8 | 21:05 | GameVault (Cash Back Card) | Entertainment | -$59.99 | Posted |
 | -13 | 11:00 | Sarah Lee | Transfer in | +$120.00 | Posted |
+| -16 | 12:00 | Cash Back Card payment (and matching +$1,000.00 "From Everyday Checking ••2087" on Cash Back Card) | Transfer | -$1,000.00 | Posted |
 | -18 | 07:00 | Brightpath Software Payroll | Income | +$2,108.46 | Posted |
+
+The day -3 and day -16 outflows were added 2026-10-19 so his checking history never goes below $0.00 (lowest point $22.67, before filler).
 
 Last-30-day spending targets (total $2,755.00): Housing $1,450.00, Groceries $380.00, Shopping $310.00, Dining $240.00, Utilities $165.00, Transport $120.00, Entertainment $90.00.
 
@@ -473,7 +491,7 @@ app/src/main/assets/seed/
     daniel.json         section 06
 ```
 
-Current `seedVersion`: 2 (2026-10-19: Samanta's Health target added). Bump on every data change.
+Current `seedVersion`: 2 (2026-10-19: Samanta's Health target and Marcus's two outflows, before any install was seeded). Bump on every data change.
 `SeedFilesTest` checks the files against the Firestore mappers, the Luhn and ABA checksums, and the balance rules in this document.
 
 Card limit fields: debit cards use `atmDailyLimit`/`atmMaxLimit` and `retailDailyLimit`/`retailMaxLimit`.

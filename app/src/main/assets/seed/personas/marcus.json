@@ -45,7 +45,10 @@
     { "id": "tx-005", "accountId": "checking", "direction": "DEBIT", "amount": 6437, "merchant": "Fresh Market Co.", "category": "GROCERIES", "status": "POSTED", "createdAt": { "dayOffset": -6, "time": "16:10" } },
     { "id": "tx-006", "accountId": "credit", "direction": "DEBIT", "amount": 5999, "merchant": "GameVault", "category": "ENTERTAINMENT", "status": "POSTED", "createdAt": { "dayOffset": -8, "time": "21:05" } },
     { "id": "tx-007", "accountId": "checking", "direction": "CREDIT", "amount": 12000, "merchant": "Sarah Lee", "category": "TRANSFER_IN", "status": "POSTED", "createdAt": { "dayOffset": -13, "time": "11:00" } },
-    { "id": "tx-008", "accountId": "checking", "direction": "CREDIT", "amount": 210846, "merchant": "Brightpath Software Payroll", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -18, "time": "07:00" } }
+    { "id": "tx-008", "accountId": "checking", "direction": "CREDIT", "amount": 210846, "merchant": "Brightpath Software Payroll", "category": "INCOME", "status": "POSTED", "createdAt": { "dayOffset": -18, "time": "07:00" } },
+    { "id": "tx-009", "accountId": "checking", "direction": "DEBIT", "amount": 140000, "merchant": "Sarah Lee", "category": "TRANSFER_OUT", "status": "POSTED", "createdAt": { "dayOffset": -3, "time": "12:00" } },
+    { "id": "tx-010", "accountId": "checking", "direction": "DEBIT", "amount": 100000, "merchant": "Cash Back Card payment", "category": "TRANSFER", "status": "POSTED", "createdAt": { "dayOffset": -16, "time": "12:00" } },
+    { "id": "tx-011", "accountId": "credit", "direction": "CREDIT", "amount": 100000, "merchant": "From Everyday Checking ••2087", "category": "TRANSFER", "status": "POSTED", "createdAt": { "dayOffset": -16, "time": "12:00" } }
   ],
   "fillerTargets": {
     "HOUSING": 145000,
