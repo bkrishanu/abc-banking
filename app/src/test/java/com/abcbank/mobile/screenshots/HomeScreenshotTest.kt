@@ -4,10 +4,13 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
+import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.feature.home.ui.HomeActions
 import com.abcbank.mobile.feature.home.ui.HomePreviewData
 import com.abcbank.mobile.feature.home.ui.HomeScreen
 import com.abcbank.mobile.feature.home.ui.HomeUiState
+import com.abcbank.mobile.feature.profile.ui.ProfileScreen
+import com.abcbank.mobile.feature.profile.ui.ProfileUiState
 import com.android.resources.Density
 import org.junit.Rule
 import org.junit.Test
@@ -39,6 +42,33 @@ class HomeScreenshotTest {
         AbcTheme {
             HomeScreen(state = state, actions = HomeActions(), onToggleBalances = {}, onRetry = {})
         }
+    }
+}
+
+/** Profile, for now the persona and Log Out. */
+class ProfileScreenshotTest {
+    @get:Rule
+    val paparazzi =
+        Paparazzi(
+            deviceConfig = DeviceConfig.PIXEL_5.copy(
+                screenWidth = 1080,
+                screenHeight = 2340,
+                density = Density.XXHIGH,
+                xdpi = 480,
+                ydpi = 480
+            )
+        )
+
+    @Test
+    fun samanta() = snapshot(
+        ProfileUiState.Content(PersonaId.SAMANTA, "Samanta Johns", "SAMJOH01", isOffline = false)
+    )
+
+    @Test
+    fun error() = snapshot(ProfileUiState.Error(DataError.UNKNOWN))
+
+    private fun snapshot(state: ProfileUiState) = paparazzi.snapshot {
+        AbcTheme { ProfileScreen(state = state, onBack = {}, onLogOut = {}, onRetry = {}) }
     }
 }
 

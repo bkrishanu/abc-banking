@@ -51,6 +51,10 @@ class SettingsRepository @Inject constructor(private val dataStore: DataStore<Pr
     override suspend fun rememberedCustomer(): CustomerId? =
         current()[REMEMBERED_CUSTOMER_ID]?.let(CustomerId::parse)
 
+    override suspend fun forgetCustomer() {
+        dataStore.edit { prefs -> prefs.remove(REMEMBERED_CUSTOMER_ID) }
+    }
+
     // An unreadable file is treated as empty settings rather than crashing the app.
     private suspend fun current(): Preferences = dataStore.data
         .catch { error -> if (error is IOException) emit(emptyPreferences()) else throw error }

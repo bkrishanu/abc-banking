@@ -66,6 +66,7 @@ import com.abcbank.mobile.core.model.TransactionStatus
 /** Where Home's actions go. Destinations that are not built yet are no-ops in the nav host. */
 data class HomeActions(
     val onNotifications: () -> Unit = {},
+    val onProfile: () -> Unit = {},
     val onTransfer: () -> Unit = {},
     val onPayBills: () -> Unit = {},
     val onMoreActions: () -> Unit = {},
@@ -108,7 +109,8 @@ fun HomeScreen(
                     personaId = state.personaId,
                     greeting = stringResource(R.string.home_greeting, state.firstName),
                     unreadNotifications = 0,
-                    onNotifications = actions.onNotifications
+                    onNotifications = actions.onNotifications,
+                    onProfile = actions.onProfile
                 )
                 Spacer(Modifier.height(AbcTheme.spacing.space6))
                 EmptyCard(stringResource(R.string.home_empty), actions.onExploreProducts)
@@ -130,7 +132,8 @@ private fun HomeContent(
         personaId = state.personaId,
         greeting = stringResource(R.string.home_greeting, state.firstName),
         unreadNotifications = state.unreadNotifications,
-        onNotifications = actions.onNotifications
+        onNotifications = actions.onNotifications,
+        onProfile = actions.onProfile
     )
     if (state.isOffline) {
         Spacer(Modifier.height(spacing.space2))

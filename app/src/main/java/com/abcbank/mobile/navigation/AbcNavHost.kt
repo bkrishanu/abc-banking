@@ -15,6 +15,7 @@ import com.abcbank.mobile.feature.auth.ui.LoginRoute
 import com.abcbank.mobile.feature.auth.ui.WelcomeScreen
 import com.abcbank.mobile.feature.home.ui.HomeActions
 import com.abcbank.mobile.feature.home.ui.HomeRoute
+import com.abcbank.mobile.feature.profile.ui.ProfileRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -25,6 +26,9 @@ data object LoginDestination
 
 @Serializable
 data object HomeDestination
+
+@Serializable
+data object ProfileDestination
 
 @Composable
 fun AbcNavHost(modifier: Modifier = Modifier) {
@@ -55,7 +59,23 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
         composable<HomeDestination> {
             // Notifications, transfer, bill pay and products are not built yet; their actions
             // are no-ops until each destination exists.
-            HomeRoute(actions = HomeActions())
+            HomeRoute(
+                actions = HomeActions(onProfile = {
+                    navController.navigate(ProfileDestination)
+                })
+            )
+        }
+        composable<ProfileDestination> {
+            ProfileRoute(
+                onBack = { navController.popBackStack() },
+                onLoggedOut = {
+                    // Back from the login screen goes to Welcome, never to the logged-out Home.
+                    navController.navigate(WelcomeDestination) {
+                        popUpTo<HomeDestination> { inclusive = true }
+                    }
+                    navController.navigate(LoginDestination)
+                }
+            )
         }
     }
 }

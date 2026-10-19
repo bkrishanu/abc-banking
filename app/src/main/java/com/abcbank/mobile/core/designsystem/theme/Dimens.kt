@@ -19,6 +19,7 @@ data class AbcDimens(
     val keypadKeyHeight: Dp = 64.dp,
     val mpinDot: Dp = 12.dp,
     val avatarSmall: Dp = 32.dp,
+    val avatarLarge: Dp = 72.dp,
     val iconCircle: Dp = 40.dp,
     val actionPillHeight: Dp = 56.dp,
     val actionPillOverlap: Dp = 28.dp,

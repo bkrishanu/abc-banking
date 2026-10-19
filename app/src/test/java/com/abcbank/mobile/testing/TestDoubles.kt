@@ -49,6 +49,10 @@ class FakeRememberedCustomerStore : RememberedCustomerStore {
     }
 
     override suspend fun rememberedCustomer(): CustomerId? = remembered
+
+    override suspend fun forgetCustomer() {
+        remembered = null
+    }
 }
 
 /**

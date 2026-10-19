@@ -44,6 +44,7 @@
     <string name="cd_balance_hidden">Balance hidden</string>
     <string name="cd_more_actions">More actions</string>
     <string name="cd_notifications">Notifications</string>
+    <string name="cd_profile">Profile</string>
     <plurals name="cd_notifications_unread">
         <item quantity="one">Notifications, %d unread</item>
         <item quantity="other">Notifications, %d unread</item>
@@ -90,4 +91,11 @@
     <string name="home_no_transactions">No transactions in the last 30 days.</string>
     <string name="home_empty">Your accounts will show here.</string>
     <string name="home_error">We couldn\'t load your accounts.</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_customer_id">Customer ID %1$s</string>
+    <string name="profile_empty">Your profile will show here.</string>
+    <string name="profile_error">We couldn\'t load your profile.</string>
+    <string name="action_log_out">Log Out</string>
 </resources>

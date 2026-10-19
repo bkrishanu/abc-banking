@@ -250,7 +250,7 @@ How the sample PNGs map to app screens. Use them for layout and feel, not as pix
 `LoginScreen` layout: back arrow (Lucide `arrow-left`, 24dp in a 48dp target), H1 "Log In", space-6, customer ID `AbcTextField` (placeholder "8 letters or numbers"), space-6, H3 "Enter Your MPIN", space-4, `MpinPad`. The pad stays disabled until the ID is recognised, then the keyboard closes.
 
 `HomeScreen` layout (2026-10-20):
-- `GreetingTopBar`, then the offline banner when reading from the cache.
+- `GreetingTopBar` (tapping the avatar or greeting opens Profile until the bottom bar exists), then the offline banner when reading from the cache.
 - Balance header, space-4 below: card-sage gradient, radius-xl, padding space-5. "Wallet Balance" (Small) with the eye toggle (Lucide `eye-off` to hide, `eye` to show, 48dp target), `BalanceText`, then two chips: arrow-up "+$x" in positiveText and arrow-down "-$y" in text, Label on surface pills, last-30-day money in and out of the wallet account. Header text is `text` colour, not white: white fails contrast on the light end of the sage gradient, and `text` passes on both ends.
 - Action pills overlap the header's bottom edge by 28dp: `ActionPill` Transfer (`arrow-up-right`), `ActionPill` Pay Bills (`receipt`), `GridPill`. One row at 360dp; at narrower widths or large fonts they wrap downward.
 - space-6, `SectionHeader` "Accounts", one `ContentCard` with a row per account (dividers between): nickname and "••last4" on the start side; the amount in Body tabular on the end side with Small muted details: checking "Available" or "Ledger $x" when a pending item makes them differ, savings APY, card current balance with available, statement and due date, line of credit amount owed with available and APR, term deposit principal with APY and maturity date, investments portfolio value. A low balance adds "Below $500.00" in warning.
@@ -259,6 +259,8 @@ How the sample PNGs map to app screens. Use them for layout and feel, not as pix
 - Eye toggle masks every amount on the screen; the choice lasts for the session (`SessionManager`, in memory).
 - Loading: skeleton of the top bar, header and three cards. Error: `ErrorState` "We couldn't load your accounts." Empty (no accounts): "Your accounts will show here." with Explore Products.
 - No bottom bar yet: it arrives with the Cards tab, so it never offers tabs that do not exist. Until their screens are built, the bell, pills, View All and Explore Products do nothing.
+
+`ProfileScreen` layout (interim, 2026-10-20): back arrow, H1 "Profile", space-6, `ContentCard` (padding space-5) with the 72dp `ProfileAvatar`, the name in H2 and "Customer ID SAMJOH01" in Small muted, all centred; space-6, Secondary "Log Out" (shown in every state but loading, so a profile that fails to load never traps the user). Settings, documents, support and Reset Demo Data join it with their features, and it becomes the Profile tab when the bottom bar arrives.
 
 | Sample | Shows | App screen |
 | --- | --- | --- |

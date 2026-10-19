@@ -1,6 +1,7 @@
 package com.abcbank.mobile.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +38,7 @@ fun GreetingTopBar(
     greeting: String,
     unreadNotifications: Int,
     onNotifications: () -> Unit,
+    onProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = AbcTheme.colors
@@ -46,14 +49,22 @@ fun GreetingTopBar(
             .heightIn(min = dimens.touchTarget),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ProfileAvatar(personaId)
-        Spacer(Modifier.width(AbcTheme.spacing.space2))
-        Text(
-            text = greeting,
-            style = AbcTheme.typography.body,
-            color = colors.text,
-            modifier = Modifier.weight(1f)
-        )
+        val profileDescription = stringResource(R.string.cd_profile)
+        // Avatar and greeting open Profile (DESIGN_SYSTEM.md section 10) until the bottom bar exists.
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .heightIn(min = dimens.touchTarget)
+                .clickable(role = Role.Button, onClick = onProfile)
+                .semantics(mergeDescendants = true) {
+                    contentDescription = "$greeting, $profileDescription"
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ProfileAvatar(personaId)
+            Spacer(Modifier.width(AbcTheme.spacing.space2))
+            Text(text = greeting, style = AbcTheme.typography.body, color = colors.text)
+        }
         val bellDescription = if (unreadNotifications > 0) {
             pluralStringResource(
                 R.plurals.cd_notifications_unread,
@@ -99,6 +110,7 @@ private fun GreetingTopBarPreview() {
             greeting = "Hello, Samanta",
             unreadNotifications = 3,
             onNotifications = {},
+            onProfile = {},
             modifier = Modifier.padding(AbcTheme.spacing.space4)
         )
     }

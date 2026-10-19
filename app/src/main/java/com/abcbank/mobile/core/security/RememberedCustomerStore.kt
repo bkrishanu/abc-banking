@@ -7,4 +7,7 @@ interface RememberedCustomerStore {
     suspend fun rememberCustomer(customerId: CustomerId)
 
     suspend fun rememberedCustomer(): CustomerId?
+
+    /** Log Out: the next launch asks for the customer ID again. */
+    suspend fun forgetCustomer()
 }
