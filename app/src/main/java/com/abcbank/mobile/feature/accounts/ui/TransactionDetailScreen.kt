@@ -249,6 +249,7 @@ private fun DetailContent(state: TransactionDetailUiState.Content) {
                 stringResource(R.string.transaction_detail_category) to
                     categoryLabel(transaction.category)
             )
+            transaction.memo?.let { add(stringResource(R.string.transaction_detail_memo) to it) }
             add(
                 stringResource(R.string.transaction_detail_status) to stringResource(
                     if (transaction.status == TransactionStatus.PENDING) {

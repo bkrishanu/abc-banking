@@ -192,8 +192,8 @@ users/{uid}                         summary for the console: activePersonaId, cu
       holdings/{holdingId}          name, value (INVESTMENT accounts only)
     transactions/{txId}             accountId, direction (DEBIT|CREDIT), amount, merchant,
                                     logoUrl, category, reference, runningBalance, status
-                                    (POSTED|PENDING), disputed, createdAt,
-                                    clearsAt (pending check deposits only)
+                                    (POSTED|PENDING), disputed, createdAt, memo (transfers,
+                                    optional), clearsAt (pending check deposits only)
     beneficiaries/{beneficiaryId}   name, shortName, avatarUrl, bankName, routingNumber,
                                     accountLast4, isRecent, recentOrder
     cards/{cardId}                  accountId, tag, network, artKey, holderName, pan, cvv, last4,
@@ -218,12 +218,14 @@ No Cloud Storage (Spark plan). Monthly statements and the 1099-INT are built on 
 app's cache directory, shared through the `FileProvider` in `file_paths.xml`, and deleted when the viewer closes.
 
 Path of every write (example: P2P transfer):
-1. User taps Confirm on `TransferReviewScreen`; the screen calls `viewModel.onConfirm()`.
-2. ViewModel builds a request from its state and calls `SendTransferUseCase`.
-3. Use case validates (amount > 0, <= available balance, beneficiary exists), computes the fee, and asks `StepUpManager` whether step-up is required (amount > $1,000).
-4. If required, the use case returns `NeedsStepUp`; the ViewModel shows `StepUpSheet`, which asks for the MPIN; on a correct entry it retries with the one-time grant.
-5. Repository runs one Firestore transaction: debit the source account, write the transaction with a client-generated UUID reference, write a transactional notification, and a low balance notification if the account crossed below $500.00.
-6. Use case returns a typed `Result`. The ViewModel moves to the receipt state from that result, not from a guess.
+1. User taps Confirm Transfer on `TransferReviewScreen` and Agree and Send on the disclaimer sheet; the screen calls `viewModel.onConfirm()`.
+2. The ViewModel asks its `StepUpController` for a grant for `OutboundTransfer(amount)`. Up to $1,000 the grant is issued at once; above it `StepUpSheet` asks for the MPIN first.
+3. With the grant, the ViewModel calls `SendTransferUseCase`, which validates (amount > 0, amount + fee <= available balance), computes the fee, and spends the grant with `StepUpManager.consume`. A missing, used or different-amount grant returns `StepUpRequired` and nothing is written.
+4. `TransferPlanner` (pure, unit-tested) works out every effect: new balances, the transfer and fee transactions with running balances and a client-generated UUID reference, the transactional notification, and a low balance notification if the account crossed below $500.00.
+5. The repository writes the plan as one Firestore batch (revised 2026-10-20, was a transaction). Like every other write it is not awaited: it applies to the cache at once and uploads in the background, so a transfer works offline. A Firestore transaction would fail offline and wait on the network. The balances in the plan come from the snapshot the screen showed; with one user on one device per persona tree there is no concurrent writer to race.
+6. Use case returns a typed `TransferResult`. The ViewModel moves to the receipt state from that result, not from a guess.
+
+Internal transfers take the same path through `MoveMoneyUseCase` without step-up (not outbound). Add New Payee checks the form first (`AddPayeeUseCase.check`), then asks for step-up, then writes the beneficiary. The routing number lookup reads the bundled `assets/seed/catalog.json` (`AssetBankDirectory`), the same list `catalog/banks` was created from, so it works offline and never depends on the console copy.
 
 State:
 - Firestore is the source of truth. Repositories expose `Flow`s from snapshot listeners; screens update live.
@@ -283,7 +285,7 @@ Never:
 
 The agent must not "fix" these.
 
-- No backend and no Cloud Functions. Money movement runs as client-side Firestore transactions. This is a demo on a possibly free (Spark) Firebase plan; in production it would move server-side. Do not add Cloud Functions without approval.
+- No backend and no Cloud Functions. Money movement runs as client-side Firestore batches (section 04, path of every write). This is a demo on a possibly free (Spark) Firebase plan; in production it would move server-side. Do not add Cloud Functions without approval.
 - The MPIN is hardcoded to `123456` in `MpinVerifier`, per MobileBuild.md 1.1, for every persona. It is a demo lock, not a credential. Do not move it to Firestore or make it configurable.
 - Step-up re-asks for the same MPIN; there is no OTP and no biometric (PRD 08). It is not a real second factor. Do not add AndroidX Biometric or an OTP without approval.
 - The customer ID is not an account. It only picks which persona tree the install's anonymous user shows. Each persona's tree stays on the install once written (at most four, a few hundred documents each).

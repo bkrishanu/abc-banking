@@ -23,7 +23,8 @@ data class TransactionDto(
     val status: String? = null,
     val disputed: Boolean? = null,
     val createdAt: Timestamp? = null,
-    val clearsAt: Timestamp? = null
+    val clearsAt: Timestamp? = null,
+    val memo: String? = null
 ) {
     fun toMap(): Map<String, Any> = firestoreFields(
         ACCOUNT_ID to accountId,
@@ -37,7 +38,8 @@ data class TransactionDto(
         STATUS to status,
         DISPUTED to disputed,
         CREATED_AT to createdAt,
-        CLEARS_AT to clearsAt
+        CLEARS_AT to clearsAt,
+        MEMO to memo
     )
 
     /** Null when a field is missing or invalid. */
@@ -53,7 +55,8 @@ data class TransactionDto(
         status = enumOrNull<TransactionStatus>(status) ?: return null,
         disputed = disputed ?: false,
         createdAt = createdAt?.toInstantUtc() ?: return null,
-        clearsAt = clearsAt?.toInstantUtc()
+        clearsAt = clearsAt?.toInstantUtc(),
+        memo = memo?.takeIf(String::isNotBlank)
     )
 
     companion object {
@@ -69,6 +72,7 @@ data class TransactionDto(
         const val DISPUTED = "disputed"
         const val CREATED_AT = "createdAt"
         const val CLEARS_AT = "clearsAt"
+        const val MEMO = "memo"
 
         fun fromMap(map: Map<String, Any?>): TransactionDto = TransactionDto(
             accountId = map.stringField(ACCOUNT_ID),
@@ -82,7 +86,8 @@ data class TransactionDto(
             status = map.stringField(STATUS),
             disputed = map.booleanField(DISPUTED),
             createdAt = map.timestampField(CREATED_AT),
-            clearsAt = map.timestampField(CLEARS_AT)
+            clearsAt = map.timestampField(CLEARS_AT),
+            memo = map.stringField(MEMO)
         )
     }
 }

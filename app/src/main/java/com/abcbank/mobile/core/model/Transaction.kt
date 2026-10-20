@@ -47,7 +47,9 @@ data class Transaction(
     val status: TransactionStatus,
     val disputed: Boolean,
     val createdAt: Instant,
-    val clearsAt: Instant?
+    val clearsAt: Instant?,
+    /** The customer's note on a transfer they sent; null for everything else. */
+    val memo: String? = null
 ) {
     init {
         require(amount.isPositive) { "A transaction amount is positive; direction gives the sign" }
