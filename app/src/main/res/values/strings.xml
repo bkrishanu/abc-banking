@@ -579,4 +579,10 @@
     <string name="profile_resetting">Resetting the demo data…</string>
     <string name="profile_reset_done">Demo data reset.</string>
     <string name="profile_reset_failed">The demo data could not be reset. Check your connection and try again.</string>
+    <!-- Home Features carousel (Sample 2) -->
+    <string name="home_features">Features</string>
+    <string name="home_feature_transfers">Instant Bank Transfers</string>
+    <string name="home_feature_analytics">Spending Analytics</string>
+    <string name="home_feature_deposit">Deposit a Check</string>
+    <string name="home_feature_products">Explore Products</string>
 </resources>

@@ -190,6 +190,9 @@ private fun HomeContent(
     BalanceHeader(state, actions, onToggleBalances)
     Spacer(Modifier.height(spacing.space6))
 
+    HomeFeatures(actions)
+    Spacer(Modifier.height(spacing.space6))
+
     SectionHeader(title = stringResource(R.string.home_accounts))
     AccountsCard(state.accounts, state.balancesHidden, actions.onAccount)
     if (state.showNoInvestments) {
