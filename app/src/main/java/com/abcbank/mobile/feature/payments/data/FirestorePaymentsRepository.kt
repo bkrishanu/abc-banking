@@ -10,6 +10,7 @@ import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
 import com.abcbank.mobile.core.data.firebase.BeneficiaryDto
+import com.abcbank.mobile.core.data.firebase.BillDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
 import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
@@ -18,14 +19,24 @@ import com.abcbank.mobile.core.data.firebase.toDataError
 import com.abcbank.mobile.core.data.firebase.toTimestamp
 import com.abcbank.mobile.core.data.seed.ActivePersonaSource
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.feature.payments.domain.Bill
+import com.abcbank.mobile.feature.payments.domain.BillPaymentPlan
+import com.abcbank.mobile.feature.payments.domain.BillStatus
+import com.abcbank.mobile.feature.payments.domain.BillsData
+import com.abcbank.mobile.feature.payments.domain.BillsRepository
+import com.abcbank.mobile.feature.payments.domain.FetchedBill
 import com.abcbank.mobile.feature.payments.domain.NewNotification
 import com.abcbank.mobile.feature.payments.domain.NewPayee
 import com.abcbank.mobile.feature.payments.domain.NotificationType
 import com.abcbank.mobile.feature.payments.domain.PaymentsData
 import com.abcbank.mobile.feature.payments.domain.PaymentsRepository
 import com.abcbank.mobile.feature.payments.domain.TransferPlan
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.WriteBatch
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
@@ -41,7 +52,8 @@ class FirestorePaymentsRepository @Inject constructor(
     private val activePersona: ActivePersonaSource,
     private val firestore: FirebaseFirestore,
     private val dispatchers: DispatcherProvider
-) : PaymentsRepository {
+) : PaymentsRepository,
+    BillsRepository {
 
     private data class Tree(val uid: String, val personaId: String)
 
@@ -95,6 +107,15 @@ class FirestorePaymentsRepository @Inject constructor(
 
     override suspend fun applyTransfer(plan: TransferPlan): DataResult<Unit> = call { tree ->
         val batch = firestore.batch()
+        batch.addTransfer(tree, plan)
+        // Not awaited, like every write: applied to the cache now, uploaded when possible.
+        batch.commit()
+        DataResult.Success(Unit)
+    }
+
+    /** Balances, transactions and alerts of one transfer, added to [this] batch. */
+    private fun WriteBatch.addTransfer(tree: Tree, plan: TransferPlan) {
+        val batch = this
         plan.accounts.forEach { update ->
             batch.update(
                 tree.collection(FirestorePaths.ACCOUNTS).document(update.accountId),
@@ -129,10 +150,93 @@ class FirestorePaymentsRepository @Inject constructor(
                 notification.toFields()
             )
         }
-        // Not awaited, like every write: applied to the cache now, uploaded when possible.
+    }
+
+    override fun observeBills(): Flow<DataResult<BillsData>> = flow {
+        val tree = when (val result = tree()) {
+            is DataResult.Success -> result.value
+            is DataResult.Failure -> {
+                emit(result)
+                return@flow
+            }
+        }
+        emitAll(
+            combine(
+                tree.collection(FirestorePaths.BILLS).snapshotFlow(),
+                tree.collection(FirestorePaths.ACCOUNTS).snapshotFlow()
+            ) { billSnapshot, accountSnapshot ->
+                val bills = billSnapshot.documents.map {
+                    BillDto.fromMap(it.data.orEmpty()).toBill(it.id) ?: return@combine malformed()
+                }
+                val accounts = accountSnapshot.documents.map {
+                    AccountDto.fromMap(it.data.orEmpty()).toAccount(it.id)
+                        ?: return@combine malformed()
+                }
+                DataResult.Success(
+                    BillsData(
+                        bills = bills,
+                        accounts = accounts,
+                        isFromCache =
+                        billSnapshot.metadata.isFromCache ||
+                            accountSnapshot.metadata.isFromCache
+                    )
+                )
+            }
+        )
+    }
+        .catch { error -> emit(DataResult.Failure(error.toDataError())) }
+        .flowOn(dispatchers.default)
+
+    /** One bill per biller, as in the seed, so the bill id is the biller id. */
+    override suspend fun addBill(bill: FetchedBill): DataResult<Unit> = call { tree ->
+        val dto = BillDto(
+            billerId = bill.biller.id,
+            amountDue = bill.amountDue.cents,
+            dueDate = bill.dueDate.toTimestamp(),
+            autoPay = false,
+            status = BillStatus.DUE.name,
+            accountLast4 = bill.accountLast4
+        )
+        tree.collection(FirestorePaths.BILLS).document(bill.biller.id).set(dto.toMap())
+        DataResult.Success(Unit)
+    }
+
+    override suspend fun payBill(plan: BillPaymentPlan): DataResult<Unit> = call { tree ->
+        val batch = firestore.batch()
+        batch.addTransfer(tree, plan.transfer)
+        batch.update(
+            tree.collection(FirestorePaths.BILLS).document(plan.billId),
+            mapOf(
+                BillDto.STATUS to BillStatus.PAID.name,
+                BillDto.PAID_AT to plan.paidAt.toTimestamp(),
+                BillDto.SCHEDULED_FOR to FieldValue.delete()
+            )
+        )
         batch.commit()
         DataResult.Success(Unit)
     }
+
+    override suspend fun schedule(billId: String, date: Instant?): DataResult<Unit> = call { tree ->
+        val fields = if (date == null) {
+            mapOf(
+                BillDto.SCHEDULED_FOR to FieldValue.delete(),
+                BillDto.STATUS to BillStatus.DUE.name
+            )
+        } else {
+            mapOf(
+                BillDto.SCHEDULED_FOR to date.toTimestamp(),
+                BillDto.STATUS to BillStatus.SCHEDULED.name
+            )
+        }
+        tree.collection(FirestorePaths.BILLS).document(billId).update(fields)
+        DataResult.Success(Unit)
+    }
+
+    override suspend fun setAutoPay(billId: String, autoPay: Boolean): DataResult<Unit> =
+        call { tree ->
+            tree.collection(FirestorePaths.BILLS).document(billId).update(BillDto.AUTO_PAY, autoPay)
+            DataResult.Success(Unit)
+        }
 
     override suspend fun addPayee(payee: NewPayee): DataResult<Unit> = call { tree ->
         val dto = BeneficiaryDto(
@@ -163,6 +267,10 @@ class FirestorePaymentsRepository @Inject constructor(
                     args[1],
                     args[2]
                 )
+            NotificationType.BILL_PAID -> context.getString(
+                R.string.notification_bill_paid_title
+            ) to
+                context.getString(R.string.notification_bill_paid_body, money(args[0]), args[1])
             NotificationType.LOW_BALANCE -> context.getString(
                 R.string.notification_low_balance_title
             ) to
@@ -194,4 +302,20 @@ class FirestorePaymentsRepository @Inject constructor(
     private companion object {
         const val POSTED = "POSTED"
     }
+}
+
+/** Null when a field is missing or invalid. */
+internal fun BillDto.toBill(id: String): Bill? {
+    fun Timestamp.instant(): Instant = Instant.ofEpochSecond(seconds, nanoseconds.toLong())
+    return Bill(
+        id = id,
+        billerId = billerId?.takeIf(String::isNotBlank) ?: return null,
+        amountDue = amountDue?.takeIf { it >= 0 }?.let(::Money) ?: return null,
+        dueDate = dueDate?.instant() ?: return null,
+        autoPay = autoPay ?: false,
+        scheduledFor = scheduledFor?.instant(),
+        status = BillStatus.entries.firstOrNull { it.name == status } ?: return null,
+        paidAt = paidAt?.instant(),
+        accountLast4 = accountLast4?.takeIf { it.length == 4 && it.all(Char::isDigit) }
+    )
 }

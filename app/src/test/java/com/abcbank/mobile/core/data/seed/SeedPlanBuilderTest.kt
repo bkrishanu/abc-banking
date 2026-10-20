@@ -1,8 +1,10 @@
 package com.abcbank.mobile.core.data.seed
 
 import com.abcbank.mobile.core.data.firebase.AccountDto
+import com.abcbank.mobile.core.data.firebase.BillDto
 import com.abcbank.mobile.core.data.firebase.CardDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
+import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.core.data.firebase.SavingsGoalDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
@@ -16,6 +18,8 @@ import com.abcbank.mobile.core.model.TransactionDirection
 import com.abcbank.mobile.feature.insights.data.toSavingsGoal
 import com.abcbank.mobile.feature.insights.domain.InsightsRules
 import com.abcbank.mobile.feature.insights.domain.SpendingPeriod
+import com.abcbank.mobile.feature.notifications.data.toNotification
+import com.abcbank.mobile.feature.payments.data.toBill
 import com.google.firebase.Timestamp
 import java.io.File
 import java.time.Instant
@@ -110,6 +114,19 @@ class SeedPlanBuilderTest {
         assertEquals(13, savings.points.size)
         assertEquals(savings.goal.saved, savings.points.last().saved)
         assertEquals(today.minusDays(90), savings.points.first().date)
+    }
+
+    @Test
+    fun `every seeded bill and notification maps`() = forEachPersona { persona, plan ->
+        val bills = documents(plan, FirestorePaths.BILLS).map { (id, fields) ->
+            requireNotNull(BillDto.fromMap(fields).toBill(id)) {
+                "${persona.key} bill $id does not map"
+            }
+        }
+        assertTrue(persona.key, bills.isNotEmpty())
+        documents(plan, FirestorePaths.NOTIFICATIONS).forEach { (id, fields) ->
+            assertNotNull("${persona.key} $id", NotificationDto.fromMap(fields).toNotification(id))
+        }
     }
 
     @Test

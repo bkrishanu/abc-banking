@@ -422,6 +422,7 @@ Billers (`catalog/billers`)
 | fairview-county | Fairview County Treasurer | Property tax |
 
 Bill fetch for a biller the persona has no bill with returns an amount between $20.00 and $250.00 and a due date between day +7 and day +20, derived from a hash of the entered account number so the same input always gives the same bill.
+The fetched bill is saved as `bills/{billerId}` with status `DUE`, auto-pay off and the account number's last 4 digits (`accountLast4`). Paying a bill sets status `PAID` and `paidAt`; seeded bills have neither field, so no reseed is needed.
 
 Products (`catalog/products`)
 

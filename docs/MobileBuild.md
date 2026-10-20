@@ -81,6 +81,8 @@ This repository outlines the functional scope, screen flows, and technical requi
 - Bill fetch simulation displaying amount due and due date.
 - Auto-pay toggle and one-time scheduled payment picker.
 
+> **Decided (2026-10-20).** Home's Pay Bills opens the customer's bills, unpaid first by due date ("Due Oct 24", "Scheduled for Nov 3", "Paid Oct 20", an Auto-Pay badge). Add a Biller searches the catalog directory by name or type, takes the 6 to 17 digit account number from the bill, fetches the bill (DEMO_DATA.md section 07) and saves it after MPIN step-up, as adding a payee does; a biller already added cannot be added twice. A bill shows the amount due, Pay From (checking or savings, blocked inline when the balance is short), Pay Now (step-up above $1,000, as for any outbound payment), Schedule Payment (a date from tomorrow through the due date, or Cancel Scheduled Payment) and the Auto-Pay switch. Paying posts the debit (Utilities, or Housing for property tax and insurance), a "Bill paid" alert and a low balance alert on crossing, and marks the bill paid. Scheduled and auto-pay payments are saved and listed; this demo does not run them on their date.
+
 ---
 
 ## 4. Card Management & Controls

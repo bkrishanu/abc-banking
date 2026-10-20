@@ -201,6 +201,7 @@ users/{uid}                         summary for the console: activePersonaId, cu
                                     retailMaxLimit, international, online, contactless, stackOrder
       travelNotices/{noticeId}      destination, startDate, endDate
     bills/{billId}                  billerId, amountDue, dueDate, autoPay, scheduledFor, status
+                                    (DUE|SCHEDULED|PAID), paidAt, accountLast4 (bill pay only)
     savingsGoals/{goalId}           name, target, saved, accountId, startedAt, weeklyHistory[]
     applications/{applicationId}    productId, step (COMPLETE), answers {employment, annualIncome,
                                     amount, termMonths}, decision (APPROVED|REFERRED), accountId,
@@ -228,6 +229,8 @@ Path of every write (example: P2P transfer):
 6. Use case returns a typed `TransferResult`. The ViewModel moves to the receipt state from that result, not from a guess.
 
 Applications are written once, when the customer accepts on step 3: the `applications` document and, when approved, the new account, as one non-awaited batch (DEMO_DATA.md section 07). The draft before that (product, amount, term, income, agreement) lives in `ProductsViewModel`, scoped to the products graph, and in `SavedStateHandle`. Products come from the bundled catalog (`AssetProductCatalog`), like the bank directory.
+
+Bill payments take the transfer path: `PayBillUseCase` checks step-up, `BillRules.plan` works out the debit and alerts, and the payments repository writes them with the bill's PAID status in one batch. Bill ids are the biller id (one bill per biller, as seeded); billers come from the bundled catalog (`AssetBillerDirectory`).
 
 Every alert is a `notifications` document written through `NotificationDto` (`core/data/firebase`), in the same batch as the event that caused it. The notification center reads them all and marks them read with one non-awaited batch; Home counts the unread ones for the bell.
 

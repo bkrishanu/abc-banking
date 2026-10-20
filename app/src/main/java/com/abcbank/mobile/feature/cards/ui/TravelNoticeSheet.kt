@@ -7,13 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,13 +24,12 @@ import com.abcbank.mobile.core.common.DateFormatter
 import com.abcbank.mobile.core.designsystem.component.AbcBottomSheet
 import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
+import com.abcbank.mobile.core.designsystem.component.AbcDatePickerDialog
 import com.abcbank.mobile.core.designsystem.component.AbcTextField
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.feature.cards.domain.CardRules
 import com.abcbank.mobile.feature.cards.domain.TravelNoticeError
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 
 /**
  * Add a travel notice (MobileBuild.md 4.2): destination and start and end dates from date pickers.
@@ -101,8 +94,11 @@ internal fun TravelNoticeSheet(
         }
     }
     picking?.let { field ->
-        DatePickerFor(
+        // Travel notices start today or later (CardRules checks the rest on save).
+        val today = LocalDate.now()
+        AbcDatePickerDialog(
             initial = if (field == DateField.START) start else end,
+            isSelectable = { !it.isBefore(today) },
             onPicked = { picked ->
                 if (field == DateField.START) {
                     start = picked
@@ -126,42 +122,6 @@ private fun DateButton(label: String, date: LocalDate, onClick: () -> Unit) {
         onClick = onClick,
         variant = AbcButtonVariant.Secondary
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DatePickerFor(
-    initial: LocalDate,
-    onPicked: (LocalDate) -> Unit,
-    onDismiss: () -> Unit
-) {
-    // The Material picker speaks UTC milliseconds for calendar days.
-    val today = LocalDate.now()
-    val state = rememberDatePickerState(
-        initialSelectedDateMillis = initial.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean = !Instant.ofEpochMilli(
-                utcTimeMillis
-            ).atZone(ZoneOffset.UTC).toLocalDate().isBefore(today)
-        }
-    )
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                state.selectedDateMillis?.let {
-                    onPicked(Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate())
-                } ?: onDismiss()
-            }) { Text(stringResource(R.string.action_ok), color = AbcTheme.colors.text) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.action_cancel), color = AbcTheme.colors.text)
-            }
-        }
-    ) {
-        DatePicker(state = state)
-    }
 }
 
 @Composable

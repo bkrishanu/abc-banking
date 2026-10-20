@@ -71,6 +71,7 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
                     onAccount = { navController.navigate(TransactionsDestination(accountId = it)) },
                     onTransaction = { navController.navigate(TransactionDetailDestination(it)) },
                     onTransfer = { navController.navigate(TransferGraph) },
+                    onPayBills = { navController.navigate(BillPayGraph) },
                     onNotifications = { navController.navigate(NotificationsDestination) },
                     onExploreProducts = { navController.navigate(ProductsGraph) },
                     onLoggedOut = {
@@ -95,6 +96,7 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
         composable<NotificationsDestination> {
             NotificationsRoute(onBack = { navController.popBackStack() })
         }
+        billPayGraph(navController) { navController.navigate(TransactionDetailDestination(it)) }
         transferGraph(navController) { navController.navigate(TransactionDetailDestination(it)) }
         productsGraph(navController) {
             navController.navigate(TransactionsDestination(accountId = it))
