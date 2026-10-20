@@ -1,15 +1,10 @@
 package com.abcbank.mobile.core.security
 
 import com.abcbank.mobile.core.common.Clock
-import java.time.Duration
-import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 sealed interface StepUpMessage {
     data class WrongMpin(val attemptsLeft: Int) : StepUpMessage
@@ -36,18 +31,22 @@ data class StepUpState(
  * are wiped after every attempt and on cancel.
  */
 class StepUpController(
-    private val verifier: MpinVerifier,
+    verifier: MpinVerifier,
     private val manager: StepUpManager,
-    private val clock: Clock,
-    private val scope: CoroutineScope
+    clock: Clock,
+    scope: CoroutineScope
 ) {
+    private var action: StepUpAction? = null
     private val _state = MutableStateFlow(StepUpState())
     val state: StateFlow<StepUpState> = _state.asStateFlow()
-
-    private val digits = CharArray(MpinVerifier.LENGTH)
-    private var count = 0
-    private var onGranted: ((StepUpGrant) -> Unit)? = null
-    private var countdown: Job? = null
+    private val entry = MpinEntry(verifier, clock, scope) { pad ->
+        val current = action
+        _state.value = if (current == null || !pad.active) {
+            StepUpState()
+        } else {
+            StepUpState(current, pad.entered, pad.length, pad.message, pad.verifying)
+        }
+    }
 
     /** Opens the sheet for [action], or grants at once when the action does not need step-up. */
     fun request(action: StepUpAction, onGranted: (StepUpGrant) -> Unit) {
@@ -55,85 +54,19 @@ class StepUpController(
             onGranted(manager.issue(action))
             return
         }
-        clear()
-        this.onGranted = onGranted
-        _state.value = StepUpState(action = action)
-        scope.launch { verifier.lockedUntil()?.let(::startCountdown) }
+        this.action = action
+        entry.start {
+            this.action = null
+            onGranted(manager.issue(action))
+        }
     }
 
-    fun onDigit(digit: Int) {
-        if (!_state.value.isPadEnabled || count >= digits.size || digit !in 0..9) return
-        digits[count++] = '0' + digit
-        val message = _state.value.message.takeUnless { it is StepUpMessage.WrongMpin }
-        _state.value = _state.value.copy(entered = count, message = message)
-        if (count == digits.size) submit()
-    }
+    fun onDigit(digit: Int) = entry.onDigit(digit)
 
-    fun onDelete() {
-        if (!_state.value.isPadEnabled || count == 0) return
-        digits[--count] = Char.MIN_VALUE
-        _state.value = _state.value.copy(entered = count)
-    }
+    fun onDelete() = entry.onDelete()
 
     fun cancel() {
-        clear()
-        countdown?.cancel()
-        onGranted = null
-        _state.value = StepUpState()
-    }
-
-    private fun submit() {
-        val action = _state.value.action ?: return
-        _state.value = _state.value.copy(verifying = true)
-        scope.launch {
-            val result = try {
-                verifier.verify(digits)
-            } finally {
-                clear()
-            }
-            when (result) {
-                MpinCheck.Correct -> {
-                    val callback = onGranted
-                    onGranted = null
-                    _state.value = StepUpState()
-                    callback?.invoke(manager.issue(action))
-                }
-                is MpinCheck.Wrong -> _state.value = _state.value.copy(
-                    entered = 0,
-                    verifying = false,
-                    message = StepUpMessage.WrongMpin(result.attemptsLeft)
-                )
-                is MpinCheck.LockedOut -> {
-                    _state.value = _state.value.copy(entered = 0, verifying = false)
-                    startCountdown(result.until)
-                }
-            }
-        }
-    }
-
-    private fun startCountdown(until: Instant) {
-        countdown?.cancel()
-        countdown = scope.launch {
-            while (_state.value.isVisible) {
-                val millis = Duration.between(clock.now(), until).toMillis()
-                if (millis <= 0) {
-                    _state.value = _state.value.copy(message = null)
-                    break
-                }
-                _state.value = _state.value.copy(
-                    message = StepUpMessage.LockedOut((millis + TICK_MS - 1) / TICK_MS)
-                )
-                delay(TICK_MS)
-            }
-        }
-    }
-
-    private fun clear() {
-        digits.fill(Char.MIN_VALUE)
-        count = 0
-    }
-
-    private companion object {
-        const val TICK_MS = 1_000L
+        action = null
+        entry.cancel()
     }
 }

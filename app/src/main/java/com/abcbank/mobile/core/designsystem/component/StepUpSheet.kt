@@ -72,7 +72,7 @@ private fun StepUpContent(
             onDigit = onDigit,
             onDelete = onDelete,
             enabled = state.isPadEnabled,
-            supportingText = state.message?.let { messageText(it) },
+            supportingText = state.message?.let { mpinMessageText(it) },
             isError = state.message is StepUpMessage.WrongMpin,
             modifier = Modifier.fillMaxWidth()
         )
@@ -94,8 +94,9 @@ private fun reasonText(action: StepUpAction): String = when (action) {
     is StepUpAction.RevealCardDetails -> stringResource(R.string.step_up_reason_reveal_card)
 }
 
+/** The pad's message outside login: attempts left after a wrong MPIN, or the lockout countdown. */
 @Composable
-private fun messageText(message: StepUpMessage): String = when (message) {
+fun mpinMessageText(message: StepUpMessage): String = when (message) {
     is StepUpMessage.WrongMpin ->
         pluralStringResource(
             R.plurals.mpin_wrong_attempts_left,

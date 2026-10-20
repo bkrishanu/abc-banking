@@ -3,7 +3,7 @@ package com.abcbank.mobile.feature.profile.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abcbank.mobile.core.common.DataResult
-import com.abcbank.mobile.feature.profile.domain.LogOutUseCase
+import com.abcbank.mobile.core.security.LogOutUseCase
 import com.abcbank.mobile.feature.profile.domain.ObserveProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

@@ -6,13 +6,21 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.abcbank.mobile.core.designsystem.theme.AbcMotion
+import com.abcbank.mobile.core.security.SessionState
 import com.abcbank.mobile.feature.accounts.ui.TransactionDetailRoute
 import com.abcbank.mobile.feature.accounts.ui.TransactionsRoute
+import com.abcbank.mobile.feature.auth.ui.LockViewModel
 import com.abcbank.mobile.feature.auth.ui.LoginRoute
 import com.abcbank.mobile.feature.auth.ui.WelcomeScreen
 import com.abcbank.mobile.feature.notifications.ui.NotificationsRoute
@@ -43,8 +51,32 @@ data object NotificationsDestination
 data object DepositCheckDestination
 
 @Composable
-fun AbcNavHost(modifier: Modifier = Modifier) {
+fun AbcNavHost(modifier: Modifier = Modifier, lockViewModel: LockViewModel = hiltViewModel()) {
     val navController = rememberNavController()
+    val session by lockViewModel.sessionState.collectAsStateWithLifecycle()
+    val locked = session == SessionState.LOCKED
+
+    // Back from the login screen goes to Welcome, never to the logged-out tabs.
+    fun showLoginAfterLogOut() {
+        navController.navigate(WelcomeDestination) {
+            popUpTo<MainDestination> { inclusive = true }
+        }
+        navController.navigate(LoginDestination)
+    }
+
+    // Under the lock screen the screens stop collecting, so their listeners pause.
+    CompositionLocalProvider(LocalLifecycleOwner provides rememberPausableLifecycleOwner(locked)) {
+        AbcNavGraph(navController, modifier, ::showLoginAfterLogOut)
+    }
+    if (locked) LockOverlay(lockViewModel, onLoggedOut = ::showLoginAfterLogOut)
+}
+
+@Composable
+private fun AbcNavGraph(
+    navController: NavHostController,
+    modifier: Modifier,
+    showLoginAfterLogOut: () -> Unit
+) {
     NavHost(
         navController = navController,
         startDestination = WelcomeDestination,
@@ -79,13 +111,7 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
                     onDepositCheck = { navController.navigate(DepositCheckDestination) },
                     onNotifications = { navController.navigate(NotificationsDestination) },
                     onExploreProducts = { navController.navigate(ProductsGraph) },
-                    onLoggedOut = {
-                        // Back from the login screen goes to Welcome, never to the logged-out tabs.
-                        navController.navigate(WelcomeDestination) {
-                            popUpTo<MainDestination> { inclusive = true }
-                        }
-                        navController.navigate(LoginDestination)
-                    }
+                    onLoggedOut = showLoginAfterLogOut
                 )
             )
         }

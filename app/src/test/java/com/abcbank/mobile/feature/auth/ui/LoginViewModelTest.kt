@@ -6,6 +6,7 @@ import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.security.MpinAttempts
 import com.abcbank.mobile.core.security.MpinVerifier
+import com.abcbank.mobile.core.security.SessionLock
 import com.abcbank.mobile.feature.auth.data.CatalogPersonaDirectory
 import com.abcbank.mobile.feature.auth.domain.CheckCustomerIdUseCase
 import com.abcbank.mobile.feature.auth.domain.LogInUseCase
@@ -14,6 +15,7 @@ import com.abcbank.mobile.testing.FakeDemoDataRepository
 import com.abcbank.mobile.testing.FakeMpinAttemptStore
 import com.abcbank.mobile.testing.FakeRememberedCustomerStore
 import com.abcbank.mobile.testing.MainDispatcherRule
+import com.abcbank.mobile.testing.ManualClock
 import com.abcbank.mobile.testing.SchedulerClock
 import com.abcbank.mobile.testing.TEST_START
 import kotlinx.coroutines.CompletableDeferred
@@ -37,6 +39,8 @@ class LoginViewModelTest {
     private val rememberedStore = FakeRememberedCustomerStore()
     private val demoData = FakeDemoDataRepository()
 
+    private val sessionLock = SessionLock(ManualClock())
+
     private fun TestScope.createViewModel(
         savedStateHandle: SavedStateHandle = SavedStateHandle()
     ): LoginViewModel {
@@ -52,6 +56,7 @@ class LoginViewModelTest {
                 rememberedStore,
                 PrepareDemoDataUseCase(demoData),
                 demoData,
+                sessionLock,
                 applicationScope = backgroundScope
             ),
             mpinVerifier = verifier,

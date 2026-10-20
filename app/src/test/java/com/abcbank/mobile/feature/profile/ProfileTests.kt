@@ -5,9 +5,11 @@ import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.CustomerId
 import com.abcbank.mobile.core.model.PersonaId
+import com.abcbank.mobile.core.security.LogOutUseCase
+import com.abcbank.mobile.core.security.SessionLock
 import com.abcbank.mobile.core.security.SessionManager
+import com.abcbank.mobile.core.security.SessionState
 import com.abcbank.mobile.feature.home.profile
-import com.abcbank.mobile.feature.profile.domain.LogOutUseCase
 import com.abcbank.mobile.feature.profile.domain.ObserveProfileUseCase
 import com.abcbank.mobile.feature.profile.domain.ProfileData
 import com.abcbank.mobile.feature.profile.domain.ProfileRepository
@@ -15,6 +17,7 @@ import com.abcbank.mobile.feature.profile.ui.ProfileUiState
 import com.abcbank.mobile.feature.profile.ui.ProfileViewModel
 import com.abcbank.mobile.testing.FakeRememberedCustomerStore
 import com.abcbank.mobile.testing.MainDispatcherRule
+import com.abcbank.mobile.testing.ManualClock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -34,17 +37,20 @@ private class FakeProfileRepository : ProfileRepository {
 
 class LogOutUseCaseTest {
     @Test
-    fun `log out forgets the customer and resets balance masking`() = runTest {
-        val store = FakeRememberedCustomerStore().apply {
-            remembered = CustomerId.parse("SAMJOH01")
+    fun `log out forgets the customer, resets balance masking and ends the session lock`() =
+        runTest {
+            val store = FakeRememberedCustomerStore().apply {
+                remembered = CustomerId.parse("SAMJOH01")
+            }
+            val session = SessionManager().apply { toggleBalancesHidden() }
+            val lock = SessionLock(ManualClock()).apply { onLoggedIn() }
+
+            LogOutUseCase(store, session, lock)()
+
+            assertNull(store.remembered)
+            assertFalse(session.balancesHidden.value)
+            assertEquals(SessionState.LOGGED_OUT, lock.state.value)
         }
-        val session = SessionManager().apply { toggleBalancesHidden() }
-
-        LogOutUseCase(store, session)()
-
-        assertNull(store.remembered)
-        assertFalse(session.balancesHidden.value)
-    }
 }
 
 class ProfileViewModelTest {
@@ -58,7 +64,7 @@ class ProfileViewModelTest {
     }
     private val viewModel = ProfileViewModel(
         ObserveProfileUseCase(repository),
-        LogOutUseCase(store, SessionManager())
+        LogOutUseCase(store, SessionManager(), SessionLock(ManualClock()))
     )
 
     @Test

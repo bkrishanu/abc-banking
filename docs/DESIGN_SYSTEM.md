@@ -302,7 +302,7 @@ Transfer flow layouts (2026-10-20): every step has a back arrow, "Step n of 5" (
 
 | Sample | Shows | App screen |
 | --- | --- | --- |
-| Sample 1, left | Wordmark, stacked card art, headline, Get Started | `WelcomeScreen`, then `LoginScreen` (no sample: H1 "Log In", `AbcTextField` labelled "Customer ID" (8 characters, upper case, no autocorrect, max length 8), then `MpinPad`; a wrong format or unknown ID shows the field error) and `LockScreen` (no sample: `ProfileAvatar`, "Welcome back, Samanta" in H1, `MpinPad`, Ghost "Not you?") |
+| Sample 1, left | Wordmark, stacked card art, headline, Get Started | `WelcomeScreen`, then `LoginScreen` (no sample: H1 "Log In", `AbcTextField` labelled "Customer ID" (8 characters, upper case, no autocorrect, max length 8), then `MpinPad`; a wrong format or unknown ID shows the field error) and `LockScreen` (no sample, built 2026-10-20: space-12, 72dp `ProfileAvatar`, "Welcome back, Samanta" in H1 centred, "Enter your MPIN to continue." in Body muted, space-8, `MpinPad`, Ghost "Not You?") |
 | Sample 1, middle | Card stack with Main card tag, Deposit/Send/More, Quick transfer contacts, Transactions with All/Spendings/Earnings | `CardsScreen` (Cards tab) |
 | Sample 1, right | Spendings donut by month, savings line chart | `InsightsScreen` (Insights tab) |
 | Sample 2, phone | Greeting, wallet balance with in/out totals, action pills, Features carousel, Latest transactions | `HomeScreen` (Home tab). Withdraw is replaced by Pay Bills (see PRD out of scope). |

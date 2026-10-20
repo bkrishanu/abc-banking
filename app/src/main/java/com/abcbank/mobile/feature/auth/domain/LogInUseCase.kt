@@ -5,6 +5,7 @@ import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.security.MpinCheck
 import com.abcbank.mobile.core.security.MpinVerifier
 import com.abcbank.mobile.core.security.RememberedCustomerStore
+import com.abcbank.mobile.core.security.SessionLock
 import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,7 @@ class LogInUseCase @Inject constructor(
     private val rememberedCustomerStore: RememberedCustomerStore,
     private val prepareDemoData: PrepareDemoDataUseCase,
     private val demoData: DemoDataRepository,
+    private val sessionLock: SessionLock,
     @param:ApplicationScope private val applicationScope: CoroutineScope
 ) {
     /** Does not keep [mpin]; the caller clears it. */
@@ -40,6 +42,7 @@ class LogInUseCase @Inject constructor(
         return when (val result = mpinVerifier.verify(mpin)) {
             MpinCheck.Correct -> {
                 rememberedCustomerStore.rememberCustomer(check.customerId)
+                sessionLock.onLoggedIn()
                 // Not awaited: Home shows the data once it is in the cache.
                 applicationScope.launch {
                     demoData.recordLogin(check.personaId, check.customerId)

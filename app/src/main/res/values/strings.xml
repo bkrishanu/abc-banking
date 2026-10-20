@@ -498,4 +498,9 @@
     <string name="deposit_failed">The deposit could not be sent. Try again.</string>
     <string name="notification_deposit_cleared_title">Deposit cleared</string>
     <string name="notification_deposit_cleared_body">%1$s is now available in %2$s.</string>
+    <!-- Session lock (MobileBuild.md 1.1, PRD feature 2) -->
+    <string name="lock_welcome_back">Welcome back, %1$s</string>
+    <string name="lock_title">Welcome Back</string>
+    <string name="lock_prompt">Enter your MPIN to continue.</string>
+    <string name="lock_not_you">Not You?</string>
 </resources>
