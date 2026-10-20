@@ -6,6 +6,7 @@ import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.common.DispatcherProvider
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
+import com.abcbank.mobile.core.data.firebase.UserSummaryDto
 import com.abcbank.mobile.core.data.firebase.await
 import com.abcbank.mobile.core.data.firebase.toDataError
 import com.abcbank.mobile.core.data.firebase.toTimestamp
@@ -14,6 +15,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
 import java.time.Instant
 import java.time.ZoneId
@@ -92,6 +94,12 @@ class DemoDataSeeder @Inject constructor(
             queue(personaDocument(uid, personaId), plan)
             queued += key
         }
+    }
+
+    /** Updates the install's summary document; queued locally like the seed writes. */
+    fun recordLogin(uid: String, personaId: PersonaId, customerId: String) {
+        firestore.document(FirestorePaths.user(uid))
+            .set(UserSummaryDto.forLogin(personaId.key, customerId), SetOptions.merge())
     }
 
     private fun queue(root: DocumentReference, plan: SeedPlan) {

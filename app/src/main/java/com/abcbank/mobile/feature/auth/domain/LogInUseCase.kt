@@ -30,6 +30,7 @@ class LogInUseCase @Inject constructor(
     private val mpinVerifier: MpinVerifier,
     private val rememberedCustomerStore: RememberedCustomerStore,
     private val prepareDemoData: PrepareDemoDataUseCase,
+    private val demoData: DemoDataRepository,
     @param:ApplicationScope private val applicationScope: CoroutineScope
 ) {
     /** Does not keep [mpin]; the caller clears it. */
@@ -40,7 +41,10 @@ class LogInUseCase @Inject constructor(
             MpinCheck.Correct -> {
                 rememberedCustomerStore.rememberCustomer(check.customerId)
                 // Not awaited: Home shows the data once it is in the cache.
-                applicationScope.launch { prepareDemoData(check.personaId) }
+                applicationScope.launch {
+                    demoData.recordLogin(check.personaId, check.customerId)
+                    prepareDemoData(check.personaId)
+                }
                 LogInResult.LoggedIn(check.personaId)
             }
             is MpinCheck.Wrong -> LogInResult.WrongMpin(result.attemptsLeft)

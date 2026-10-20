@@ -64,6 +64,7 @@ class FakeDemoDataRepository(
     var failWith: DataError? = null
 ) : DemoDataRepository {
     val seeded = mutableListOf<PersonaId>()
+    val logins = mutableListOf<Pair<PersonaId, String>>()
     var seedGate: CompletableDeferred<Unit>? = null
 
     override suspend fun storedSeedVersion(personaId: PersonaId): DataResult<Long?> =
@@ -71,6 +72,10 @@ class FakeDemoDataRepository(
 
     override suspend fun bundledSeedVersion(personaId: PersonaId): DataResult<Long> =
         failWith?.let { DataResult.Failure(it) } ?: DataResult.Success(bundledVersion)
+
+    override suspend fun recordLogin(personaId: PersonaId, customerId: CustomerId) {
+        logins += personaId to customerId.value
+    }
 
     override suspend fun seedDemoData(personaId: PersonaId): DataResult<Unit> {
         seedGate?.await()

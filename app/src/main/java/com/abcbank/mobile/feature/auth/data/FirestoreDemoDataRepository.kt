@@ -3,6 +3,7 @@ package com.abcbank.mobile.feature.auth.data
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
 import com.abcbank.mobile.core.data.seed.DemoDataSeeder
+import com.abcbank.mobile.core.model.CustomerId
 import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.feature.auth.domain.DemoDataRepository
 import javax.inject.Inject
@@ -21,6 +22,9 @@ class FirestoreDemoDataRepository @Inject constructor(
 
     override suspend fun bundledSeedVersion(personaId: PersonaId): DataResult<Long> =
         seeder.bundledSeedVersion(personaId)
+
+    override suspend fun recordLogin(personaId: PersonaId, customerId: CustomerId) =
+        seeder.recordLogin(auth.awaitSignedInUid(), personaId, customerId.value)
 
     override suspend fun seedDemoData(personaId: PersonaId): DataResult<Unit> =
         seeder.seed(auth.awaitSignedInUid(), personaId)

@@ -177,7 +177,8 @@ Field encodings (DTOs in `core/data/firebase`, one `<Name>Dto.kt` per document t
 Firestore layout:
 
 ```
-users/{uid}                         the install's anonymous user (no fields needed)
+users/{uid}                         summary for the console: activePersonaId, customerId, lastLoginAt
+                                    (written at login, never read by the app)
   devices/{deviceId}                publicKey (base64 EC P-256), model, registeredAt (belongs to the install)
   personas/{personaId}              one tree per persona; this document is the profile:
                                     personaId, customerId, seedVersion, name, holderName, email, phone,
@@ -236,6 +237,7 @@ Auth and session:
 - After a correct MPIN, `LogInUseCase` starts `PrepareDemoDataUseCase` in the application scope and returns at once. It reads `personas/{personaId}` from the offline cache; if the tree exists at the bundled `seedVersion` it is kept, with no writes. Otherwise `DemoDataSeeder` writes the persona from `assets/seed/personas/` (dates resolved, filler generated as in DEMO_DATA.md section 01) as Firestore batches that are not awaited: they apply to the cache at once and upload in the background, and pending writes survive restarts. The persona document is in the last batch, so its presence means the tree is complete.
 - The server is asked only when the cache has nothing and the anonymous user existed before this launch (an older install); that check gives up after 5 s and the persona is written again rather than leaving Home empty. A user created this launch skips it.
 - Each persona keeps its own tree, so a different customer ID opens or writes its own tree and switching back is instant. Nothing is deleted on login, and there is no replace warning.
+- Login also merges a summary into `users/{uid}` (`activePersonaId`, `customerId`, server-time `lastLoginAt`), queued the same way, so each install is identifiable in the Firebase console.
 - Screens find the active persona from the remembered customer ID (`ActivePersonaSource`, local), not from Firestore. Home and Profile stay on their loading state while a just-started tree is still being written, which takes moments because the writes are local.
 - Not written yet: the persona file's `documents` block (statement accounts, 1099-INT interest). Section 04 has no field for it; the statements feature decides where it lives.
 - The remembered customer ID lives in DataStore. Log Out (Profile) clears it and returns to the login screen; the Firestore data stays until a different ID logs in. `LogOutUseCase` (`feature/profile/domain`) also ends the in-memory session (balances shown again). It does not sign out of Firebase: the anonymous user is the install's identity and owns its data. After Log Out, back from the login screen goes to Welcome, never to the old Home.

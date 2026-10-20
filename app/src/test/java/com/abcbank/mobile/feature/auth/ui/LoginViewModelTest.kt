@@ -51,6 +51,7 @@ class LoginViewModelTest {
                 verifier,
                 rememberedStore,
                 PrepareDemoDataUseCase(demoData),
+                demoData,
                 applicationScope = backgroundScope
             ),
             mpinVerifier = verifier,
@@ -240,6 +241,7 @@ class LoginViewModelTest {
         runCurrent()
 
         assertEquals(listOf(PersonaId.GRACE), demoData.seeded)
+        assertEquals(listOf(PersonaId.GRACE to "GRAWHI01"), demoData.logins)
     }
 
     @Test

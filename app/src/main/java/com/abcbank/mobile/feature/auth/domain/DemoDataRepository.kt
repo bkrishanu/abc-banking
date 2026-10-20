@@ -1,6 +1,7 @@
 package com.abcbank.mobile.feature.auth.domain
 
 import com.abcbank.mobile.core.common.DataResult
+import com.abcbank.mobile.core.model.CustomerId
 import com.abcbank.mobile.core.model.PersonaId
 
 /**
@@ -13,6 +14,9 @@ interface DemoDataRepository {
 
     /** The `seedVersion` of the persona file bundled with this build. */
     suspend fun bundledSeedVersion(personaId: PersonaId): DataResult<Long>
+
+    /** Notes on the install's summary document who logged in. Queued locally, never awaited. */
+    suspend fun recordLogin(personaId: PersonaId, customerId: CustomerId)
 
     /** Writes [personaId]'s tree. Returns once queued locally, without waiting for the server. */
     suspend fun seedDemoData(personaId: PersonaId): DataResult<Unit>
