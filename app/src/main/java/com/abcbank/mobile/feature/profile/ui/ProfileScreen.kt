@@ -1,19 +1,25 @@
 package com.abcbank.mobile.feature.profile.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -22,8 +28,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +55,7 @@ import com.abcbank.mobile.core.model.PersonaId
 fun ProfileRoute(
     onBack: (() -> Unit)?,
     onLoggedOut: () -> Unit,
+    onDocuments: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -57,9 +66,19 @@ fun ProfileRoute(
         state = state,
         onBack = onBack,
         onLogOut = viewModel::onLogOut,
-        onRetry = viewModel::onRetry
+        onRetry = viewModel::onRetry,
+        menu = listOf(
+            ProfileMenuItem(
+                R.drawable.ic_file_text,
+                stringResource(R.string.profile_documents),
+                onDocuments
+            )
+        )
     )
 }
+
+/** A Profile row that opens another screen. */
+data class ProfileMenuItem(val icon: Int, val label: String, val onClick: () -> Unit)
 
 /**
  * The Profile screen, for now the persona and Log Out (DESIGN_SYSTEM.md section 10). Settings,
@@ -72,7 +91,8 @@ fun ProfileScreen(
     onBack: (() -> Unit)?,
     onLogOut: () -> Unit,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    menu: List<ProfileMenuItem> = emptyList()
 ) {
     val spacing = AbcTheme.spacing
     Column(
@@ -119,7 +139,13 @@ fun ProfileScreen(
                     ),
                     onRetry = onRetry
                 )
-                is ProfileUiState.Content -> PersonaCard(state)
+                is ProfileUiState.Content -> {
+                    PersonaCard(state)
+                    if (menu.isNotEmpty()) {
+                        Spacer(Modifier.height(spacing.space4))
+                        ProfileMenu(menu)
+                    }
+                }
             }
             if (state != ProfileUiState.LoggedOut) {
                 Spacer(Modifier.height(spacing.space6))
@@ -130,6 +156,41 @@ fun ProfileScreen(
                 )
             }
             Spacer(Modifier.height(spacing.space6 + LocalBottomBarClearance.current))
+        }
+    }
+}
+
+@Composable
+private fun ProfileMenu(items: List<ProfileMenuItem>) {
+    val spacing = AbcTheme.spacing
+    ContentCard(padding = spacing.space2) {
+        items.forEachIndexed { index, item ->
+            if (index > 0) HorizontalDivider(color = AbcTheme.colors.border)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = AbcTheme.dimens.touchTarget)
+                    .clickable(role = Role.Button, onClick = item.onClick)
+                    .padding(spacing.space2),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(AbcTheme.dimens.iconCircle)
+                        .clip(AbcTheme.shapes.full)
+                        .background(AbcTheme.colors.surfaceMuted)
+                ) {
+                    Icon(
+                        painter = painterResource(item.icon),
+                        contentDescription = null,
+                        tint = AbcTheme.colors.text,
+                        modifier = Modifier.size(AbcTheme.dimens.iconMedium)
+                    )
+                }
+                Spacer(Modifier.width(spacing.space3))
+                Text(item.label, style = AbcTheme.typography.body, color = AbcTheme.colors.text)
+            }
         }
     }
 }

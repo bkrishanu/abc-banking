@@ -52,6 +52,7 @@ data class MainTabsNavigation(
     val onTransfer: () -> Unit,
     val onPayBills: () -> Unit,
     val onDepositCheck: () -> Unit,
+    val onDocuments: () -> Unit,
     val onNotifications: () -> Unit,
     val onExploreProducts: () -> Unit,
     val onLoggedOut: () -> Unit
@@ -80,6 +81,7 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                             onTransfer = navigation.onTransfer,
                             onPayBills = navigation.onPayBills,
                             onDepositCheck = navigation.onDepositCheck,
+                            onDocuments = navigation.onDocuments,
                             onNotifications = navigation.onNotifications,
                             onExploreProducts = navigation.onExploreProducts,
                             onInsights = { tabs.selectTab(InsightsTab) },
@@ -90,7 +92,11 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                 composable<CardsTab> { CardsRoute() }
                 composable<InsightsTab> { InsightsRoute() }
                 composable<ProfileTab> {
-                    ProfileRoute(onBack = null, onLoggedOut = navigation.onLoggedOut)
+                    ProfileRoute(
+                        onBack = null,
+                        onLoggedOut = navigation.onLoggedOut,
+                        onDocuments = navigation.onDocuments
+                    )
                 }
             }
         }

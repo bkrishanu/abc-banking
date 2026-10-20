@@ -3,4 +3,5 @@
      (ARCHITECTURE.md section 04). Nothing in app storage is ever exposed. -->
 <paths>
     <cache-path name="receipts" path="receipts/" />
+    <cache-path name="documents" path="documents/" />
 </paths>

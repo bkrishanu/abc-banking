@@ -219,6 +219,10 @@ Receipts (2026-10-20): `PdfReceiptGenerator` (`feature/accounts/data`) draws a o
 No Cloud Storage (Spark plan). Monthly statements and the 1099-INT are built on demand by
 `feature/documents` from the user's accounts and transactions with `PdfDocument`, written to the
 app's cache directory, shared through the `FileProvider` in `file_paths.xml`, and deleted when the viewer closes.
+Built 2026-10-20: `StatementRules` works each month's balances back from the account's balance today
+(today's balance less everything posted since), lists posted items only with running balances, and
+treats cards and loans as amounts owed. `PdfDocumentRenderer` draws A4 pages (cache `documents/`,
+cleared before each new document); the viewer draws the pages with `PdfRenderer` and offers Share.
 
 Path of every write (example: P2P transfer):
 1. User taps Confirm Transfer on `TransferReviewScreen` and Agree and Send on the disclaimer sheet; the screen calls `viewModel.onConfirm()`.
@@ -254,7 +258,7 @@ Auth and session:
 - Each persona keeps its own tree, so a different customer ID opens or writes its own tree and switching back is instant. Nothing is deleted on login, and there is no replace warning.
 - Login also merges a summary into `users/{uid}` (`activePersonaId`, `customerId`, server-time `lastLoginAt`), queued the same way, so each install is identifiable in the Firebase console.
 - Screens find the active persona from the remembered customer ID (`ActivePersonaSource`, local), not from Firestore. Home and Profile stay on their loading state while a just-started tree is still being written, which takes moments because the writes are local.
-- Not written yet: the persona file's `documents` block (statement accounts, 1099-INT interest). Section 04 has no field for it; the statements feature decides where it lives.
+- The persona file's `documents` block (statement accounts, 1099-INT interest) is read from the bundled file by `AssetDocumentsSetup` (decided 2026-10-20): it never changes, so it is not copied into Firestore and needs no field or reseed.
 - The remembered customer ID lives in DataStore. Log Out (Profile) clears it and returns to the login screen; the Firestore data stays until a different ID logs in. `LogOutUseCase` (`feature/profile/domain`) also ends the in-memory session (balances shown again). It does not sign out of Firebase: the anonymous user is the install's identity and owns its data. After Log Out, back from the login screen goes to Welcome, never to the old Home.
 - Hidden Reset Demo Data (long-press the app version in Profile, then confirm) deletes the current persona's tree and writes it again; other personas' trees are untouched.
 - The MPIN (`123456`, every persona) is the only factor: for login, the lock screen and step-up. No biometrics.

@@ -79,6 +79,7 @@ data class HomeActions(
     val onExploreProducts: () -> Unit = {},
     val onInsights: () -> Unit = {},
     val onDepositCheck: () -> Unit = {},
+    val onDocuments: () -> Unit = {},
     val onCards: () -> Unit = {}
 )
 
@@ -104,6 +105,11 @@ fun HomeRoute(actions: HomeActions, viewModel: HomeViewModel = hiltViewModel()) 
                     R.drawable.ic_arrow_down,
                     stringResource(R.string.more_deposit_check),
                     actions.onDepositCheck
+                ),
+                MoreAction(
+                    R.drawable.ic_file_text,
+                    stringResource(R.string.more_statements),
+                    actions.onDocuments
                 ),
                 MoreAction(
                     R.drawable.ic_layout_grid,

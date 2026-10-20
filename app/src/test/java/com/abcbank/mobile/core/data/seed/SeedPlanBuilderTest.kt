@@ -9,12 +9,14 @@ import com.abcbank.mobile.core.data.firebase.SavingsGoalDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
 import com.abcbank.mobile.core.model.Account
+import com.abcbank.mobile.core.model.AccountType
 import com.abcbank.mobile.core.model.CreditCardAccount
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.model.TransactionCategory
 import com.abcbank.mobile.core.model.TransactionDirection
+import com.abcbank.mobile.feature.documents.domain.StatementRules
 import com.abcbank.mobile.feature.insights.data.toSavingsGoal
 import com.abcbank.mobile.feature.insights.domain.InsightsRules
 import com.abcbank.mobile.feature.insights.domain.SpendingPeriod
@@ -24,6 +26,7 @@ import com.google.firebase.Timestamp
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
@@ -128,6 +131,65 @@ class SeedPlanBuilderTest {
             assertNotNull("${persona.key} $id", NotificationDto.fromMap(fields).toNotification(id))
         }
     }
+
+    @Test
+    fun `statements chain month to month and every checking month shows a salary`() =
+        forEachPersona {
+                persona,
+                plan
+            ->
+            val profile =
+                requireNotNull(UserProfileDto.fromMap(plan.profile.forFirestore()).toUserProfile())
+            val setup = personas.getValue(persona).getValue("documents").jsonObject
+            val ids = setup.getValue(
+                "statementAccountIds"
+            ).toString().removeSurrounding("[", "]").split(",").map {
+                it.trim('"', ' ')
+            }
+            val today = NOW.atZone(ZONE).toLocalDate()
+            val all = transactions(plan)
+            val accounts = accounts(plan)
+            for (id in ids) {
+                val account = accounts.first { it.id == id }
+                val statements = StatementRules.months(today).map {
+                    StatementRules.statement(account, it, all, profile, ZONE)
+                }
+                statements.zipWithNext().forEach { (newer, older) ->
+                    assertEquals("${persona.key} $id ${newer.month}", older.closing, newer.opening)
+                }
+                statements.forEach { statement ->
+                    assertEquals(
+                        statement.opening +
+                            (
+                                if (statement.owedStyle) {
+                                    -statement.moneyIn + statement.moneyOut
+                                } else {
+                                    statement.moneyIn -
+                                        statement.moneyOut
+                                }
+                                ),
+                        statement.closing
+                    )
+                    if (account.type == AccountType.CHECKING) {
+                        assertTrue(
+                            "${persona.key} ${statement.month}",
+                            statement.lines.isNotEmpty()
+                        )
+                    }
+                }
+            }
+            val incomeMonths = all.filter {
+                it.category ==
+                    TransactionCategory.INCOME
+            }
+                .map { YearMonth.from(it.createdAt.atZone(ZONE)) }.toSet()
+            StatementRules.months(today).forEach {
+                assertTrue(
+                    "${persona.key} salary in $it",
+                    it in incomeMonths
+                )
+            }
+        }
 
     @Test
     fun `filler stays inside each pool's range`() = forEachPersona { persona, plan ->
