@@ -169,7 +169,11 @@ fun ProfileScreen(
                         Text(
                             text = text,
                             style = AbcTheme.typography.small,
-                            color = if (isError) AbcTheme.colors.danger else AbcTheme.colors.textMuted,
+                            color = if (isError) {
+                                AbcTheme.colors.danger
+                            } else {
+                                AbcTheme.colors.textMuted
+                            },
                             modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
                         )
                     }
