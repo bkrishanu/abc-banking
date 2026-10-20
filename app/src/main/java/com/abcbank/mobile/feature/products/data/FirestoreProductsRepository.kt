@@ -9,6 +9,7 @@ import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.ApplicationDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
+import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
 import com.abcbank.mobile.core.data.firebase.snapshotFlow
 import com.abcbank.mobile.core.data.firebase.toDataError
@@ -215,26 +216,15 @@ class FirestoreProductsRepository @Inject constructor(
                 application.productName
             )
         }
-        return mapOf(
-            NOTIFICATION_KIND to TRANSACTIONAL,
-            NOTIFICATION_TITLE to title,
-            NOTIFICATION_BODY to body,
-            NOTIFICATION_READ to false,
-            NOTIFICATION_CREATED_AT to application.createdAt.toTimestamp()
-        )
+        return NotificationDto.transactional(
+            title,
+            body,
+            application.createdAt.toTimestamp()
+        ).toMap()
     }
 
     // A document that does not map is reported, never shown half-read (AGENTS.md section 04).
     private fun malformed(): DataResult<ProductsData> = DataResult.Failure(DataError.MALFORMED_DATA)
-
-    private companion object {
-        const val NOTIFICATION_KIND = "kind"
-        const val NOTIFICATION_TITLE = "title"
-        const val NOTIFICATION_BODY = "body"
-        const val NOTIFICATION_READ = "read"
-        const val NOTIFICATION_CREATED_AT = "createdAt"
-        const val TRANSACTIONAL = "TRANSACTIONAL"
-    }
 }
 
 /** Null when a field is missing or invalid. */

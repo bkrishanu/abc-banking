@@ -7,6 +7,7 @@ import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
 import com.abcbank.mobile.core.data.firebase.CardDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
+import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
 import com.abcbank.mobile.core.data.firebase.snapshotFlow
@@ -56,7 +57,9 @@ class FirestoreHomeRepository @Inject constructor(
         val transactions = collection(FirestorePaths.TRANSACTIONS)
             .whereGreaterThanOrEqualTo(TransactionDto.CREATED_AT, transactionsSince.toTimestamp())
             .orderBy(TransactionDto.CREATED_AT, Query.Direction.DESCENDING)
-        val unread = collection(FirestorePaths.NOTIFICATIONS).whereEqualTo(NOTIFICATION_READ, false)
+        val unread = collection(
+            FirestorePaths.NOTIFICATIONS
+        ).whereEqualTo(NotificationDto.READ, false)
 
         emitAll(
             combine(
@@ -106,9 +109,4 @@ class FirestoreHomeRepository @Inject constructor(
 
     // A document that does not map is reported, never shown half-read (AGENTS.md section 04).
     private fun malformed(): DataResult<HomeData> = DataResult.Failure(DataError.MALFORMED_DATA)
-
-    private companion object {
-        // NotificationDto arrives with the notification center; Home only counts unread ones.
-        const val NOTIFICATION_READ = "read"
-    }
 }

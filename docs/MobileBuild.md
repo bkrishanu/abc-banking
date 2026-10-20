@@ -125,6 +125,8 @@ This repository outlines the functional scope, screen flows, and technical requi
 ## 6. Self-Service & Notifications
 
 - **In-App Notification Center**: Split into *Transactional Alerts* (debit alerts, low balance warnings) and *Promotional Messages*.
+
+> **Decided (2026-10-20).** The bell on Home opens Notifications: Transactional and Promotional tabs, each with its unread count ("Transactional (3)"), newest first. Unread alerts have an accent dot and a semibold title. Opening an alert marks it read; Mark All as Read clears the selected tab. Time labels: "Today, 3:14 pm", "Yesterday, 9:00 am", then the date. Alerts come from the seed, transfers (money sent, money moved, low balance), applications and deposits; there are no push notifications.
 - **Statements & Document Center**: PDF viewer for monthly statements and tax summaries (1099-INT).
 - **Customer Support Hub**: Simulated live chat with automated FAQ triage and contextual transaction dispute initiation.
 

@@ -429,4 +429,18 @@
     <string name="notification_application_approved_body">Your %1$s is open.</string>
     <string name="notification_application_referred_title">Application received</string>
     <string name="notification_application_referred_body">We\'re reviewing your %1$s application.</string>
+    <!-- Notifications (MobileBuild.md 6, PRD feature 13) -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_transactional">Transactional</string>
+    <string name="notifications_promotional">Promotional</string>
+    <string name="notifications_kind_unread">%1$s (%2$d)</string>
+    <string name="notifications_alerts">Alerts</string>
+    <string name="notifications_offers">Offers</string>
+    <string name="action_mark_all_read">Mark All as Read</string>
+    <string name="notifications_today">Today, %1$s</string>
+    <string name="notifications_yesterday">Yesterday, %1$s</string>
+    <string name="notifications_empty_transactional">No alerts yet. Transfers, card use and low balances will show here.</string>
+    <string name="notifications_empty_promotional">No offers right now.</string>
+    <string name="notifications_error">Notifications could not be loaded. Try again.</string>
+    <string name="cd_unread">Unread</string>
 </resources>

@@ -229,6 +229,8 @@ Path of every write (example: P2P transfer):
 
 Applications are written once, when the customer accepts on step 3: the `applications` document and, when approved, the new account, as one non-awaited batch (DEMO_DATA.md section 07). The draft before that (product, amount, term, income, agreement) lives in `ProductsViewModel`, scoped to the products graph, and in `SavedStateHandle`. Products come from the bundled catalog (`AssetProductCatalog`), like the bank directory.
 
+Every alert is a `notifications` document written through `NotificationDto` (`core/data/firebase`), in the same batch as the event that caused it. The notification center reads them all and marks them read with one non-awaited batch; Home counts the unread ones for the bell.
+
 Insights reads the profile's monthly budget, transactions since the first day of last month (one single-field query serves every period) and savings goals. `InsightsRules` (pure, unit-tested, and checked against every persona's seed in `SeedPlanBuilderTest`) works out the donut and the savings line; nothing is stored.
 
 Internal transfers take the same path through `MoveMoneyUseCase` without step-up (not outbound). Add New Payee checks the form first (`AddPayeeUseCase.check`), then asks for step-up, then writes the beneficiary. The routing number lookup reads the bundled `assets/seed/catalog.json` (`AssetBankDirectory`), the same list `catalog/banks` was created from, so it works offline and never depends on the console copy.

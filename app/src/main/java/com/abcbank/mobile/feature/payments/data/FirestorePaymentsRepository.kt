@@ -11,6 +11,7 @@ import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
 import com.abcbank.mobile.core.data.firebase.BeneficiaryDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
+import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
 import com.abcbank.mobile.core.data.firebase.snapshotFlow
 import com.abcbank.mobile.core.data.firebase.toDataError
@@ -171,13 +172,7 @@ class FirestorePaymentsRepository @Inject constructor(
                     MoneyFormatter.format(LowBalanceRule.THRESHOLD)
                 )
         }
-        return mapOf(
-            NOTIFICATION_KIND to TRANSACTIONAL,
-            NOTIFICATION_TITLE to title,
-            NOTIFICATION_BODY to body,
-            NOTIFICATION_READ to false,
-            NOTIFICATION_CREATED_AT to createdAt.toTimestamp()
-        )
+        return NotificationDto.transactional(title, body, createdAt.toTimestamp()).toMap()
     }
 
     private fun money(cents: String): String = MoneyFormatter.format(Money(cents.toLong()))
@@ -198,14 +193,5 @@ class FirestorePaymentsRepository @Inject constructor(
 
     private companion object {
         const val POSTED = "POSTED"
-
-        // A notifications document (ARCHITECTURE.md section 04). NotificationDto arrives with the
-        // notification center, which reads these.
-        const val NOTIFICATION_KIND = "kind"
-        const val NOTIFICATION_TITLE = "title"
-        const val NOTIFICATION_BODY = "body"
-        const val NOTIFICATION_READ = "read"
-        const val NOTIFICATION_CREATED_AT = "createdAt"
-        const val TRANSACTIONAL = "TRANSACTIONAL"
     }
 }

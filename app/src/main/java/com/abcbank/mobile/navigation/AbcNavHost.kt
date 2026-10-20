@@ -15,6 +15,7 @@ import com.abcbank.mobile.feature.accounts.ui.TransactionDetailRoute
 import com.abcbank.mobile.feature.accounts.ui.TransactionsRoute
 import com.abcbank.mobile.feature.auth.ui.LoginRoute
 import com.abcbank.mobile.feature.auth.ui.WelcomeScreen
+import com.abcbank.mobile.feature.notifications.ui.NotificationsRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -33,6 +34,9 @@ data class TransactionsDestination(val accountId: String? = null)
 
 @Serializable
 data class TransactionDetailDestination(val transactionId: String)
+
+@Serializable
+data object NotificationsDestination
 
 @Composable
 fun AbcNavHost(modifier: Modifier = Modifier) {
@@ -67,6 +71,7 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
                     onAccount = { navController.navigate(TransactionsDestination(accountId = it)) },
                     onTransaction = { navController.navigate(TransactionDetailDestination(it)) },
                     onTransfer = { navController.navigate(TransferGraph) },
+                    onNotifications = { navController.navigate(NotificationsDestination) },
                     onExploreProducts = { navController.navigate(ProductsGraph) },
                     onLoggedOut = {
                         // Back from the login screen goes to Welcome, never to the logged-out tabs.
@@ -86,6 +91,9 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
         }
         composable<TransactionDetailDestination> {
             TransactionDetailRoute(onBack = { navController.popBackStack() })
+        }
+        composable<NotificationsDestination> {
+            NotificationsRoute(onBack = { navController.popBackStack() })
         }
         transferGraph(navController) { navController.navigate(TransactionDetailDestination(it)) }
         productsGraph(navController) {

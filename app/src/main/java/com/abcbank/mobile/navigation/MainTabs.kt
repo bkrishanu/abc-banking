@@ -50,6 +50,7 @@ data class MainTabsNavigation(
     val onAccount: (String) -> Unit,
     val onTransaction: (String) -> Unit,
     val onTransfer: () -> Unit,
+    val onNotifications: () -> Unit,
     val onExploreProducts: () -> Unit,
     val onLoggedOut: () -> Unit
 )
@@ -68,7 +69,7 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
         CompositionLocalProvider(LocalBottomBarClearance provides bottomBarClearance()) {
             NavHost(navController = tabs, startDestination = HomeTab) {
                 composable<HomeTab> {
-                    // Notifications and bill pay are not built yet; their
+                    // Bill pay is not built yet; its
                     // actions are no-ops until each destination exists.
                     HomeRoute(
                         actions = HomeActions(
@@ -77,6 +78,7 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                             onAccount = navigation.onAccount,
                             onTransaction = navigation.onTransaction,
                             onTransfer = navigation.onTransfer,
+                            onNotifications = navigation.onNotifications,
                             onExploreProducts = navigation.onExploreProducts,
                             onInsights = { tabs.selectTab(InsightsTab) },
                             onCards = { tabs.selectTab(CardsTab) }
