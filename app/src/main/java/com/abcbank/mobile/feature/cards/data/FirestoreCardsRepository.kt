@@ -5,6 +5,7 @@ import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.common.DispatcherProvider
 import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
+import com.abcbank.mobile.core.data.firebase.BeneficiaryDto
 import com.abcbank.mobile.core.data.firebase.CardDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
 import com.abcbank.mobile.core.data.firebase.TravelNoticeDto
@@ -74,10 +75,11 @@ class FirestoreCardsRepository @Inject constructor(
         }
         val cardsAndAccounts = combine(
             tree.collection(FirestorePaths.CARDS).snapshotFlow(),
-            tree.collection(FirestorePaths.ACCOUNTS).snapshotFlow()
-        ) { cards, accounts -> cards to accounts }
+            tree.collection(FirestorePaths.ACCOUNTS).snapshotFlow(),
+            tree.collection(FirestorePaths.BENEFICIARIES).snapshotFlow()
+        ) { cards, accounts, beneficiaries -> Triple(cards, accounts, beneficiaries) }
         emitAll(
-            cardsAndAccounts.flatMapLatest { (cardSnapshot, accountSnapshot) ->
+            cardsAndAccounts.flatMapLatest { (cardSnapshot, accountSnapshot, beneficiarySnapshot) ->
                 val cards = cardSnapshot.documents.map {
                     CardDto.fromMap(it.data.orEmpty()).toCard(it.id)
                         ?: return@flatMapLatest flowOf(malformed())
@@ -86,11 +88,17 @@ class FirestoreCardsRepository @Inject constructor(
                     AccountDto.fromMap(it.data.orEmpty()).toAccount(it.id)
                         ?: return@flatMapLatest flowOf(malformed())
                 }
+                val beneficiaries = beneficiarySnapshot.documents.map {
+                    BeneficiaryDto.fromMap(it.data.orEmpty()).toBeneficiary(it.id)
+                        ?: return@flatMapLatest flowOf(malformed())
+                }
                 val fromCache =
                     cardSnapshot.metadata.isFromCache || accountSnapshot.metadata.isFromCache
                 if (cards.isEmpty()) {
                     return@flatMapLatest flowOf(
-                        DataResult.Success(CardsData(emptyList(), accounts, fromCache))
+                        DataResult.Success(
+                            CardsData(emptyList(), accounts, fromCache, beneficiaries)
+                        )
                     )
                 }
                 // One small live query per card (at most three) for its travel notices.
@@ -114,7 +122,8 @@ class FirestoreCardsRepository @Inject constructor(
                                 )
                             },
                             accounts = accounts,
-                            isFromCache = fromCache
+                            isFromCache = fromCache,
+                            beneficiaries = beneficiaries
                         )
                     )
                 }

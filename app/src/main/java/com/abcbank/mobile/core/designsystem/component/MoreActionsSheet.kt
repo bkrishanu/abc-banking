@@ -1,4 +1,4 @@
-package com.abcbank.mobile.feature.home.ui
+package com.abcbank.mobile.core.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,15 +26,14 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.abcbank.mobile.R
-import com.abcbank.mobile.core.designsystem.component.AbcBottomSheet
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 
 /** One row in the More Actions sheet. */
 data class MoreAction(val icon: Int, val label: String, val onClick: () -> Unit)
 
 /**
- * The More Actions sheet behind Home's grid pill (DESIGN_SYSTEM.md section 06, GridPill). Only
- * destinations that exist are listed; each feature adds its row when it is built.
+ * The More Actions sheet behind Home's grid pill and the Cards tab's More (DESIGN_SYSTEM.md
+ * section 06). Only destinations that exist are listed; each feature adds its row when built.
  */
 @Composable
 fun MoreActionsSheet(actions: List<MoreAction>, onDismiss: () -> Unit) {

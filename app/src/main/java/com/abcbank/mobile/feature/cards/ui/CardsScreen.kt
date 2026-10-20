@@ -90,11 +90,24 @@ data class CardsEvents(
     val onStepUpDigit: (Int) -> Unit = {},
     val onStepUpDelete: () -> Unit = {},
     val onStepUpCancel: () -> Unit = {},
-    val onRetry: () -> Unit = {}
+    val onRetry: () -> Unit = {},
+    val navigation: CardsNavigation = CardsNavigation()
+)
+
+/** Where the Cards tab leads outside itself; MainTabs supplies these. */
+data class CardsNavigation(
+    val onDeposit: () -> Unit = {},
+    val onSend: () -> Unit = {},
+    val onMore: () -> Unit = {},
+    val onQuickTransfer: (String) -> Unit = {},
+    val onAddPayee: () -> Unit = {}
 )
 
 @Composable
-fun CardsRoute(viewModel: CardsViewModel = hiltViewModel()) {
+fun CardsRoute(
+    navigation: CardsNavigation = CardsNavigation(),
+    viewModel: CardsViewModel = hiltViewModel()
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // Revealed details never outlive the screen or survive the app going to the background
     // (AGENTS.md section 05).
@@ -116,7 +129,8 @@ fun CardsRoute(viewModel: CardsViewModel = hiltViewModel()) {
             onStepUpDigit = viewModel::onStepUpDigit,
             onStepUpDelete = viewModel::onStepUpDelete,
             onStepUpCancel = viewModel::onStepUpCancel,
-            onRetry = viewModel::onRetry
+            onRetry = viewModel::onRetry,
+            navigation = navigation
         )
     )
 }
@@ -194,6 +208,8 @@ private fun CardsContent(state: CardsUiState.Content, events: CardsEvents) {
         Spacer(Modifier.height(spacing.space4))
     }
     CardStack(state, events.onSelectCard)
+    Spacer(Modifier.height(spacing.space4))
+    CardsQuickActions(state, events.navigation)
     Spacer(Modifier.height(spacing.space4))
     AbcButton(
         text = stringResource(

@@ -4,6 +4,7 @@ import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.AccountType
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardArt
 import com.abcbank.mobile.core.model.CardChannels
@@ -158,6 +159,16 @@ class CardRulesTest {
         assertEquals(LimitError.ABOVE_MAXIMUM, CardRules.validateLimit(Money.ofDollars(2_600), max))
         assertEquals(LimitError.NOT_ON_STEP, CardRules.validateLimit(Money.ofDollars(1_250), max))
         assertNull(CardRules.validateLimits(SIGNATURE, Money.ofDollars(1_000), null))
+    }
+
+    @Test
+    fun `Quick Transfer shows recent payees in their saved order`() {
+        val payees = listOf(
+            Beneficiary("b", "Kris Patel", "Kris", "Harbor", "500000034", "2290", 1),
+            Beneficiary("c", "Oakwood", "Oakwood", "Summit", "500000050", "3305", null),
+            Beneficiary("a", "Mark Robinson", "Mark R.", "Northfield", "500000021", "1180", 0)
+        )
+        assertEquals(listOf("a", "b"), CardRules.quickPayees(payees).map { it.id })
     }
 
     @Test

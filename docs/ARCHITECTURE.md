@@ -239,6 +239,8 @@ Bill payments take the transfer path: `PayBillUseCase` checks step-up, `BillRule
 
 Reset Demo Data (2026-10-20): `DemoDataSeeder.reset` reads every collection in the active persona's tree (and holdings and travel notices under them), queues batch deletes, then queues the seed again, all in order and not awaited; `users/{uid}/devices` and other personas are untouched.
 
+Quick Transfer (2026-10-20): `TransferGraph(beneficiaryId)` carries a payee chosen on the Cards tab; `TransferViewModel` reads it from its SavedStateHandle and uses it only if it names a saved payee, otherwise the amount step cannot continue. The Cards repository also observes beneficiaries for the row.
+
 Support (built 2026-10-20): `FirestoreFaqSource` reads `catalog/faqs` and falls back to the bundled catalog when it is empty or unreadable; `SupportBot` (pure) matches questions; a hand-off writes a `supportCases` document with status OPEN through `SupportCaseDto`, which disputes now use too.
 
 Every alert is a `notifications` document written through `NotificationDto` (`core/data/firebase`), in the same batch as the event that caused it. The notification center reads them all and marks them read with one non-awaited batch; Home counts the unread ones for the bell.

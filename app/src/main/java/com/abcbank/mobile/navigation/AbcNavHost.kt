@@ -106,11 +106,20 @@ private fun AbcNavGraph(
                     onViewAllTransactions = { navController.navigate(TransactionsDestination()) },
                     onAccount = { navController.navigate(TransactionsDestination(accountId = it)) },
                     onTransaction = { navController.navigate(TransactionDetailDestination(it)) },
-                    onTransfer = { navController.navigate(TransferGraph) },
+                    onTransfer = { navController.navigate(TransferGraph()) },
                     onPayBills = { navController.navigate(BillPayGraph) },
                     onDepositCheck = { navController.navigate(DepositCheckDestination) },
                     onDocuments = { navController.navigate(DocumentsGraph) },
                     onSupport = { navController.navigate(SupportGraph) },
+                    onQuickTransfer = { payeeId ->
+                        // The payee is chosen, so the flow opens on the amount; Back shows the list.
+                        navController.navigate(TransferGraph(beneficiaryId = payeeId))
+                        navController.navigate(TransferAmountStep)
+                    },
+                    onAddPayee = {
+                        navController.navigate(TransferGraph())
+                        navController.navigate(AddPayeeStep)
+                    },
                     onNotifications = { navController.navigate(NotificationsDestination) },
                     onExploreProducts = { navController.navigate(ProductsGraph) },
                     onLoggedOut = showLoginAfterLogOut

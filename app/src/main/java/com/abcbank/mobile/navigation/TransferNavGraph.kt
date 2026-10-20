@@ -19,8 +19,12 @@ import com.abcbank.mobile.feature.payments.ui.TransferViewModel
 import kotlinx.serialization.Serializable
 
 /** The transfer flow (PRD features 7 and 8): one graph, so its steps share one ViewModel. */
+/**
+ * [beneficiaryId] starts a transfer to that payee (the Cards tab's Quick Transfer). The
+ * ViewModel uses it only if it names a saved payee.
+ */
 @Serializable
-data object TransferGraph
+data class TransferGraph(val beneficiaryId: String? = null)
 
 @Serializable
 data object TransferRecipientStep
@@ -90,7 +94,7 @@ private fun transferViewModel(
     navController: NavController,
     entry: NavBackStackEntry
 ): TransferViewModel {
-    val graphEntry = remember(entry) { navController.getBackStackEntry(TransferGraph) }
+    val graphEntry = remember(entry) { navController.getBackStackEntry<TransferGraph>() }
     return hiltViewModel(graphEntry)
 }
 
@@ -99,7 +103,7 @@ private fun navigation(
     navController: NavController,
     onViewTransaction: (String) -> Unit
 ): TransferNavigation = remember(navController, onViewTransaction) {
-    val leave: () -> Unit = { navController.popBackStack(TransferGraph, inclusive = true) }
+    val leave: () -> Unit = { navController.popBackStack<TransferGraph>(inclusive = true) }
     TransferNavigation(
         onBack = { navController.popBackStack() },
         onAddPayee = { navController.navigate(AddPayeeStep) },

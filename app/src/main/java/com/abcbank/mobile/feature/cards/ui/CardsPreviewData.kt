@@ -1,5 +1,6 @@
 package com.abcbank.mobile.feature.cards.ui
 
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardArt
 import com.abcbank.mobile.core.model.CardChannels
@@ -119,7 +120,46 @@ internal object CardsPreviewData {
             stepUp = StepUpState(),
             message = null,
             noticeError = null,
-            noticesAdded = 0
+            noticesAdded = 0,
+            // Samanta's recent payees (DEMO_DATA.md section 03).
+            quickPayees = listOf(
+                Beneficiary(
+                    "mark-robinson",
+                    "Mark Robinson",
+                    "Mark R.",
+                    "Northfield Bank",
+                    "500000021",
+                    "1180",
+                    0
+                ),
+                Beneficiary(
+                    "kris-patel",
+                    "Kris Patel",
+                    "Kris",
+                    "Harbor State Bank",
+                    "500000034",
+                    "2290",
+                    1
+                ),
+                Beneficiary(
+                    "helen-torres",
+                    "Helen Torres",
+                    "Helen T.",
+                    "ABC Bank",
+                    "500000018",
+                    "5532",
+                    2
+                ),
+                Beneficiary(
+                    "tonys-gym",
+                    "Tony's Gym",
+                    "Tony Gym",
+                    "Pinecrest Credit Union",
+                    "500000047",
+                    "7001",
+                    3
+                )
+            )
         )
     }
 

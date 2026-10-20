@@ -258,7 +258,8 @@ class CardsViewModel @Inject constructor(
             stepUp = stepUpState,
             message = state.message,
             noticeError = state.noticeError,
-            noticesAdded = state.noticesAdded
+            noticesAdded = state.noticesAdded,
+            quickPayees = CardRules.quickPayees(data.beneficiaries)
         )
     }
 

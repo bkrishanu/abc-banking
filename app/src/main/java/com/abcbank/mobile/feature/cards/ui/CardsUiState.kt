@@ -1,6 +1,7 @@
 package com.abcbank.mobile.feature.cards.ui
 
 import com.abcbank.mobile.core.common.DataError
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardSecrets
 import com.abcbank.mobile.core.model.Money
@@ -30,7 +31,9 @@ sealed interface CardsUiState {
         val message: CardsMessage?,
         val noticeError: TravelNoticeError?,
         /** Bumped each time a notice is added, so the screen can close its sheet. */
-        val noticesAdded: Int
+        val noticesAdded: Int,
+        /** Recent payees for Quick Transfer (Sample 1). */
+        val quickPayees: List<Beneficiary> = emptyList()
     ) : CardsUiState
 }
 

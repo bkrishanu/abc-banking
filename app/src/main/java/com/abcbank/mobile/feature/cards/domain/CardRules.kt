@@ -1,5 +1,6 @@
 package com.abcbank.mobile.feature.cards.domain
 
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.Money
 import com.abcbank.mobile.core.model.TravelNotice
@@ -68,4 +69,8 @@ object CardRules {
         val end = notice.endDate.atZone(zone).toLocalDate()
         return today in start..end
     }
+
+    /** The Quick Transfer row: recent payees in their saved order (DEMO_DATA.md, beneficiaries). */
+    fun quickPayees(beneficiaries: List<Beneficiary>): List<Beneficiary> =
+        beneficiaries.filter { it.recentOrder != null }.sortedBy { it.recentOrder }
 }

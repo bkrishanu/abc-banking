@@ -48,7 +48,8 @@ sealed interface TransferUiState {
         val canContinueFromAmount: Boolean get() = amount.isPositive &&
             amountError == null &&
             source != null &&
-            (mode == TransferMode.SEND || destination != null)
+            // A payee id from navigation that matches no saved payee leaves nobody to send to.
+            (if (mode == TransferMode.SEND) beneficiary != null else destination != null)
     }
 }
 

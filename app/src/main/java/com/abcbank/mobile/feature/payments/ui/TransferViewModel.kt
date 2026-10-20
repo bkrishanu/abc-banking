@@ -352,7 +352,9 @@ class TransferViewModel @Inject constructor(
             runCatching { TransferMode.valueOf(it) }.getOrNull()
         }
             ?: TransferMode.SEND,
-        beneficiaryId = savedStateHandle[KEY_BENEFICIARY],
+        // A payee chosen before the flow opened (Quick Transfer) arrives as the graph's argument.
+        beneficiaryId =
+        savedStateHandle[KEY_BENEFICIARY] ?: savedStateHandle.get<String>(ARG_BENEFICIARY_ID),
         sourceId = savedStateHandle[KEY_SOURCE],
         destinationId = savedStateHandle[KEY_DESTINATION],
         amount = AmountInput(
@@ -392,6 +394,9 @@ class TransferViewModel @Inject constructor(
         val ORDER = listOf(AccountType.CHECKING, AccountType.SAVINGS, AccountType.LOAN)
         const val KEY_MODE = "transferMode"
         const val KEY_BENEFICIARY = "transferBeneficiary"
+
+        /** Matches TransferGraph.beneficiaryId. */
+        const val ARG_BENEFICIARY_ID = "beneficiaryId"
         const val KEY_SOURCE = "transferSource"
         const val KEY_DESTINATION = "transferDestination"
         const val KEY_AMOUNT = "transferAmount"

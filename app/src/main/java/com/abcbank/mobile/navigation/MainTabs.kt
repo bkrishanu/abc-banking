@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,8 +25,11 @@ import com.abcbank.mobile.R
 import com.abcbank.mobile.core.designsystem.component.AbcBottomBar
 import com.abcbank.mobile.core.designsystem.component.BottomBarItem
 import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
+import com.abcbank.mobile.core.designsystem.component.MoreAction
+import com.abcbank.mobile.core.designsystem.component.MoreActionsSheet
 import com.abcbank.mobile.core.designsystem.component.bottomBarClearance
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
+import com.abcbank.mobile.feature.cards.ui.CardsNavigation
 import com.abcbank.mobile.feature.cards.ui.CardsRoute
 import com.abcbank.mobile.feature.home.ui.HomeActions
 import com.abcbank.mobile.feature.home.ui.HomeRoute
@@ -54,6 +60,9 @@ data class MainTabsNavigation(
     val onDepositCheck: () -> Unit,
     val onDocuments: () -> Unit,
     val onSupport: () -> Unit,
+    /** Starts a transfer to this saved payee (Quick Transfer). */
+    val onQuickTransfer: (String) -> Unit,
+    val onAddPayee: () -> Unit,
     val onNotifications: () -> Unit,
     val onExploreProducts: () -> Unit,
     val onLoggedOut: () -> Unit
@@ -68,6 +77,8 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
     val tabs = rememberNavController()
     val current by tabs.currentBackStackEntryAsState()
     fun selected(tab: KClass<*>) = current?.destination?.hasRoute(tab) == true
+    // One More Actions sheet for Home's grid pill and the Cards tab's More.
+    var showMoreActions by rememberSaveable { mutableStateOf(false) }
 
     Box(modifier) {
         CompositionLocalProvider(LocalBottomBarClearance provides bottomBarClearance()) {
@@ -86,11 +97,22 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                             onNotifications = navigation.onNotifications,
                             onExploreProducts = navigation.onExploreProducts,
                             onInsights = { tabs.selectTab(InsightsTab) },
-                            onCards = { tabs.selectTab(CardsTab) }
+                            onCards = { tabs.selectTab(CardsTab) },
+                            onMoreActions = { showMoreActions = true }
                         )
                     )
                 }
-                composable<CardsTab> { CardsRoute() }
+                composable<CardsTab> {
+                    CardsRoute(
+                        CardsNavigation(
+                            onDeposit = navigation.onDepositCheck,
+                            onSend = navigation.onTransfer,
+                            onMore = { showMoreActions = true },
+                            onQuickTransfer = navigation.onQuickTransfer,
+                            onAddPayee = navigation.onAddPayee
+                        )
+                    )
+                }
                 composable<InsightsTab> { InsightsRoute() }
                 composable<ProfileTab> {
                     ProfileRoute(
@@ -138,6 +160,39 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(horizontal = AbcTheme.spacing.space4)
                 .padding(bottom = AbcTheme.spacing.space3)
+        )
+    }
+    if (showMoreActions) {
+        MoreActionsSheet(
+            actions = listOf(
+                MoreAction(
+                    R.drawable.ic_arrow_up_right,
+                    stringResource(R.string.more_send_money),
+                    navigation.onTransfer
+                ),
+                MoreAction(
+                    R.drawable.ic_arrow_down,
+                    stringResource(R.string.more_deposit_check),
+                    navigation.onDepositCheck
+                ),
+                MoreAction(
+                    R.drawable.ic_file_text,
+                    stringResource(R.string.more_statements),
+                    navigation.onDocuments
+                ),
+                MoreAction(
+                    R.drawable.ic_layout_grid,
+                    stringResource(R.string.more_explore_products),
+                    navigation.onExploreProducts
+                ),
+                MoreAction(R.drawable.ic_chart_column, stringResource(R.string.more_insights)) {
+                    tabs.selectTab(InsightsTab)
+                },
+                MoreAction(R.drawable.ic_credit_card, stringResource(R.string.more_cards)) {
+                    tabs.selectTab(CardsTab)
+                }
+            ),
+            onDismiss = { showMoreActions = false }
         )
     }
 }

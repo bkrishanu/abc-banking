@@ -2,6 +2,7 @@ package com.abcbank.mobile.feature.cards.domain
 
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.Account
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardChannels
 import com.abcbank.mobile.core.model.CardSecrets
@@ -16,7 +17,9 @@ data class CardsData(
     /** In stack order: the Main card first. */
     val cards: List<CardWithNotices>,
     val accounts: List<Account>,
-    val isFromCache: Boolean
+    val isFromCache: Boolean,
+    /** Saved payees, for the Quick Transfer row (Sample 1). */
+    val beneficiaries: List<Beneficiary> = emptyList()
 )
 
 /**

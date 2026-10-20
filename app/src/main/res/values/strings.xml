@@ -585,4 +585,12 @@
     <string name="home_feature_analytics">Spending Analytics</string>
     <string name="home_feature_deposit">Deposit a Check</string>
     <string name="home_feature_products">Explore Products</string>
+    <!-- Cards tab quick actions (Sample 1) -->
+    <string name="cards_action_deposit">Deposit</string>
+    <string name="cards_action_send">Send</string>
+    <string name="cards_action_more">More</string>
+    <string name="cards_quick_transfer">Quick Transfer</string>
+    <string name="cards_add_payee">Add</string>
+    <string name="cd_quick_transfer_to">Send money to %1$s</string>
+    <string name="cd_add_payee">Add a new payee</string>
 </resources>

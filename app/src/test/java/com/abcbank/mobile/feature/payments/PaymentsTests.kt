@@ -550,6 +550,37 @@ class TransferViewModelTest {
     }
 
     @Test
+    fun `a payee chosen before the flow opens is used only if it is saved`() = runTest {
+        savedState["beneficiaryId"] = "mark-robinson"
+        viewModel().uiState.test {
+            awaitItem()
+            load()
+            assertEquals("mark-robinson", (awaitItem() as TransferUiState.Content).beneficiary?.id)
+        }
+        val unknown = TransferViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("beneficiaryId" to "nobody")),
+            observePaymentsData = ObservePaymentsDataUseCase(repository),
+            sendTransfer = SendTransferUseCase(repository, stepUp, clock),
+            moveMoney = MoveMoneyUseCase(repository, clock),
+            addPayee = AddPayeeUseCase(repository, BANKS, stepUp),
+            sessionManager = SessionManager(),
+            stepUpFactory = StepUpControllerFactory(
+                MpinVerifier(FakeMpinAttemptStore(), clock),
+                stepUp,
+                clock
+            )
+        )
+        unknown.uiState.test {
+            awaitItem()
+            "50".forEach { unknown.onKey(it) }
+            testScheduler.runCurrent()
+            val content = expectMostRecentItem() as TransferUiState.Content
+            assertNull(content.beneficiary)
+            assertFalse(content.canContinueFromAmount)
+        }
+    }
+
+    @Test
     fun `the draft survives process death`() = runTest {
         viewModel().apply {
             onSendTo("mark-robinson")
