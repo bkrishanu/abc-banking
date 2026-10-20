@@ -202,7 +202,9 @@ users/{uid}                         summary for the console: activePersonaId, cu
       travelNotices/{noticeId}      destination, startDate, endDate
     bills/{billId}                  billerId, amountDue, dueDate, autoPay, scheduledFor, status
     savingsGoals/{goalId}           name, target, saved, accountId, startedAt, weeklyHistory[]
-    applications/{applicationId}    productId, step, answers, decision, createdAt
+    applications/{applicationId}    productId, step (COMPLETE), answers {employment, annualIncome,
+                                    amount, termMonths}, decision (APPROVED|REFERRED), accountId,
+                                    createdAt
     notifications/{notificationId}  kind (TRANSACTIONAL|PROMOTIONAL), title, body, read, createdAt
     supportCases/{caseId}           transactionId?, topic, status, messages[]
 catalog/banks/{routingNumber}       shared, read-only
@@ -224,6 +226,8 @@ Path of every write (example: P2P transfer):
 4. `TransferPlanner` (pure, unit-tested) works out every effect: new balances, the transfer and fee transactions with running balances and a client-generated UUID reference, the transactional notification, and a low balance notification if the account crossed below $500.00.
 5. The repository writes the plan as one Firestore batch (revised 2026-10-20, was a transaction). Like every other write it is not awaited: it applies to the cache at once and uploads in the background, so a transfer works offline. A Firestore transaction would fail offline and wait on the network. The balances in the plan come from the snapshot the screen showed; with one user on one device per persona tree there is no concurrent writer to race.
 6. Use case returns a typed `TransferResult`. The ViewModel moves to the receipt state from that result, not from a guess.
+
+Applications are written once, when the customer accepts on step 3: the `applications` document and, when approved, the new account, as one non-awaited batch (DEMO_DATA.md section 07). The draft before that (product, amount, term, income, agreement) lives in `ProductsViewModel`, scoped to the products graph, and in `SavedStateHandle`. Products come from the bundled catalog (`AssetProductCatalog`), like the bank directory.
 
 Insights reads the profile's monthly budget, transactions since the first day of last month (one single-field query serves every period) and savings goals. `InsightsRules` (pure, unit-tested, and checked against every persona's seed in `SeedPlanBuilderTest`) works out the donut and the savings line; nothing is stored.
 

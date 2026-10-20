@@ -531,6 +531,25 @@ class TransferViewModelTest {
     }
 
     @Test
+    fun `a double tap on Confirm moves the money once`() = runTest {
+        val viewModel = viewModel()
+        viewModel.uiState.test {
+            awaitItem()
+            load()
+            awaitItem()
+            viewModel.onMoveBetweenAccounts()
+            viewModel.type("50")
+            testScheduler.runCurrent()
+            expectMostRecentItem()
+            viewModel.onConfirm()
+            viewModel.onConfirm()
+            testScheduler.runCurrent()
+            assertNotNull((expectMostRecentItem() as TransferUiState.Content).receipt)
+            assertEquals(1, repository.plans.size)
+        }
+    }
+
+    @Test
     fun `the draft survives process death`() = runTest {
         viewModel().apply {
             onSendTo("mark-robinson")

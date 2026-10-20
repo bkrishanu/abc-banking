@@ -28,7 +28,10 @@ import com.abcbank.mobile.core.designsystem.component.AbcBottomSheet
 import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
 import com.abcbank.mobile.core.designsystem.component.ContentCard
+import com.abcbank.mobile.core.designsystem.component.FlowScaffold
 import com.abcbank.mobile.core.designsystem.component.StepUpSheet
+import com.abcbank.mobile.core.designsystem.component.SummaryRow
+import com.abcbank.mobile.core.designsystem.component.SummaryRows
 import com.abcbank.mobile.core.designsystem.component.categoryLabel
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.designsystem.theme.TABULAR_FIGURES
@@ -47,7 +50,7 @@ fun TransferReviewScreen(
     val content = state as? TransferUiState.Content
     var disclaimer by rememberSaveable { mutableStateOf(false) }
     val mode = content?.mode ?: TransferMode.SEND
-    TransferStepScaffold(
+    FlowScaffold(
         step = mode.totalSteps() - 1,
         totalSteps = mode.totalSteps(),
         title = stringResource(R.string.transfer_review_title),
@@ -71,21 +74,16 @@ fun TransferReviewScreen(
             AbcButton(
                 text = stringResource(R.string.action_confirm_transfer),
                 onClick = {
-                    if (mode ==
-                        TransferMode.SEND
-                    ) {
-                        disclaimer = true
-                    } else {
-                        events.onConfirm()
-                    }
+                    if (mode == TransferMode.SEND) disclaimer = true else events.onConfirm()
                 },
-                enabled = content?.canContinueFromAmount == true
+                enabled = content?.canContinueFromAmount == true,
+                loading = content?.sending == true
             )
         }
     ) {
         if (content == null) {
             TransferStatePlaceholder(state, events.onRetry)
-            return@TransferStepScaffold
+            return@FlowScaffold
         }
         ReviewSummary(content)
         StepUpSheet(
@@ -225,7 +223,7 @@ fun TransferReceiptScreen(
     val receipt = (state as? TransferUiState.Content)?.receipt
     val mode = receipt?.mode ?: TransferMode.SEND
     val spacing = AbcTheme.spacing
-    TransferStepScaffold(
+    FlowScaffold(
         step = mode.totalSteps(),
         totalSteps = mode.totalSteps(),
         title = stringResource(
@@ -250,7 +248,7 @@ fun TransferReceiptScreen(
             AbcButton(text = stringResource(R.string.action_done), onClick = events.onDone)
         }
     ) {
-        if (receipt == null) return@TransferStepScaffold
+        if (receipt == null) return@FlowScaffold
         ContentCard(padding = spacing.space5) {
             Column(
                 modifier = Modifier.fillMaxWidth(),

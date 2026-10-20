@@ -40,6 +40,8 @@ sealed interface TransferUiState {
         val stepUp: StepUpState,
         val payee: PayeeForm,
         val receipt: TransferReceipt?,
+        /** A confirmed transfer is being written; the button shows progress and ignores taps. */
+        val sending: Boolean,
         val failed: Boolean
     ) : TransferUiState {
         val total: Money get() = amount + fee

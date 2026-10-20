@@ -54,6 +54,7 @@ private data class Draft(
 private data class FlowState(
     val payee: PayeeForm = PayeeForm(),
     val receipt: TransferReceipt? = null,
+    val sending: Boolean = false,
     val failed: Boolean = false
 )
 
@@ -126,16 +127,18 @@ class TransferViewModel @Inject constructor(
     /** After the disclaimer is accepted: step-up when the amount needs it, then send. */
     fun onConfirm() {
         val content = latest ?: return
-        if (content.receipt != null) return
+        if (isBusy()) return
         when (content.mode) {
-            TransferMode.MOVE -> viewModelScope.launch { finish(content, move(content)) }
+            TransferMode.MOVE -> send(content) { move(content) }
             TransferMode.SEND -> stepUp.request(
                 StepUpAction.OutboundTransfer(content.amount)
             ) { grant ->
-                viewModelScope.launch {
-                    val source = content.source ?: return@launch
-                    val beneficiary = content.beneficiary ?: return@launch
-                    val result = sendTransfer(
+                send(content) {
+                    val source =
+                        content.source ?: return@send TransferResult.Failed(DataError.UNKNOWN)
+                    val beneficiary =
+                        content.beneficiary ?: return@send TransferResult.Failed(DataError.UNKNOWN)
+                    sendTransfer(
                         source = source,
                         beneficiary = beneficiary,
                         amount = content.amount,
@@ -144,10 +147,21 @@ class TransferViewModel @Inject constructor(
                         category = content.category ?: TransactionCategory.TRANSFER_OUT,
                         grant = grant
                     )
-                    finish(content, result)
                 }
             }
         }
+    }
+
+    /**
+     * Reads the live flow state, not the last emitted UI state, so a quick double tap on Confirm
+     * or Agree and Send can never send the money twice.
+     */
+    private fun isBusy(): Boolean = flowState.value.let { it.sending || it.receipt != null }
+
+    private fun send(content: TransferUiState.Content, block: suspend () -> TransferResult) {
+        if (isBusy()) return
+        flowState.update { it.copy(sending = true, failed = false) }
+        viewModelScope.launch { finish(content, block()) }
     }
 
     fun onPayeeNameChange(name: String) = editPayee {
@@ -235,6 +249,7 @@ class TransferViewModel @Inject constructor(
         when (result) {
             is TransferResult.Sent -> flowState.update {
                 it.copy(
+                    sending = false,
                     failed = false,
                     receipt = TransferReceipt(
                         mode = content.mode,
@@ -249,7 +264,7 @@ class TransferViewModel @Inject constructor(
                     )
                 )
             }
-            else -> flowState.update { it.copy(failed = true) }
+            else -> flowState.update { it.copy(sending = false, failed = true) }
         }
     }
 
@@ -327,6 +342,7 @@ class TransferViewModel @Inject constructor(
             stepUp = stepUpState,
             payee = f.payee,
             receipt = f.receipt,
+            sending = f.sending,
             failed = f.failed
         )
     }

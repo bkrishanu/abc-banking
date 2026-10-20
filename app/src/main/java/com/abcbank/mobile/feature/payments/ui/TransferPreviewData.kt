@@ -88,6 +88,7 @@ internal object TransferPreviewData {
             stepUp = StepUpState(),
             payee = PayeeForm(),
             receipt = null,
+            sending = false,
             failed = false
         )
     }

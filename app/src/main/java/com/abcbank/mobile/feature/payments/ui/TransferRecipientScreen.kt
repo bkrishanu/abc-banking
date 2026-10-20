@@ -27,6 +27,7 @@ import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
 import com.abcbank.mobile.core.designsystem.component.AbcTextField
 import com.abcbank.mobile.core.designsystem.component.ContentCard
+import com.abcbank.mobile.core.designsystem.component.FlowScaffold
 import com.abcbank.mobile.core.designsystem.component.InitialsAvatar
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.SectionHeader
@@ -46,7 +47,7 @@ fun TransferRecipientScreen(
     modifier: Modifier = Modifier
 ) {
     val spacing = AbcTheme.spacing
-    TransferStepScaffold(
+    FlowScaffold(
         step = 1,
         totalSteps = (state as? TransferUiState.Content)?.mode?.totalSteps()
             ?: TransferMode.SEND.totalSteps(),
@@ -65,7 +66,7 @@ fun TransferRecipientScreen(
     ) {
         if (state !is TransferUiState.Content) {
             TransferStatePlaceholder(state, events.onRetry)
-            return@TransferStepScaffold
+            return@FlowScaffold
         }
         if (state.isOffline) {
             OfflineBanner()
@@ -158,7 +159,7 @@ fun AddPayeeScreen(state: TransferUiState, events: TransferEvents, modifier: Mod
     val spacing = AbcTheme.spacing
     val content = state as? TransferUiState.Content
     val form = content?.payee ?: PayeeForm()
-    TransferStepScaffold(
+    FlowScaffold(
         step = 1,
         totalSteps = TransferMode.SEND.totalSteps(),
         title = stringResource(R.string.payee_title),
@@ -181,7 +182,7 @@ fun AddPayeeScreen(state: TransferUiState, events: TransferEvents, modifier: Mod
     ) {
         if (content == null) {
             TransferStatePlaceholder(state, events.onRetry)
-            return@TransferStepScaffold
+            return@FlowScaffold
         }
         val error = form.error
         val nameError = error?.takeIf { it.isNameError() }

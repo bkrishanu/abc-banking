@@ -6,25 +6,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -38,14 +31,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.abcbank.mobile.R
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.designsystem.component.AbcBottomSheet
-import com.abcbank.mobile.core.designsystem.component.AdaptiveRow
 import com.abcbank.mobile.core.designsystem.component.ErrorState
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
@@ -90,82 +80,6 @@ fun TransferMode.totalSteps(): Int = if (this == TransferMode.SEND) SEND_STEPS e
 private const val SEND_STEPS = 5
 private const val MOVE_STEPS = 4
 
-/**
- * The frame every step shares (DESIGN_SYSTEM.md section 06, flows that leave the tabs): back
- * arrow, "Step 2 of 5", H1 title, scrolling content, and the step's button pinned at the bottom.
- */
-@Composable
-internal fun TransferStepScaffold(
-    step: Int,
-    totalSteps: Int,
-    title: String,
-    onBack: (() -> Unit)?,
-    modifier: Modifier = Modifier,
-    bottom: @Composable ColumnScope.() -> Unit = {},
-    content: @Composable ColumnScope.() -> Unit
-) {
-    val spacing = AbcTheme.spacing
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(AbcTheme.colors.background)
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = AbcTheme.dimens.touchTarget),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (onBack != null) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.size(AbcTheme.dimens.touchTarget)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_left),
-                        contentDescription = stringResource(R.string.cd_back),
-                        tint = AbcTheme.colors.text,
-                        modifier = Modifier.size(AbcTheme.dimens.iconLarge)
-                    )
-                }
-            } else {
-                Spacer(Modifier.width(spacing.space4))
-            }
-            Spacer(Modifier.weight(1f))
-            Text(
-                text = stringResource(R.string.transfer_step, step, totalSteps),
-                style = AbcTheme.typography.small,
-                color = AbcTheme.colors.textMuted,
-                modifier = Modifier.padding(end = spacing.space4)
-            )
-        }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = spacing.space4)
-        ) {
-            Text(
-                text = title,
-                style = AbcTheme.typography.h1,
-                color = AbcTheme.colors.text,
-                modifier = Modifier.semantics { heading() }
-            )
-            Spacer(Modifier.height(spacing.space6))
-            content()
-            Spacer(Modifier.height(spacing.space6))
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = spacing.space4, vertical = spacing.space4),
-            verticalArrangement = Arrangement.spacedBy(spacing.space3),
-            content = bottom
-        )
-    }
-}
-
 /** Loading and error for the steps that need accounts or payees. */
 @Composable
 internal fun TransferStatePlaceholder(state: TransferUiState, onRetry: () -> Unit) {
@@ -199,40 +113,6 @@ internal fun TransferStatePlaceholder(state: TransferUiState, onRetry: () -> Uni
 }
 
 private const val PLACEHOLDER_ROWS = 3
-
-/** A label and value row inside a content card, wrapping the value below at large font sizes. */
-@Composable
-internal fun SummaryRow(
-    label: String,
-    value: String,
-    valueStyle: TextStyle = AbcTheme.typography.body
-) {
-    AdaptiveRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = AbcTheme.spacing.space3)
-            .semantics(mergeDescendants = true) {},
-        start = {
-            Text(text = label, style = AbcTheme.typography.small, color = AbcTheme.colors.textMuted)
-        }
-    ) {
-        Text(
-            text = value,
-            style = valueStyle,
-            color = AbcTheme.colors.text,
-            textAlign = TextAlign.End
-        )
-    }
-}
-
-/** Summary rows with dividers between them. */
-@Composable
-internal fun SummaryRows(rows: List<Pair<String, String>>) {
-    rows.forEachIndexed { index, (label, value) ->
-        if (index > 0) HorizontalDivider(color = AbcTheme.colors.border)
-        SummaryRow(label, value)
-    }
-}
 
 /**
  * A tappable field showing the chosen account (From / To on the amount step). Opens the

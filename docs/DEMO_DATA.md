@@ -441,6 +441,18 @@ Simulated credit decision (MobileBuild.md 5.2, step 3), from the persona's credi
 | 660 to 739 | Approved | 12.49% | $15,000 | $3,000 |
 | Below 660 | Referred for review | none | none | none |
 
+Card APR (decided 2026-10-20): 21.24% for 740 and above, 28.24% for 660 to 739, the two ends of the catalog's range. Opening High-Yield Savings needs no credit check and is always approved. Every persona scores 660 or more, so the referred path is shown only by tests.
+
+Accounts opened by an approved application (decided 2026-10-20), written with the `applications` document in one batch:
+
+| Product | Account | Starting values |
+| --- | --- | --- |
+| ABC High-Yield Savings | SAVINGS "High-Yield Savings" | Available and ledger $0.00, 4.50% APY |
+| ABC Signature Rewards Card | CREDIT "Signature Rewards Card" | The tier's limit, nothing owed, statement $0.00, first due date 25 days after opening, auto-pay off. No card document: the Cards tab shows only issued cards. |
+| ABC Personal Loan | LOAN "Personal Loan" | Principal and amount owed are the chosen amount, the tier's APR, opened now. The funds are not paid into another account. |
+
+The account id is the product id plus the first 8 characters of the application UUID (`personal-loan-3f6c2a9e`); its last 4 digits come from a hash of the application UUID, so they are fake and stable. One `TRANSACTIONAL` alert is written: "Application approved", "Your ABC Personal Loan is open." (or "Application received", "We're reviewing your ... application." when referred).
+
 Merchant pools for generated filler (category: merchants, amount range per transaction)
 
 | Category | Merchants | Range |

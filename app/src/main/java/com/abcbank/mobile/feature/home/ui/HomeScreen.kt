@@ -26,6 +26,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,18 +76,48 @@ data class HomeActions(
     val onViewAllTransactions: () -> Unit = {},
     val onAccount: (accountId: String) -> Unit = {},
     val onTransaction: (transactionId: String) -> Unit = {},
-    val onExploreProducts: () -> Unit = {}
+    val onExploreProducts: () -> Unit = {},
+    val onInsights: () -> Unit = {},
+    val onCards: () -> Unit = {}
 )
 
 @Composable
 fun HomeRoute(actions: HomeActions, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var showMoreActions by rememberSaveable { mutableStateOf(false) }
     HomeScreen(
         state = state,
-        actions = actions,
+        actions = actions.copy(onMoreActions = { showMoreActions = true }),
         onToggleBalances = viewModel::onToggleBalances,
         onRetry = viewModel::onRetry
     )
+    if (showMoreActions) {
+        MoreActionsSheet(
+            actions = listOf(
+                MoreAction(
+                    R.drawable.ic_arrow_up_right,
+                    stringResource(R.string.more_send_money),
+                    actions.onTransfer
+                ),
+                MoreAction(
+                    R.drawable.ic_layout_grid,
+                    stringResource(R.string.more_explore_products),
+                    actions.onExploreProducts
+                ),
+                MoreAction(
+                    R.drawable.ic_chart_column,
+                    stringResource(R.string.more_insights),
+                    actions.onInsights
+                ),
+                MoreAction(
+                    R.drawable.ic_credit_card,
+                    stringResource(R.string.more_cards),
+                    actions.onCards
+                )
+            ),
+            onDismiss = { showMoreActions = false }
+        )
+    }
 }
 
 @Composable

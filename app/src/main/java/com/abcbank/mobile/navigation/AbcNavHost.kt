@@ -67,6 +67,7 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
                     onAccount = { navController.navigate(TransactionsDestination(accountId = it)) },
                     onTransaction = { navController.navigate(TransactionDetailDestination(it)) },
                     onTransfer = { navController.navigate(TransferGraph) },
+                    onExploreProducts = { navController.navigate(ProductsGraph) },
                     onLoggedOut = {
                         // Back from the login screen goes to Welcome, never to the logged-out tabs.
                         navController.navigate(WelcomeDestination) {
@@ -87,5 +88,8 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
             TransactionDetailRoute(onBack = { navController.popBackStack() })
         }
         transferGraph(navController) { navController.navigate(TransactionDetailDestination(it)) }
+        productsGraph(navController) {
+            navController.navigate(TransactionsDestination(accountId = it))
+        }
     }
 }

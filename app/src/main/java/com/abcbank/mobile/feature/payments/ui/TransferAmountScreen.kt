@@ -1,6 +1,5 @@
 package com.abcbank.mobile.feature.payments.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,8 +8,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -42,7 +39,9 @@ import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcTextField
 import com.abcbank.mobile.core.designsystem.component.AmountKeypad
+import com.abcbank.mobile.core.designsystem.component.ChoiceChip
 import com.abcbank.mobile.core.designsystem.component.ContentCard
+import com.abcbank.mobile.core.designsystem.component.FlowScaffold
 import com.abcbank.mobile.core.designsystem.component.InitialsAvatar
 import com.abcbank.mobile.core.designsystem.component.categoryLabel
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
@@ -77,7 +76,7 @@ fun TransferAmountScreen(
 ) {
     val content = state as? TransferUiState.Content
     var picker by rememberSaveable { mutableStateOf<PickerTarget?>(null) }
-    TransferStepScaffold(
+    FlowScaffold(
         step = 2,
         totalSteps = content?.mode?.totalSteps() ?: TransferMode.SEND.totalSteps(),
         title = stringResource(
@@ -101,7 +100,7 @@ fun TransferAmountScreen(
     ) {
         if (content == null) {
             TransferStatePlaceholder(state, events.onRetry)
-            return@TransferStepScaffold
+            return@FlowScaffold
         }
         AmountForm(content, events, onPick = { picker = it })
     }
@@ -279,23 +278,10 @@ private fun CategoryTags(selected: TransactionCategory?, onSelect: (TransactionC
         ) {
             TAG_CATEGORIES.forEach { category ->
                 val isSelected = category == selected
-                Text(
-                    text = categoryLabel(category),
-                    style = AbcTheme.typography.small,
-                    color = if (isSelected) colors.onPrimary else colors.text,
-                    modifier = Modifier
-                        .heightIn(min = AbcTheme.dimens.chipHeight)
-                        .clip(AbcTheme.shapes.full)
-                        .background(if (isSelected) colors.primary else colors.surface)
-                        .border(
-                            AbcTheme.dimens.borderWidth,
-                            if (isSelected) colors.primary else colors.border,
-                            AbcTheme.shapes.full
-                        )
-                        .selectable(selected = isSelected, role = Role.RadioButton) {
-                            onSelect(if (isSelected) null else category)
-                        }
-                        .padding(horizontal = spacing.space4, vertical = spacing.space3)
+                ChoiceChip(
+                    label = categoryLabel(category),
+                    selected = isSelected,
+                    onClick = { onSelect(if (isSelected) null else category) }
                 )
             }
         }
@@ -310,7 +296,7 @@ fun TransferSpeedScreen(
     modifier: Modifier = Modifier
 ) {
     val content = state as? TransferUiState.Content
-    TransferStepScaffold(
+    FlowScaffold(
         step = 3,
         totalSteps = TransferMode.SEND.totalSteps(),
         title = stringResource(R.string.transfer_speed_title),
@@ -333,7 +319,7 @@ fun TransferSpeedScreen(
     ) {
         if (content == null) {
             TransferStatePlaceholder(state, events.onRetry)
-            return@TransferStepScaffold
+            return@FlowScaffold
         }
         Column(
             modifier = Modifier.selectableGroup(),
