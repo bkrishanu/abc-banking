@@ -263,7 +263,6 @@
     <string name="transfer_move_title">Move Money</string>
     <string name="transfer_from">From</string>
     <string name="transfer_to">To</string>
-    <string name="transfer_amount_typed">$%1$s</string>
     <string name="transfer_available">Available %1$s</string>
     <string name="transfer_available_to_draw">Available to Draw %1$s</string>
     <string name="transfer_memo">Memo</string>
@@ -478,4 +477,25 @@
     <string name="bills_failed">That didn\'t go through. Try again.</string>
     <string name="notification_bill_paid_title">Bill paid</string>
     <string name="notification_bill_paid_body">%1$s paid to %2$s.</string>
+    <!-- Deposit check (MobileBuild.md 2.3, PRD feature 16) -->
+    <string name="more_deposit_check">Deposit Check</string>
+    <string name="deposit_title">Deposit Check</string>
+    <string name="deposit_to">Deposit To</string>
+    <string name="deposit_limit">Up to %1$s per deposit</string>
+    <string name="deposit_error_limit">The most you can deposit at once is %1$s.</string>
+    <string name="deposit_error_minimum">The smallest deposit is $1.00.</string>
+    <string name="deposit_images">Check Images (Optional)</string>
+    <string name="deposit_front">Front</string>
+    <string name="deposit_back">Back</string>
+    <string name="deposit_image_add">Add %1$s</string>
+    <string name="deposit_image_attached">%1$s Added</string>
+    <string name="deposit_images_note">Demo images only. Nothing is uploaded.</string>
+    <string name="action_deposit_check">Deposit Check</string>
+    <string name="deposit_received_title">Deposit Received</string>
+    <string name="deposit_received_text">Your deposit is pending. It will clear in about 30 seconds and you\'ll get an alert.</string>
+    <string name="deposit_status">Status</string>
+    <string name="action_view_transactions">View Transactions</string>
+    <string name="deposit_failed">The deposit could not be sent. Try again.</string>
+    <string name="notification_deposit_cleared_title">Deposit cleared</string>
+    <string name="notification_deposit_cleared_body">%1$s is now available in %2$s.</string>
 </resources>

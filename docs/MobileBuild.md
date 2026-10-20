@@ -55,6 +55,8 @@ This repository outlines the functional scope, screen flows, and technical requi
 - On confirm, a Pending credit ("Check deposit") appears in transactions. The available balance does not change yet.
 - 30 seconds later the deposit posts: status becomes Posted, the balance increases, and a transactional "Deposit cleared" alert is created. If the app was closed at that moment, this happens the next time it opens.
 
+> **Decided (2026-10-20).** Deposit Check opens from Home's More Actions sheet. One screen: Deposit To (checking first, savings), the amount on the keypad with "Up to $10,000.00 per deposit" below it (the inline error states the limit), Front and Back tiles that attach or remove a bundled line-art cheque, and Deposit Check. Then "Deposit Received" with the amount, account, Pending status and reference, View Transactions (that account) and Done. Clearing runs while the app is in the foreground, so a deposit made in the background or before closing posts on the next return.
+
 ---
 
 ## 3. Payments & Money Movement

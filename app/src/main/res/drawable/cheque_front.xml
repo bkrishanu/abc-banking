@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder front of a cheque for Deposit Check (DEMO_DATA.md section 07). Line art only, no
+     bank, name or numbers; tinted with the text colour where it is drawn. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp"
+    android:height="50dp"
+    android:viewportWidth="220"
+    android:viewportHeight="100">
+    <!-- Outline -->
+    <path
+        android:pathData="M8,4 L212,4 Q216,4 216,8 L216,92 Q216,96 212,96 L8,96 Q4,96 4,92 L4,8 Q4,4 8,4 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:fillColor="#00000000" />
+    <!-- Payer block and date -->
+    <path
+        android:pathData="M16,18 L76,18 M16,26 L56,26 M150,22 L200,22"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round" />
+    <!-- Pay to line and amount box -->
+    <path
+        android:pathData="M16,46 L150,46"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M160,38 L204,38 L204,54 L160,54 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:fillColor="#00000000" />
+    <!-- Written amount and signature -->
+    <path
+        android:pathData="M16,62 L130,62 M136,80 L204,80"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round" />
+    <!-- Account line marks -->
+    <path
+        android:pathData="M16,84 L22,84 M28,84 L46,84 M52,84 L58,84 M64,84 L90,84"
+        android:strokeWidth="3"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round" />
+</vector>

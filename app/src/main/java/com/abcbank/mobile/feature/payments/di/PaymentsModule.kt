@@ -2,10 +2,13 @@ package com.abcbank.mobile.feature.payments.di
 
 import com.abcbank.mobile.feature.payments.data.AssetBankDirectory
 import com.abcbank.mobile.feature.payments.data.AssetBillerDirectory
+import com.abcbank.mobile.feature.payments.data.DepositClearingScheduler
 import com.abcbank.mobile.feature.payments.data.FirestorePaymentsRepository
 import com.abcbank.mobile.feature.payments.domain.BankDirectory
 import com.abcbank.mobile.feature.payments.domain.BillerDirectory
 import com.abcbank.mobile.feature.payments.domain.BillsRepository
+import com.abcbank.mobile.feature.payments.domain.DepositClearingTrigger
+import com.abcbank.mobile.feature.payments.domain.DepositRepository
 import com.abcbank.mobile.feature.payments.domain.PaymentsRepository
 import dagger.Binds
 import dagger.Module
@@ -26,4 +29,10 @@ interface PaymentsModule {
 
     @Binds
     fun bindBillerDirectory(impl: AssetBillerDirectory): BillerDirectory
+
+    @Binds
+    fun bindDepositRepository(impl: FirestorePaymentsRepository): DepositRepository
+
+    @Binds
+    fun bindDepositClearingTrigger(impl: DepositClearingScheduler): DepositClearingTrigger
 }

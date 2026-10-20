@@ -51,6 +51,7 @@ data class MainTabsNavigation(
     val onTransaction: (String) -> Unit,
     val onTransfer: () -> Unit,
     val onPayBills: () -> Unit,
+    val onDepositCheck: () -> Unit,
     val onNotifications: () -> Unit,
     val onExploreProducts: () -> Unit,
     val onLoggedOut: () -> Unit
@@ -78,6 +79,7 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                             onTransaction = navigation.onTransaction,
                             onTransfer = navigation.onTransfer,
                             onPayBills = navigation.onPayBills,
+                            onDepositCheck = navigation.onDepositCheck,
                             onNotifications = navigation.onNotifications,
                             onExploreProducts = navigation.onExploreProducts,
                             onInsights = { tabs.selectTab(InsightsTab) },

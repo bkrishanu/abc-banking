@@ -265,7 +265,7 @@ Auth and session:
 
 Deposit check clearing:
 - A check deposit is written as a PENDING credit transaction with `clearsAt = createdAt + 30 s`; balances do not change.
-- `ClearDueDepositsUseCase` (`feature/payments/domain`) runs in an injected application scope: on app start, on return to foreground, and on a timer for each pending deposit while the app is open. For each due deposit, one Firestore transaction sets it to POSTED, credits the account and writes a "Deposit cleared" notification.
+- `ClearDueDepositsUseCase` (`feature/payments/domain`) runs in an injected application scope through `DepositClearingScheduler` (`feature/payments/data`, started by `AbcBankApp`): when the app comes to the foreground (ProcessLifecycleOwner), after each new deposit, and on a timer for the next pending deposit while the app is open. For each due deposit, one batch sets it to POSTED, credits the account and writes a "Deposit cleared" notification (revised 2026-10-20, was a transaction, for the same offline reason as transfers). A mutex makes it run one at a time, and pending deposits are read fresh each run, so a deposit is never credited twice.
 - `MainActivity` sets `FLAG_SECURE`, so screenshots and the app switcher preview are blank.
 - Device binding: `DeviceKeyManager` creates an EC P-256 key in Android Keystore on first launch and stores the public key in `users/{uid}/devices`, outside every persona tree: the key belongs to the install, not the persona.
 

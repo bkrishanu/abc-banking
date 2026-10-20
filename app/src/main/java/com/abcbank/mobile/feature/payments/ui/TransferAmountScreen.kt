@@ -209,11 +209,9 @@ private fun AmountForm(
 private fun AmountDisplay(content: TransferUiState.Content) {
     val colors = AbcTheme.colors
     val shown = if (content.amountText.isEmpty()) {
-        MoneyFormatter.format(
-            content.amount
-        )
+        MoneyFormatter.format(content.amount)
     } else {
-        stringResource(R.string.transfer_amount_typed, groupTyped(content.amountText))
+        MoneyFormatter.formatTyped(content.amountText)
     }
     val spoken = MoneyFormatter.format(content.amount)
     Column(
@@ -248,16 +246,6 @@ private fun AmountDisplay(content: TransferUiState.Content) {
         }
     }
 }
-
-/** "1234.5" as typed becomes "1,234.5": grouped like formatted money, without padding the cents. */
-private fun groupTyped(text: String): String {
-    val whole = text.substringBefore(DECIMAL)
-    val grouped = whole.reversed().chunked(GROUP).joinToString(",").reversed()
-    return if (DECIMAL in text) grouped + DECIMAL + text.substringAfter(DECIMAL) else grouped
-}
-
-private const val DECIMAL = '.'
-private const val GROUP = 3
 
 /** Optional single-choice category tag; tapping the selected tag clears it. */
 @OptIn(ExperimentalLayoutApi::class)

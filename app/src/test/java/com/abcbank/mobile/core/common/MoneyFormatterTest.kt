@@ -52,4 +52,12 @@ class MoneyFormatterTest {
         assertEquals("21.24%", MoneyFormatter.formatRate(Rate(2_124)))
         assertEquals("0.05%", MoneyFormatter.formatRate(Rate(5)))
     }
+
+    @Test
+    fun `typed amounts group thousands and keep what was typed after the point`() {
+        assertEquals("$1,234.5", MoneyFormatter.formatTyped("1234.5"))
+        assertEquals("$12.", MoneyFormatter.formatTyped("12."))
+        assertEquals("$0.", MoneyFormatter.formatTyped("0."))
+        assertEquals("$9,999,999.99", MoneyFormatter.formatTyped("9999999.99"))
+    }
 }

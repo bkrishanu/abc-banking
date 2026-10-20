@@ -78,6 +78,7 @@ data class HomeActions(
     val onTransaction: (transactionId: String) -> Unit = {},
     val onExploreProducts: () -> Unit = {},
     val onInsights: () -> Unit = {},
+    val onDepositCheck: () -> Unit = {},
     val onCards: () -> Unit = {}
 )
 
@@ -98,6 +99,11 @@ fun HomeRoute(actions: HomeActions, viewModel: HomeViewModel = hiltViewModel()) 
                     R.drawable.ic_arrow_up_right,
                     stringResource(R.string.more_send_money),
                     actions.onTransfer
+                ),
+                MoreAction(
+                    R.drawable.ic_arrow_down,
+                    stringResource(R.string.more_deposit_check),
+                    actions.onDepositCheck
                 ),
                 MoreAction(
                     R.drawable.ic_layout_grid,

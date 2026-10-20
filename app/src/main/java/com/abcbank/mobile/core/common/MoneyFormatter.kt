@@ -22,6 +22,22 @@ object MoneyFormatter {
         return "$sign$${groupThousands(rounded)}"
     }
 
+    /**
+     * An amount as it is being typed on the keypad: "1234.5" becomes "$1,234.5", grouped like
+     * formatted money but without padding the cents, so "12." and "12.5" show while typing.
+     */
+    fun formatTyped(text: String): String {
+        val whole = text.substringBefore(DECIMAL).ifEmpty { "0" }
+        val grouped = groupThousands(whole.toLongOrNull() ?: 0L)
+        return if (DECIMAL in
+            text
+        ) {
+            "$$grouped$DECIMAL${text.substringAfter(DECIMAL)}"
+        } else {
+            "$$grouped"
+        }
+    }
+
     /** "+$38.60" for incoming, "-$125.00" for outgoing, "$0.00" for zero. */
     fun formatSigned(money: Money): String =
         if (money.isPositive) "+${format(money)}" else format(money)
@@ -45,6 +61,8 @@ object MoneyFormatter {
         val hundredths = rate.basisPoints % Rate.BASIS_POINTS_PER_PERCENT
         return "$whole.${hundredths.toString().padStart(2, '0')}%"
     }
+
+    private const val DECIMAL = '.'
 
     private fun groupThousands(value: Long): String =
         value.toString().reversed().chunked(3).joinToString(",").reversed()

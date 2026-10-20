@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder back of a cheque for Deposit Check (DEMO_DATA.md section 07). Line art only;
+     tinted with the text colour where it is drawn. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp"
+    android:height="50dp"
+    android:viewportWidth="220"
+    android:viewportHeight="100">
+    <!-- Outline -->
+    <path
+        android:pathData="M8,4 L212,4 Q216,4 216,8 L216,92 Q216,96 212,96 L8,96 Q4,96 4,92 L4,8 Q4,4 8,4 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:fillColor="#00000000" />
+    <!-- Endorsement area at one end -->
+    <path
+        android:pathData="M150,14 L150,86"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M160,30 L204,30 M160,44 L204,44 M160,58 L204,58 M160,72 L190,72"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round" />
+</vector>

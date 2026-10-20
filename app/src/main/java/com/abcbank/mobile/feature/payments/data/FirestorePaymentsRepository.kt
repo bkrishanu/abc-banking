@@ -14,22 +14,32 @@ import com.abcbank.mobile.core.data.firebase.BillDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
 import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
+import com.abcbank.mobile.core.data.firebase.UserProfileDto
+import com.abcbank.mobile.core.data.firebase.await
 import com.abcbank.mobile.core.data.firebase.snapshotFlow
 import com.abcbank.mobile.core.data.firebase.toDataError
 import com.abcbank.mobile.core.data.firebase.toTimestamp
 import com.abcbank.mobile.core.data.seed.ActivePersonaSource
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.core.model.TransactionCategory
+import com.abcbank.mobile.core.model.TransactionDirection
 import com.abcbank.mobile.feature.payments.domain.Bill
 import com.abcbank.mobile.feature.payments.domain.BillPaymentPlan
 import com.abcbank.mobile.feature.payments.domain.BillStatus
 import com.abcbank.mobile.feature.payments.domain.BillsData
 import com.abcbank.mobile.feature.payments.domain.BillsRepository
+import com.abcbank.mobile.feature.payments.domain.ClearedDeposit
+import com.abcbank.mobile.feature.payments.domain.DepositData
+import com.abcbank.mobile.feature.payments.domain.DepositRepository
+import com.abcbank.mobile.feature.payments.domain.DepositRules
 import com.abcbank.mobile.feature.payments.domain.FetchedBill
 import com.abcbank.mobile.feature.payments.domain.NewNotification
 import com.abcbank.mobile.feature.payments.domain.NewPayee
 import com.abcbank.mobile.feature.payments.domain.NotificationType
 import com.abcbank.mobile.feature.payments.domain.PaymentsData
 import com.abcbank.mobile.feature.payments.domain.PaymentsRepository
+import com.abcbank.mobile.feature.payments.domain.PendingDeposit
+import com.abcbank.mobile.feature.payments.domain.PendingDeposits
 import com.abcbank.mobile.feature.payments.domain.TransferPlan
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
@@ -53,7 +63,8 @@ class FirestorePaymentsRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val dispatchers: DispatcherProvider
 ) : PaymentsRepository,
-    BillsRepository {
+    BillsRepository,
+    DepositRepository {
 
     private data class Tree(val uid: String, val personaId: String)
 
@@ -232,6 +243,100 @@ class FirestorePaymentsRepository @Inject constructor(
         DataResult.Success(Unit)
     }
 
+    override fun observeDepositData(): Flow<DataResult<DepositData>> = flow {
+        val tree = when (val result = tree()) {
+            is DataResult.Success -> result.value
+            is DataResult.Failure -> {
+                emit(result)
+                return@flow
+            }
+        }
+        emitAll(
+            combine(
+                firestore.document(FirestorePaths.persona(tree.uid, tree.personaId)).snapshotFlow(),
+                tree.collection(FirestorePaths.ACCOUNTS).snapshotFlow()
+            ) { persona, accountSnapshot ->
+                val profile = persona.data?.let { UserProfileDto.fromMap(it).toUserProfile() }
+                    ?: return@combine malformed()
+                val accounts = accountSnapshot.documents.map {
+                    AccountDto.fromMap(it.data.orEmpty()).toAccount(it.id)
+                        ?: return@combine malformed()
+                }
+                DataResult.Success(
+                    DepositData(
+                        limit = profile.checkDepositLimit,
+                        accounts = accounts,
+                        isFromCache =
+                        persona.metadata.isFromCache || accountSnapshot.metadata.isFromCache
+                    )
+                )
+            }
+        )
+    }
+        .catch { error -> emit(DataResult.Failure(error.toDataError())) }
+        .flowOn(dispatchers.default)
+
+    override suspend fun submitDeposit(deposit: PendingDeposit): DataResult<Unit> = call { tree ->
+        val dto = TransactionDto(
+            accountId = deposit.accountId,
+            direction = TransactionDirection.CREDIT.name,
+            amount = deposit.amount.cents,
+            merchant = DepositRules.MERCHANT,
+            category = TransactionCategory.DEPOSIT.name,
+            reference = deposit.reference,
+            runningBalance = deposit.runningBalance.cents,
+            status = PENDING,
+            disputed = false,
+            createdAt = deposit.createdAt.toTimestamp(),
+            clearsAt = deposit.clearsAt.toTimestamp()
+        )
+        tree.collection(FirestorePaths.TRANSACTIONS).document(deposit.id).set(dto.toMap())
+        DataResult.Success(Unit)
+    }
+
+    /** Read once, from the server when online and from the cache otherwise. */
+    override suspend fun pendingDeposits(): DataResult<PendingDeposits> = call { tree ->
+        val deposits = tree.collection(FirestorePaths.TRANSACTIONS)
+            .whereEqualTo(TransactionDto.STATUS, PENDING)
+            .get()
+            .await()
+            .documents
+            .mapNotNull { TransactionDto.fromMap(it.data.orEmpty()).toTransaction(it.id) }
+            .filter { it.clearsAt != null }
+        val accounts = if (deposits.isEmpty()) {
+            emptyList()
+        } else {
+            tree.collection(FirestorePaths.ACCOUNTS).get().await().documents.mapNotNull {
+                AccountDto.fromMap(it.data.orEmpty()).toAccount(it.id)
+            }
+        }
+        DataResult.Success(PendingDeposits(deposits, accounts))
+    }
+
+    override suspend fun clearDeposit(cleared: ClearedDeposit): DataResult<Unit> = call { tree ->
+        val batch = firestore.batch()
+        batch.update(
+            tree.collection(FirestorePaths.TRANSACTIONS).document(cleared.transactionId),
+            mapOf(
+                TransactionDto.STATUS to POSTED,
+                TransactionDto.RUNNING_BALANCE to cleared.runningBalance.cents
+            )
+        )
+        batch.update(
+            tree.collection(FirestorePaths.ACCOUNTS).document(cleared.account.accountId),
+            mapOf(
+                AccountDto.AVAILABLE_BALANCE to cleared.account.available.cents,
+                AccountDto.LEDGER_BALANCE to cleared.account.ledger.cents
+            )
+        )
+        batch.set(
+            tree.collection(FirestorePaths.NOTIFICATIONS).document(cleared.notification.id),
+            cleared.notification.toFields()
+        )
+        batch.commit()
+        DataResult.Success(Unit)
+    }
+
     override suspend fun setAutoPay(billId: String, autoPay: Boolean): DataResult<Unit> =
         call { tree ->
             tree.collection(FirestorePaths.BILLS).document(billId).update(BillDto.AUTO_PAY, autoPay)
@@ -267,6 +372,14 @@ class FirestorePaymentsRepository @Inject constructor(
                     args[1],
                     args[2]
                 )
+            NotificationType.DEPOSIT_CLEARED -> context.getString(
+                R.string.notification_deposit_cleared_title
+            ) to
+                context.getString(
+                    R.string.notification_deposit_cleared_body,
+                    money(args[0]),
+                    args[1]
+                )
             NotificationType.BILL_PAID -> context.getString(
                 R.string.notification_bill_paid_title
             ) to
@@ -301,6 +414,7 @@ class FirestorePaymentsRepository @Inject constructor(
 
     private companion object {
         const val POSTED = "POSTED"
+        const val PENDING = "PENDING"
     }
 }
 

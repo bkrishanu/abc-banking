@@ -26,7 +26,7 @@ data class NewTransaction(
     val createdAt: Instant
 )
 
-enum class NotificationType { MONEY_SENT, MONEY_MOVED, LOW_BALANCE, BILL_PAID }
+enum class NotificationType { MONEY_SENT, MONEY_MOVED, LOW_BALANCE, BILL_PAID, DEPOSIT_CLEARED }
 
 /** A transactional alert; the data layer turns it into text from string resources. */
 data class NewNotification(

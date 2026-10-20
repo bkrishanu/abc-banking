@@ -16,6 +16,7 @@ import com.abcbank.mobile.feature.accounts.ui.TransactionsRoute
 import com.abcbank.mobile.feature.auth.ui.LoginRoute
 import com.abcbank.mobile.feature.auth.ui.WelcomeScreen
 import com.abcbank.mobile.feature.notifications.ui.NotificationsRoute
+import com.abcbank.mobile.feature.payments.ui.DepositCheckRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -37,6 +38,9 @@ data class TransactionDetailDestination(val transactionId: String)
 
 @Serializable
 data object NotificationsDestination
+
+@Serializable
+data object DepositCheckDestination
 
 @Composable
 fun AbcNavHost(modifier: Modifier = Modifier) {
@@ -72,6 +76,7 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
                     onTransaction = { navController.navigate(TransactionDetailDestination(it)) },
                     onTransfer = { navController.navigate(TransferGraph) },
                     onPayBills = { navController.navigate(BillPayGraph) },
+                    onDepositCheck = { navController.navigate(DepositCheckDestination) },
                     onNotifications = { navController.navigate(NotificationsDestination) },
                     onExploreProducts = { navController.navigate(ProductsGraph) },
                     onLoggedOut = {
@@ -92,6 +97,15 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
         }
         composable<TransactionDetailDestination> {
             TransactionDetailRoute(onBack = { navController.popBackStack() })
+        }
+        composable<DepositCheckDestination> {
+            DepositCheckRoute(
+                onBack = { navController.popBackStack() },
+                onViewTransactions = { accountId ->
+                    navController.popBackStack()
+                    navController.navigate(TransactionsDestination(accountId = accountId))
+                }
+            )
         }
         composable<NotificationsDestination> {
             NotificationsRoute(onBack = { navController.popBackStack() })
