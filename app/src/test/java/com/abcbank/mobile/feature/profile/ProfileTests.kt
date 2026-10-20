@@ -10,11 +10,14 @@ import com.abcbank.mobile.core.security.SessionLock
 import com.abcbank.mobile.core.security.SessionManager
 import com.abcbank.mobile.core.security.SessionState
 import com.abcbank.mobile.feature.home.profile
+import com.abcbank.mobile.feature.profile.domain.DemoDataResetter
 import com.abcbank.mobile.feature.profile.domain.ObserveProfileUseCase
 import com.abcbank.mobile.feature.profile.domain.ProfileData
 import com.abcbank.mobile.feature.profile.domain.ProfileRepository
+import com.abcbank.mobile.feature.profile.domain.ResetDemoDataUseCase
 import com.abcbank.mobile.feature.profile.ui.ProfileUiState
 import com.abcbank.mobile.feature.profile.ui.ProfileViewModel
+import com.abcbank.mobile.feature.profile.ui.ResetStatus
 import com.abcbank.mobile.testing.FakeRememberedCustomerStore
 import com.abcbank.mobile.testing.MainDispatcherRule
 import com.abcbank.mobile.testing.ManualClock
@@ -62,10 +65,40 @@ class ProfileViewModelTest {
         remembered =
             CustomerId.parse("SAMJOH01")
     }
+    private val resetter = object : DemoDataResetter {
+        var calls = 0
+
+        override suspend fun resetActivePersona(): DataResult<Unit> {
+            calls++
+            return DataResult.Success(Unit)
+        }
+    }
     private val viewModel = ProfileViewModel(
         ObserveProfileUseCase(repository),
-        LogOutUseCase(store, SessionManager(), SessionLock(ManualClock()))
+        LogOutUseCase(store, SessionManager(), SessionLock(ManualClock())),
+        ResetDemoDataUseCase(resetter)
     )
+
+    @Test
+    fun `Reset Demo Data runs once per tap and reports when done`() = runTest {
+        // Built inside the test, so its scope runs on this test's scheduler.
+        val viewModel = ProfileViewModel(
+            ObserveProfileUseCase(repository),
+            LogOutUseCase(store, SessionManager(), SessionLock(ManualClock())),
+            ResetDemoDataUseCase(resetter)
+        )
+        viewModel.uiState.test {
+            skipItems(1)
+            repository.result.value =
+                DataResult.Success(ProfileData(profile(), isFromCache = false))
+            awaitItem()
+            viewModel.onResetDemoData()
+            viewModel.onResetDemoData()
+            testScheduler.advanceUntilIdle()
+            assertEquals(ResetStatus.DONE, (expectMostRecentItem() as ProfileUiState.Content).reset)
+            assertEquals(1, resetter.calls)
+        }
+    }
 
     @Test
     fun `shows the persona, then logs out`() = runTest {

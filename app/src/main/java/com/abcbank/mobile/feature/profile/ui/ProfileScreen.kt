@@ -26,13 +26,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,6 +47,7 @@ import com.abcbank.mobile.R
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
+import com.abcbank.mobile.core.designsystem.component.AbcConfirmDialog
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.ErrorState
 import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
@@ -68,6 +74,7 @@ fun ProfileRoute(
         onBack = onBack,
         onLogOut = viewModel::onLogOut,
         onRetry = viewModel::onRetry,
+        onResetDemoData = viewModel::onResetDemoData,
         menu = listOf(
             ProfileMenuItem(
                 R.drawable.ic_file_text,
@@ -98,8 +105,10 @@ fun ProfileScreen(
     onLogOut: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    menu: List<ProfileMenuItem> = emptyList()
+    menu: List<ProfileMenuItem> = emptyList(),
+    onResetDemoData: () -> Unit = {}
 ) {
+    var confirmReset by rememberSaveable { mutableStateOf(false) }
     val spacing = AbcTheme.spacing
     Column(
         modifier = modifier
@@ -147,9 +156,22 @@ fun ProfileScreen(
                 )
                 is ProfileUiState.Content -> {
                     PersonaCard(state)
-                    if (menu.isNotEmpty()) {
-                        Spacer(Modifier.height(spacing.space4))
-                        ProfileMenu(menu)
+                    Spacer(Modifier.height(spacing.space4))
+                    ProfileMenu(
+                        menu + ProfileMenuItem(
+                            R.drawable.ic_rotate_ccw,
+                            stringResource(R.string.profile_reset_demo),
+                            { confirmReset = true }
+                        )
+                    )
+                    resetMessage(state.reset)?.let { (text, isError) ->
+                        Spacer(Modifier.height(spacing.space2))
+                        Text(
+                            text = text,
+                            style = AbcTheme.typography.small,
+                            color = if (isError) AbcTheme.colors.danger else AbcTheme.colors.textMuted,
+                            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+                        )
                     }
                 }
             }
@@ -164,6 +186,28 @@ fun ProfileScreen(
             Spacer(Modifier.height(spacing.space6 + LocalBottomBarClearance.current))
         }
     }
+    if (confirmReset) {
+        AbcConfirmDialog(
+            title = stringResource(R.string.profile_reset_title),
+            text = stringResource(R.string.profile_reset_text),
+            confirmLabel = stringResource(R.string.action_reset),
+            cancelLabel = stringResource(R.string.action_cancel),
+            onConfirm = {
+                confirmReset = false
+                onResetDemoData()
+            },
+            onDismiss = { confirmReset = false }
+        )
+    }
+}
+
+/** The line under the menu while and after Reset Demo Data runs; null when not asked. */
+@Composable
+private fun resetMessage(status: ResetStatus): Pair<String, Boolean>? = when (status) {
+    ResetStatus.IDLE -> null
+    ResetStatus.RESETTING -> stringResource(R.string.profile_resetting) to false
+    ResetStatus.DONE -> stringResource(R.string.profile_reset_done) to false
+    ResetStatus.FAILED -> stringResource(R.string.profile_reset_failed) to true
 }
 
 @Composable

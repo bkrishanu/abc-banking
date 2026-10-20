@@ -571,4 +571,12 @@
     <string name="cd_send">Send</string>
     <string name="cd_expanded">Expanded</string>
     <string name="cd_collapsed">Collapsed</string>
+    <!-- Reset Demo Data (PRD section 08) -->
+    <string name="profile_reset_demo">Reset Demo Data</string>
+    <string name="profile_reset_title">Reset Demo Data?</string>
+    <string name="profile_reset_text">This puts this customer\'s accounts, transactions, payees, bills and alerts back to the start of the demo. Anything done in the demo is removed.</string>
+    <string name="action_reset">Reset</string>
+    <string name="profile_resetting">Resetting the demo data…</string>
+    <string name="profile_reset_done">Demo data reset.</string>
+    <string name="profile_reset_failed">The demo data could not be reset. Check your connection and try again.</string>
 </resources>

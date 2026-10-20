@@ -16,9 +16,13 @@ sealed interface ProfileUiState {
         val personaId: PersonaId,
         val name: String,
         val customerId: String,
-        val isOffline: Boolean
+        val isOffline: Boolean,
+        val reset: ResetStatus = ResetStatus.IDLE
     ) : ProfileUiState
 
     /** Logged out; the screen hands over to the login screen. */
     data object LoggedOut : ProfileUiState
 }
+
+/** Reset Demo Data: not asked, rewriting, done, or failed. */
+enum class ResetStatus { IDLE, RESETTING, DONE, FAILED }
