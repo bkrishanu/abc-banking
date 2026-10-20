@@ -13,6 +13,8 @@ This repository outlines the functional scope, screen flows, and technical requi
   - Background dismissal: Mask screen buffer on app switcher; force re-authentication after 300 seconds in background.
 - **Device Binding**: Simulated public-key registration to associate the device hardware with the user session.
 
+> **Decided (2026-10-20).** Device binding runs in the background on every launch: the first creates an EC P-256 key pair in Android Keystore and stores its public key, the device model and the registration time under the user's devices; later launches find it registered and write nothing. There is no screen for it.
+
 > **Decided (2026-10-20).** The session locks after 30 minutes without a touch while the app is open, or when it returns after 300 seconds or more in the background; a shorter absence does not count as idle time. The lock screen covers everything, including open sheets, and shows "Welcome back, Samanta", the MPIN pad (sharing the 5-attempt, 30 s lockout) and Not You?, which logs out and opens the login screen. Unlocking returns to the same screen with any draft intact. Back does nothing on the lock screen.
 
 > **Decided (PRD 08, 2026-10-17).** Login is a demo customer ID (`SAMJOH01`, `MARLEE01`, `GRAWHI01`, `DANOKA01`) plus the MPIN `123456`. There is no biometric unlock. 5 wrong MPIN entries lock entry for 30 s. Each persona's data is written once per install and kept; a different customer ID switches to that persona's data (revised 2026-10-20: login never waits for Firestore). After a session lock the app asks for the MPIN only and shows "Not you?" to log in with another ID. Profile has Log Out and a hidden Reset Demo Data action.
