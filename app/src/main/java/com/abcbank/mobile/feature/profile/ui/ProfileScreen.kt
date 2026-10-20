@@ -36,6 +36,7 @@ import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.ErrorState
+import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.ProfileAvatar
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
@@ -44,7 +45,7 @@ import com.abcbank.mobile.core.model.PersonaId
 
 @Composable
 fun ProfileRoute(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onLoggedOut: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -67,7 +68,8 @@ fun ProfileRoute(
 @Composable
 fun ProfileScreen(
     state: ProfileUiState,
-    onBack: () -> Unit,
+    /** Null when Profile is a tab: there is nothing to go back to. */
+    onBack: (() -> Unit)?,
     onLogOut: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
@@ -80,13 +82,17 @@ fun ProfileScreen(
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .verticalScroll(rememberScrollState())
     ) {
-        IconButton(onClick = onBack, modifier = Modifier.size(AbcTheme.dimens.touchTarget)) {
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_left),
-                contentDescription = stringResource(R.string.cd_back),
-                tint = AbcTheme.colors.text,
-                modifier = Modifier.size(AbcTheme.dimens.iconLarge)
-            )
+        if (onBack != null) {
+            IconButton(onClick = onBack, modifier = Modifier.size(AbcTheme.dimens.touchTarget)) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_left),
+                    contentDescription = stringResource(R.string.cd_back),
+                    tint = AbcTheme.colors.text,
+                    modifier = Modifier.size(AbcTheme.dimens.iconLarge)
+                )
+            }
+        } else {
+            Spacer(Modifier.height(spacing.space4))
         }
         Column(Modifier.padding(horizontal = spacing.space4)) {
             Text(
@@ -123,7 +129,7 @@ fun ProfileScreen(
                     variant = AbcButtonVariant.Secondary
                 )
             }
-            Spacer(Modifier.height(spacing.space6))
+            Spacer(Modifier.height(spacing.space6 + LocalBottomBarClearance.current))
         }
     }
 }
@@ -169,7 +175,7 @@ private fun ProfileSkeleton() {
 
 @Composable
 private fun ProfilePreview(state: ProfileUiState) {
-    AbcTheme { ProfileScreen(state = state, onBack = {}, onLogOut = {}, onRetry = {}) }
+    AbcTheme { ProfileScreen(state = state, onBack = null, onLogOut = {}, onRetry = {}) }
 }
 
 @Preview(widthDp = 360, heightDp = 800)

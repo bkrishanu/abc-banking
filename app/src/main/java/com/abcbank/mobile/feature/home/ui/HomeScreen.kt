@@ -51,6 +51,7 @@ import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.ErrorState
 import com.abcbank.mobile.core.designsystem.component.GreetingTopBar
 import com.abcbank.mobile.core.designsystem.component.GridPill
+import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
@@ -118,7 +119,7 @@ fun HomeScreen(
             }
             is HomeUiState.Content -> HomeContent(state, actions, onToggleBalances)
         }
-        Spacer(Modifier.height(AbcTheme.spacing.space6))
+        Spacer(Modifier.height(AbcTheme.spacing.space6 + LocalBottomBarClearance.current))
     }
 }
 

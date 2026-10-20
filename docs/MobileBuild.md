@@ -89,6 +89,8 @@ This repository outlines the functional scope, screen flows, and technical requi
 
 > **Decided (PRD 01, 07, 08).** Reveal is protected by MPIN step-up, not biometric (see 1.2). Only Google Wallet is shown.
 
+> **Decided (2026-10-20).** Revealed details stay in memory only and are hidden again on another card, on Hide, when the screen is left and when the app goes to the background. Add to Google Wallet shows a success state for the session ("Demo only. No card was added to a real wallet."); nothing is stored.
+
 ### 4.2 Security Controls
 - **Card Freeze**: Immediate toggle to block POS, ATM, and e-commerce transactions.
 - **Transaction Limits**: Sliders for daily ATM cash withdrawal limit and daily retail purchase limit.
@@ -97,6 +99,8 @@ This repository outlines the functional scope, screen flows, and technical requi
   - Online / Card-Not-Present Transactions.
   - Contactless / NFC Payments.
 - **Travel Notices**: Date-picker workflow to declare travel destinations for automated fraud whitelist.
+
+> **Decided (2026-10-20).** Freezing asks for confirmation first (unfreezing does not). Limit sliders move in $100 steps, or $500 when the maximum is above $10,000, from one step up to the card's maximum; changes are a draft until Save Limits, which needs step-up. Credit cards adjust only the cash advance limit (purchases follow available credit). Channel switches save at once, without step-up. A travel notice needs a destination (up to 40 characters), starts today or later, ends on or after its start, and covers at most one year; it is active from its first through its last day. Notices are added, not edited or deleted, in v1.
 
 ---
 

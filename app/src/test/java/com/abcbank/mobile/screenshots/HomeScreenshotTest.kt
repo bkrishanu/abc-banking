@@ -11,6 +11,9 @@ import com.abcbank.mobile.feature.accounts.ui.TransactionDetailUiState
 import com.abcbank.mobile.feature.accounts.ui.TransactionsEvents
 import com.abcbank.mobile.feature.accounts.ui.TransactionsPreviewData
 import com.abcbank.mobile.feature.accounts.ui.TransactionsScreen
+import com.abcbank.mobile.feature.cards.ui.CardsEvents
+import com.abcbank.mobile.feature.cards.ui.CardsPreviewData
+import com.abcbank.mobile.feature.cards.ui.CardsScreen
 import com.abcbank.mobile.feature.home.ui.HomeActions
 import com.abcbank.mobile.feature.home.ui.HomePreviewData
 import com.abcbank.mobile.feature.home.ui.HomeScreen
@@ -76,7 +79,7 @@ class ProfileScreenshotTest {
     fun error() = snapshot(ProfileUiState.Error(DataError.UNKNOWN))
 
     private fun snapshot(state: ProfileUiState) = paparazzi.snapshot {
-        AbcTheme { ProfileScreen(state = state, onBack = {}, onLogOut = {}, onRetry = {}) }
+        AbcTheme { ProfileScreen(state = state, onBack = null, onLogOut = {}, onRetry = {}) }
     }
 }
 
@@ -148,6 +151,38 @@ class TransactionActionsScreenshotTest {
                 onRetry = {}
             )
         }
+    }
+}
+
+/** The Cards tab (PRD feature 10). */
+class CardsScreenshotTest {
+    @get:Rule
+    val paparazzi = Paparazzi(deviceConfig = TALL_360.copy(screenHeight = 3 * 1900))
+
+    @Test
+    fun samanta() = paparazzi.snapshot {
+        AbcTheme { CardsScreen(CardsPreviewData.samanta(), CardsEvents()) }
+    }
+
+    @Test
+    fun travelRevealedWalletAdded() = paparazzi.snapshot {
+        AbcTheme { CardsScreen(CardsPreviewData.travelRevealed(), CardsEvents()) }
+    }
+
+    @Test
+    fun signatureFrozen() = paparazzi.snapshot {
+        AbcTheme { CardsScreen(CardsPreviewData.signatureFrozen(), CardsEvents()) }
+    }
+}
+
+/** Cards at 200% font scale. */
+class CardsLargeFontScreenshotTest {
+    @get:Rule
+    val paparazzi = Paparazzi(deviceConfig = TALL_360.copy(fontScale = 2f, screenHeight = 3 * 2600))
+
+    @Test
+    fun samanta() = paparazzi.snapshot {
+        AbcTheme { CardsScreen(CardsPreviewData.samanta(), CardsEvents()) }
     }
 }
 

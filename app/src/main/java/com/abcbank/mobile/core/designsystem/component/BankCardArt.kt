@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -23,10 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.tooling.preview.Preview
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.designsystem.theme.BANK_CARD_ASPECT_RATIO
 import com.abcbank.mobile.core.designsystem.theme.CardGradient
+import kotlin.math.roundToInt
 
 /** The fluid artwork on a card face (DESIGN_SYSTEM.md section 02). */
 enum class CardArtPattern {
@@ -50,19 +51,30 @@ fun BankCardArt(
     pattern: CardArtPattern = CardArtPattern.Waves,
     showChip: Boolean = false,
     scrim: Boolean = true,
+    growToFit: Boolean = false,
     content: @Composable BoxScope.() -> Unit = {}
 ) {
     val scrimColor = AbcTheme.colors.cardScrim
     Box(
         modifier = modifier
-            .aspectRatio(BANK_CARD_ASPECT_RATIO)
-            .clip(AbcTheme.shapes.lg)
+            .then(
+                if (growToFit) {
+                    Modifier.minAspectRatio(
+                        BANK_CARD_ASPECT_RATIO
+                    )
+                } else {
+                    Modifier.aspectRatio(BANK_CARD_ASPECT_RATIO)
+                }
+            )
+            .clip(AbcTheme.shapes.lg),
+        // When growing, content gets the card's height as its minimum, so it can fill the face.
+        propagateMinConstraints = growToFit
     ) {
         // The artwork is softened like the fluid 3D art in the samples (Android 12+; older devices
         // show it crisp). The chip and scrim stay sharp on a layer above.
         Canvas(
             Modifier
-                .fillMaxSize()
+                .matchParentSize()
                 .blur(AbcTheme.dimens.cardArtBlur, BlurredEdgeTreatment.Rectangle)
         ) {
             when (pattern) {
@@ -70,7 +82,7 @@ fun BankCardArt(
                 CardArtPattern.Waves -> drawWaves(gradient)
             }
         }
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(Modifier.matchParentSize()) {
             if (showChip) drawChip(gradient)
             if (scrim) {
                 drawRect(Brush.verticalGradient(listOf(Color.Transparent, scrimColor)))
@@ -78,6 +90,16 @@ fun BankCardArt(
         }
         content()
     }
+}
+
+/**
+ * At least the card's proportions, taller when the content needs it (a card face at 200% font
+ * scale). The usual aspectRatio would clip that content instead.
+ */
+private fun Modifier.minAspectRatio(ratio: Float): Modifier = layout { measurable, constraints ->
+    val minHeight = (constraints.maxWidth / ratio).roundToInt().coerceAtMost(constraints.maxHeight)
+    val placeable = measurable.measure(constraints.copy(minHeight = minHeight))
+    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
 
 // Shapes are laid out in fractions of the card so they scale with any card width.

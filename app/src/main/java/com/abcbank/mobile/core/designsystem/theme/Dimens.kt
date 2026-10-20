@@ -26,7 +26,10 @@ data class AbcDimens(
     val unreadDot: Dp = 8.dp,
     val skeletonLine: Dp = 16.dp,
     val cardArtBlur: Dp = 2.dp,
-    val chipHeight: Dp = 40.dp
+    val chipHeight: Dp = 40.dp,
+    val cardPeek: Dp = 24.dp,
+    val bottomBarHeight: Dp = 64.dp,
+    val bottomBarDot: Dp = 4.dp
 )
 
 internal val DefaultAbcDimens = AbcDimens()
