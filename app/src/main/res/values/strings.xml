@@ -169,4 +169,10 @@
     <string name="dispute_bank_reply">Thanks for letting us know. We\'re reviewing this charge and will update you here within 5 business days.</string>
     <string name="dispute_under_review">This charge is under review. We\'ll update you in Support.</string>
     <string name="dispute_failed">We couldn\'t send the dispute. Try again.</string>
+    <!-- Step-up -->
+    <string name="step_up_title">Enter Your MPIN</string>
+    <string name="step_up_reason_add_beneficiary">Confirm it\'s you to add a payee.</string>
+    <string name="step_up_reason_transfer">Confirm it\'s you to send %1$s.</string>
+    <string name="step_up_reason_card_limits">Confirm it\'s you to change your card limits.</string>
+    <string name="step_up_reason_reveal_card">Confirm it\'s you to see your card details.</string>
 </resources>
