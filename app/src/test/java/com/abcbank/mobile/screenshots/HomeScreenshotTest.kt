@@ -5,6 +5,12 @@ import app.cash.paparazzi.Paparazzi
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.model.PersonaId
+import com.abcbank.mobile.core.model.TransactionCategory
+import com.abcbank.mobile.feature.accounts.ui.TransactionDetailScreen
+import com.abcbank.mobile.feature.accounts.ui.TransactionDetailUiState
+import com.abcbank.mobile.feature.accounts.ui.TransactionsEvents
+import com.abcbank.mobile.feature.accounts.ui.TransactionsPreviewData
+import com.abcbank.mobile.feature.accounts.ui.TransactionsScreen
 import com.abcbank.mobile.feature.home.ui.HomeActions
 import com.abcbank.mobile.feature.home.ui.HomePreviewData
 import com.abcbank.mobile.feature.home.ui.HomeScreen
@@ -12,6 +18,8 @@ import com.abcbank.mobile.feature.home.ui.HomeUiState
 import com.abcbank.mobile.feature.profile.ui.ProfileScreen
 import com.abcbank.mobile.feature.profile.ui.ProfileUiState
 import com.android.resources.Density
+import java.time.LocalDate
+import java.time.LocalTime
 import org.junit.Rule
 import org.junit.Test
 
@@ -72,10 +80,55 @@ class ProfileScreenshotTest {
     }
 }
 
+/** Transaction ledger and detail (PRD feature 6). */
+class TransactionsScreenshotTest {
+    @get:Rule
+    val paparazzi = Paparazzi(deviceConfig = TALL_360)
+
+    @Test
+    fun ledger() = paparazzi.snapshot {
+        AbcTheme { TransactionsScreen(TransactionsPreviewData.content(), TransactionsEvents()) }
+    }
+
+    @Test
+    fun ledgerNoMatch() = paparazzi.snapshot {
+        AbcTheme { TransactionsScreen(TransactionsPreviewData.noMatch(), TransactionsEvents()) }
+    }
+
+    @Test
+    fun detailDisputed() = paparazzi.snapshot {
+        AbcTheme {
+            TransactionDetailScreen(
+                state = TransactionDetailUiState.Content(
+                    transaction = TransactionsPreviewData.transaction(
+                        "tx-016",
+                        "Melody Live Tickets",
+                        TransactionCategory.ENTERTAINMENT,
+                        -42_000,
+                        disputed = true
+                    ),
+                    account = TransactionsPreviewData.checking,
+                    date = LocalDate.of(2026, 10, 8),
+                    time = LocalTime.of(22, 10),
+                    balancesHidden = false,
+                    isOffline = false
+                ),
+                onBack = {},
+                onRetry = {}
+            )
+        }
+    }
+}
+
 /** 200% font scale (AGENTS.md section 07): balances shrink to fit, nothing clips. */
 class HomeLargeFontScreenshotTest {
     @get:Rule
     val paparazzi = Paparazzi(deviceConfig = TALL_360.copy(fontScale = 2f, screenHeight = 3 * 2600))
+
+    @Test
+    fun ledger() = paparazzi.snapshot {
+        AbcTheme { TransactionsScreen(TransactionsPreviewData.content(), TransactionsEvents()) }
+    }
 
     @Test
     fun samanta() = paparazzi.snapshot {

@@ -107,6 +107,45 @@ fun CategoryIcon(category: TransactionCategory, incoming: Boolean, modifier: Mod
     }
 }
 
+/** People (transfers in and out) get initials; businesses get their category icon. */
+@Composable
+fun TransactionLeadingIcon(
+    category: TransactionCategory,
+    merchant: String,
+    incoming: Boolean,
+    modifier: Modifier = Modifier
+) {
+    if (category == TransactionCategory.TRANSFER_IN ||
+        category == TransactionCategory.TRANSFER_OUT
+    ) {
+        InitialsAvatar(merchant, modifier)
+    } else {
+        CategoryIcon(category, incoming, modifier)
+    }
+}
+
+/** The category's display name, a label in Title Case. */
+@Composable
+fun categoryLabel(category: TransactionCategory): String = stringResource(
+    when (category) {
+        TransactionCategory.SHOPPING -> R.string.category_shopping
+        TransactionCategory.DINING -> R.string.category_dining
+        TransactionCategory.GROCERIES -> R.string.category_groceries
+        TransactionCategory.ENTERTAINMENT -> R.string.category_entertainment
+        TransactionCategory.TRAVEL -> R.string.category_travel
+        TransactionCategory.TRANSPORT -> R.string.category_transport
+        TransactionCategory.HEALTH -> R.string.category_health
+        TransactionCategory.UTILITIES -> R.string.category_utilities
+        TransactionCategory.HOUSING -> R.string.category_housing
+        TransactionCategory.INCOME -> R.string.category_income
+        TransactionCategory.INTEREST -> R.string.category_interest
+        TransactionCategory.TRANSFER -> R.string.category_transfer
+        TransactionCategory.TRANSFER_IN -> R.string.category_transfer_in
+        TransactionCategory.TRANSFER_OUT -> R.string.category_transfer_out
+        TransactionCategory.DEPOSIT -> R.string.category_deposit
+    }
+)
+
 @DrawableRes
 fun TransactionCategory.iconRes(): Int = when (this) {
     TransactionCategory.SHOPPING -> R.drawable.ic_shopping_bag

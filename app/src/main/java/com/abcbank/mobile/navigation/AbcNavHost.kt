@@ -11,6 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.abcbank.mobile.core.designsystem.theme.AbcMotion
+import com.abcbank.mobile.feature.accounts.ui.TransactionDetailRoute
+import com.abcbank.mobile.feature.accounts.ui.TransactionsRoute
 import com.abcbank.mobile.feature.auth.ui.LoginRoute
 import com.abcbank.mobile.feature.auth.ui.WelcomeScreen
 import com.abcbank.mobile.feature.home.ui.HomeActions
@@ -29,6 +31,13 @@ data object HomeDestination
 
 @Serializable
 data object ProfileDestination
+
+/** Property names match TransactionsViewModel.ARG_ACCOUNT_ID and the detail screen's argument. */
+@Serializable
+data class TransactionsDestination(val accountId: String? = null)
+
+@Serializable
+data class TransactionDetailDestination(val transactionId: String)
 
 @Composable
 fun AbcNavHost(modifier: Modifier = Modifier) {
@@ -60,10 +69,22 @@ fun AbcNavHost(modifier: Modifier = Modifier) {
             // Notifications, transfer, bill pay and products are not built yet; their actions
             // are no-ops until each destination exists.
             HomeRoute(
-                actions = HomeActions(onProfile = {
-                    navController.navigate(ProfileDestination)
-                })
+                actions = HomeActions(
+                    onProfile = { navController.navigate(ProfileDestination) },
+                    onViewAllTransactions = { navController.navigate(TransactionsDestination()) },
+                    onAccount = { navController.navigate(TransactionsDestination(accountId = it)) },
+                    onTransaction = { navController.navigate(TransactionDetailDestination(it)) }
+                )
             )
+        }
+        composable<TransactionsDestination> {
+            TransactionsRoute(
+                onBack = { navController.popBackStack() },
+                onTransaction = { navController.navigate(TransactionDetailDestination(it)) }
+            )
+        }
+        composable<TransactionDetailDestination> {
+            TransactionDetailRoute(onBack = { navController.popBackStack() })
         }
         composable<ProfileDestination> {
             ProfileRoute(

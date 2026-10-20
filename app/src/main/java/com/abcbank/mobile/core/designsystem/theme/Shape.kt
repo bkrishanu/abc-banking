@@ -15,6 +15,9 @@ data class AbcShapes(
     val lg: Shape = RoundedCornerShape(20.dp),
     val xl: Shape = RoundedCornerShape(28.dp),
     val sheet: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+    // The first and last row of a long list drawn as one content card, row by row.
+    val xlTop: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+    val xlBottom: Shape = RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp),
     val full: Shape = CircleShape
 )
 

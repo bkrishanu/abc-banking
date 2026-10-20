@@ -43,6 +43,8 @@ This repository outlines the functional scope, screen flows, and technical requi
   - Merchant name, logo, timestamp, reference number, running ledger balance, and categorized spend tag.
   - Action buttons: "Download Receipt (PDF)" and "Dispute Transaction".
 
+> **Decided (2026-10-20).** The ledger opens from Home's "View All" (every account) or from an account row (that account). Date range: Last 30 Days (default), Last 90 Days or All Time. Groups: Today, Yesterday, Last 30 Days, then Earlier when the range is longer. Type chips: All / Spendings (debits) / Earnings (credits). Categories: any number, chosen in a filter sheet. Search: merchant name, case-insensitive. All filters combine. Firestore is read by date only; type, category and search filter on the device, so they need no index. Receipt PDF and dispute are built as a second step.
+
 ### 2.3 Deposit Check
 
 > **Added (PRD 08, 2026-10-17).** Not in the original spec; the quick action in 2.1 opens this flow.

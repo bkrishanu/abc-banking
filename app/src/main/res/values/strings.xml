@@ -95,4 +95,62 @@
     <string name="profile_empty">Your profile will show here.</string>
     <string name="profile_error">We couldn\'t load your profile.</string>
     <string name="action_log_out">Log Out</string>
+
+    <!-- Transactions -->
+    <string name="transactions_title">Transactions</string>
+    <string name="transactions_search_label">Search</string>
+    <string name="transactions_search_placeholder">Merchant name</string>
+    <string name="transactions_type_all">All</string>
+    <string name="transactions_type_spendings">Spendings</string>
+    <string name="transactions_type_earnings">Earnings</string>
+    <string name="transactions_filter">Filter</string>
+    <string name="transactions_filter_count">Filter (%1$d)</string>
+    <string name="transactions_filter_title">Filter Transactions</string>
+    <string name="transactions_date_range">Date Range</string>
+    <string name="transactions_range_30">Last 30 Days</string>
+    <string name="transactions_range_90">Last 90 Days</string>
+    <string name="transactions_range_all">All Time</string>
+    <string name="transactions_categories">Categories</string>
+    <string name="transactions_clear_filters">Clear Filters</string>
+    <string name="transactions_show_all_time">Show All Time</string>
+    <string name="action_done">Done</string>
+    <string name="transactions_group_today">Today</string>
+    <string name="transactions_group_yesterday">Yesterday</string>
+    <string name="transactions_group_last_30">Last 30 Days</string>
+    <string name="transactions_group_earlier">Earlier</string>
+    <string name="transactions_empty">No transactions in this period.</string>
+    <string name="transactions_no_match">No transactions match your filters.</string>
+    <string name="transactions_error">We couldn\'t load your transactions.</string>
+
+    <!-- Transaction detail -->
+    <string name="transaction_detail_title">Transaction Details</string>
+    <string name="transaction_detail_date">Date</string>
+    <string name="transaction_detail_time">Time</string>
+    <string name="transaction_detail_account">Account</string>
+    <string name="transaction_detail_category">Category</string>
+    <string name="transaction_detail_status">Status</string>
+    <string name="transaction_detail_running_balance">Running Balance</string>
+    <string name="transaction_detail_reference">Reference</string>
+    <string name="transaction_status_posted">Posted</string>
+    <string name="transaction_status_pending">Pending</string>
+    <string name="transaction_disputed">Disputed</string>
+    <string name="transaction_not_found">We couldn\'t find this transaction.</string>
+    <string name="account_name_last4">%1$s ••%2$s</string>
+
+    <!-- Categories (labels, Title Case) -->
+    <string name="category_shopping">Shopping</string>
+    <string name="category_dining">Dining</string>
+    <string name="category_groceries">Groceries</string>
+    <string name="category_entertainment">Entertainment</string>
+    <string name="category_travel">Travel</string>
+    <string name="category_transport">Transport</string>
+    <string name="category_health">Health</string>
+    <string name="category_utilities">Utilities</string>
+    <string name="category_housing">Housing</string>
+    <string name="category_income">Income</string>
+    <string name="category_interest">Interest</string>
+    <string name="category_transfer">Transfer</string>
+    <string name="category_transfer_in">Transfer In</string>
+    <string name="category_transfer_out">Transfer Out</string>
+    <string name="category_deposit">Deposit</string>
 </resources>

@@ -2,6 +2,7 @@ package com.abcbank.mobile.feature.home.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -46,20 +47,18 @@ import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
 import com.abcbank.mobile.core.designsystem.component.ActionPill
 import com.abcbank.mobile.core.designsystem.component.BalanceText
-import com.abcbank.mobile.core.designsystem.component.CategoryIcon
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.ErrorState
 import com.abcbank.mobile.core.designsystem.component.GreetingTopBar
 import com.abcbank.mobile.core.designsystem.component.GridPill
-import com.abcbank.mobile.core.designsystem.component.InitialsAvatar
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
+import com.abcbank.mobile.core.designsystem.component.TransactionLeadingIcon
 import com.abcbank.mobile.core.designsystem.component.TransactionRow
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.designsystem.theme.BANK_CARD_ASPECT_RATIO
 import com.abcbank.mobile.core.model.Money
-import com.abcbank.mobile.core.model.TransactionCategory
 import com.abcbank.mobile.core.model.TransactionDirection
 import com.abcbank.mobile.core.model.TransactionStatus
 
@@ -71,6 +70,8 @@ data class HomeActions(
     val onPayBills: () -> Unit = {},
     val onMoreActions: () -> Unit = {},
     val onViewAllTransactions: () -> Unit = {},
+    val onAccount: (accountId: String) -> Unit = {},
+    val onTransaction: (transactionId: String) -> Unit = {},
     val onExploreProducts: () -> Unit = {}
 )
 
@@ -144,7 +145,7 @@ private fun HomeContent(
     Spacer(Modifier.height(spacing.space6))
 
     SectionHeader(title = stringResource(R.string.home_accounts))
-    AccountsCard(state.accounts, state.balancesHidden)
+    AccountsCard(state.accounts, state.balancesHidden, actions.onAccount)
     if (state.showNoInvestments) {
         Spacer(Modifier.height(spacing.space4))
         EmptyCard(stringResource(R.string.home_no_investments), actions.onExploreProducts)
@@ -164,7 +165,9 @@ private fun HomeContent(
                 color = AbcTheme.colors.textMuted
             )
         }
-        state.latestTransactions.forEach { item -> LatestTransaction(item, state.balancesHidden) }
+        state.latestTransactions.forEach { item ->
+            LatestTransaction(item, state.balancesHidden, actions.onTransaction)
+        }
     }
 }
 
@@ -325,7 +328,11 @@ private fun FlowChip(@DrawableRes icon: Int, money: Money, hidden: Boolean, inco
 }
 
 @Composable
-private fun LatestTransaction(item: HomeTransactionItem, hidden: Boolean) {
+private fun LatestTransaction(
+    item: HomeTransactionItem,
+    hidden: Boolean,
+    onClick: (String) -> Unit
+) {
     val transaction = item.transaction
     val time = DateFormatter.time(item.time)
     val whenText = when (item.day) {
@@ -349,15 +356,9 @@ private fun LatestTransaction(item: HomeTransactionItem, hidden: Boolean) {
         amount = transaction.signedAmount,
         hidden = hidden,
         leading = {
-            // People get initials; businesses get their category icon (DESIGN_SYSTEM.md 06).
-            if (transaction.category == TransactionCategory.TRANSFER_IN ||
-                transaction.category == TransactionCategory.TRANSFER_OUT
-            ) {
-                InitialsAvatar(transaction.merchant)
-            } else {
-                CategoryIcon(transaction.category, incoming)
-            }
-        }
+            TransactionLeadingIcon(transaction.category, transaction.merchant, incoming)
+        },
+        modifier = Modifier.clickable(onClick = { onClick(transaction.id) })
     )
 }
 

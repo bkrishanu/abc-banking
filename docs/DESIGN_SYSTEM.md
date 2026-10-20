@@ -161,6 +161,7 @@ Action pills
 Chips (`FilterChipRow`)
 - Segmented filters such as All / Spendings / Earnings. 40dp tall, radius-full.
 - Selected: surface background on a surfaceMuted track. Unselected: transparent with border.
+- Labels stay on one line and shrink (down to 8sp) at large font scales rather than breaking a word. TalkBack reads the row as a selectable group of tabs.
 
 Cards and lists
 - `ContentCard`: surface, radius-xl, padding space-4 (space-5 for charts).
@@ -173,7 +174,8 @@ Cards and lists
 - `ProfileAvatar`: the signed-in persona's photo (`avatar_{personaId}`) cropped to a circle with `ContentScale.Crop`; 32dp in `AbcTopBar`, 72dp on the lock screen and Profile. Falls back to initials on surfaceMuted. Decorative next to the name (contentDescription null), otherwise "Profile photo". Add contact is a 48dp accent circle with a plus.
 - `FeatureTile`: 140 x 120dp, radius-lg, surface, illustration top, Body title bottom.
 - `SectionHeader`: H3 title left, Ghost "View All" or "Filter" with icon right. "View All" is underlined Small muted.
-- `StatusBadge`: Small label in a radius-full pill (Pending, Frozen, Scheduled).
+- `StatusBadge`: Small label in a radius-full pill (Pending, Frozen, Scheduled) on surface with a 1dp outline in the tone colour: Neutral textMuted, Warning (Disputed), Danger (Frozen).
+- `TransactionLeadingIcon`: picks `InitialsAvatar` for people (Transfer in/out) or `CategoryIcon` for businesses; Home and the ledger share it. `categoryLabel()` gives each category's Title Case name.
 - `AdaptiveRow`: a label on the start side and an amount on the end side (account and transaction rows). Side by side when the amount fits unwrapped and no word of the label has to break; otherwise the amount moves below the label, end-aligned, so money never splits across lines at 200% font scale.
 - `CategoryIcon`: the `TransactionRow` leading circle for businesses: accent fill for money out, positive fill for money in, Lucide category icon in `text` colour (white on accent fails contrast). People (Transfer in/out) get `InitialsAvatar` instead: 40dp, initials in Label on surfaceMuted.
 
@@ -265,6 +267,10 @@ How the sample PNGs map to app screens. Use them for layout and feel, not as pix
 - Eye toggle masks every amount on the screen; the choice lasts for the session (`SessionManager`, in memory).
 - Loading: skeleton of the top bar, header and three cards. Error: `ErrorState` "We couldn't load your accounts." Empty (no accounts): "Your accounts will show here." with Explore Products.
 - No bottom bar yet: it arrives with the Cards tab, so it never offers tabs that do not exist. Until their screens are built, the bell, pills, View All and Explore Products do nothing.
+
+`TransactionsScreen` layout (2026-10-20): back arrow, H1 "Transactions" (or the account nickname with "••last4" in Small muted when opened from an account), space-4, `AbcTextField` "Search" (placeholder "Merchant name"), space-4, `FilterChipRow` All / Spendings / Earnings, then a `SectionHeader` with the date range as its title and "Filter" (or "Filter (2)") opening an `AbcBottomSheet`: H2 "Filter Transactions", H3 "Date Range" with radio rows, H3 "Categories" with checkbox rows, Primary "Done", Ghost "Clear Filters"; changes apply as they are made. Groups: Small muted header (Today, Yesterday, Last 30 Days, Earlier) over the rows drawn as one content card (`xlTop`/`xlBottom` shapes on the first and last row, dividers between) in a lazy list. Rows show the time in Today and Yesterday, otherwise "Oct 16, 7:00 am", plus " · Pending". Empty period: "No transactions in this period." with Secondary "Show All Time". Filters hide everything: "No transactions match your filters." with Secondary "Clear Filters".
+
+`TransactionDetailScreen` layout (2026-10-20): back arrow, H1 "Transaction Details", space-6, `ContentCard` (padding space-5) centred: `TransactionLeadingIcon`, merchant in H2, signed amount in H1 tabular (positiveText for money in, masked with balances), `StatusBadge`s Pending and Disputed. space-4, `ContentCard` of label (Small muted) / value (Body) rows with dividers: Date, Time, Account ("Everyday Checking ••3144"), Category, Status, Running Balance, then Reference in Mono, moved under its label by `AdaptiveRow` when long. Not found: "We couldn't find this transaction."
 
 `ProfileScreen` layout (interim, 2026-10-20): back arrow, H1 "Profile", space-6, `ContentCard` (padding space-5) with the 72dp `ProfileAvatar`, the name in H2 and "Customer ID SAMJOH01" in Small muted, all centred; space-6, Secondary "Log Out" (shown in every state but loading, so a profile that fails to load never traps the user). Settings, documents, support and Reset Demo Data join it with their features, and it becomes the Profile tab when the bottom bar arrives.
 

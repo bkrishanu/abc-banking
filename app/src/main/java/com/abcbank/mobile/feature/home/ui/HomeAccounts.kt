@@ -1,5 +1,6 @@
 package com.abcbank.mobile.feature.home.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -30,17 +32,21 @@ import com.abcbank.mobile.core.model.TermDepositAccount
 
 /** The Accounts card: one row per account, as MobileBuild.md 2.1 lists what each type shows. */
 @Composable
-internal fun AccountsCard(accounts: List<HomeAccountItem>, hidden: Boolean) {
+internal fun AccountsCard(
+    accounts: List<HomeAccountItem>,
+    hidden: Boolean,
+    onAccount: (String) -> Unit
+) {
     ContentCard(padding = AbcTheme.spacing.space4) {
         accounts.forEachIndexed { index, item ->
             if (index > 0) HorizontalDivider(color = AbcTheme.colors.border)
-            AccountRow(item, hidden)
+            AccountRow(item, hidden, onClick = { onAccount(item.account.id) })
         }
     }
 }
 
 @Composable
-private fun AccountRow(item: HomeAccountItem, hidden: Boolean) {
+private fun AccountRow(item: HomeAccountItem, hidden: Boolean, onClick: () -> Unit) {
     val colors = AbcTheme.colors
     val typography = AbcTheme.typography
     val account = item.account
@@ -48,6 +54,7 @@ private fun AccountRow(item: HomeAccountItem, hidden: Boolean) {
     AdaptiveRow(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(vertical = AbcTheme.spacing.space3)
             .semantics(mergeDescendants = true) {},
         start = {
