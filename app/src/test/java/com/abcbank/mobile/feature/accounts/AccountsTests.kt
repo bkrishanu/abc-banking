@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.DataResult
+import com.abcbank.mobile.core.model.Account
 import com.abcbank.mobile.core.model.AccountType
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.Money
@@ -12,16 +13,24 @@ import com.abcbank.mobile.core.model.TransactionCategory
 import com.abcbank.mobile.core.model.TransactionDirection
 import com.abcbank.mobile.core.model.TransactionStatus
 import com.abcbank.mobile.core.security.SessionManager
+import com.abcbank.mobile.feature.accounts.domain.CreateReceiptUseCase
 import com.abcbank.mobile.feature.accounts.domain.DateRange
+import com.abcbank.mobile.feature.accounts.domain.DisputeMessages
+import com.abcbank.mobile.feature.accounts.domain.DisputeResult
+import com.abcbank.mobile.feature.accounts.domain.DisputeRules
+import com.abcbank.mobile.feature.accounts.domain.DisputeTransactionUseCase
 import com.abcbank.mobile.feature.accounts.domain.LedgerGroup
 import com.abcbank.mobile.feature.accounts.domain.LedgerRules
 import com.abcbank.mobile.feature.accounts.domain.ObserveLedgerUseCase
 import com.abcbank.mobile.feature.accounts.domain.ObserveTransactionUseCase
+import com.abcbank.mobile.feature.accounts.domain.ReceiptFile
+import com.abcbank.mobile.feature.accounts.domain.ReceiptGenerator
 import com.abcbank.mobile.feature.accounts.domain.TransactionDetail
 import com.abcbank.mobile.feature.accounts.domain.TransactionFilter
 import com.abcbank.mobile.feature.accounts.domain.TransactionsData
 import com.abcbank.mobile.feature.accounts.domain.TransactionsRepository
 import com.abcbank.mobile.feature.accounts.domain.TypeFilter
+import com.abcbank.mobile.feature.accounts.ui.ReceiptStatus
 import com.abcbank.mobile.feature.accounts.ui.TransactionDetailUiState
 import com.abcbank.mobile.feature.accounts.ui.TransactionDetailViewModel
 import com.abcbank.mobile.feature.accounts.ui.TransactionsUiState
@@ -36,6 +45,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -118,7 +128,26 @@ private class FakeTransactionsRepository : TransactionsRepository {
 
     override fun observeTransaction(transactionId: String): Flow<DataResult<TransactionDetail?>> =
         detail.filterNotNull()
+
+    val disputes = mutableListOf<Pair<String, DisputeMessages>>()
+    var disputeResult: DataResult<Unit> = DataResult.Success(Unit)
+
+    override suspend fun disputeTransaction(
+        transaction: Transaction,
+        messages: DisputeMessages
+    ): DataResult<Unit> {
+        disputes += transaction.id to messages
+        return disputeResult
+    }
 }
+
+private class FakeReceiptGenerator : ReceiptGenerator {
+    var result: DataResult<ReceiptFile> = DataResult.Success(ReceiptFile("content://receipt"))
+
+    override suspend fun createReceipt(transaction: Transaction, account: Account?) = result
+}
+
+private val MESSAGES = DisputeMessages("topic", "customer", "bank")
 
 class LedgerRulesTest {
     @Test
@@ -327,11 +356,59 @@ class TransactionsViewModelTest {
     }
 }
 
+class DisputeTests {
+    private val repository = FakeTransactionsRepository()
+    private val dispute = DisputeTransactionUseCase(repository)
+
+    @Test
+    fun `only posted charges that are not transfers or already disputed can be disputed`() {
+        val charge = tx("shop", -12_500, daysAgo(2))
+        assertTrue(DisputeRules.canDispute(charge))
+        assertFalse(
+            DisputeRules.canDispute(
+                tx("pay", 711_538, daysAgo(2), category = TransactionCategory.INCOME)
+            )
+        )
+        assertFalse(DisputeRules.canDispute(charge.copy(status = TransactionStatus.PENDING)))
+        assertFalse(
+            DisputeRules.canDispute(charge.copy(category = TransactionCategory.TRANSFER_OUT))
+        )
+        assertFalse(DisputeRules.canDispute(charge.copy(category = TransactionCategory.TRANSFER)))
+        assertFalse(DisputeRules.canDispute(charge.copy(disputed = true)))
+    }
+
+    @Test
+    fun `a charge is disputed with the given texts, anything else is refused without a write`() =
+        runTest {
+            assertEquals(
+                DisputeResult.Submitted,
+                dispute(tx("shop", -12_500, daysAgo(2)), MESSAGES)
+            )
+            assertEquals(listOf("shop" to MESSAGES), repository.disputes)
+
+            assertEquals(
+                DisputeResult.NotDisputable,
+                dispute(
+                    tx("pay", 711_538, daysAgo(2), category = TransactionCategory.INCOME),
+                    MESSAGES
+                )
+            )
+            assertEquals(1, repository.disputes.size)
+
+            repository.disputeResult = DataResult.Failure(DataError.PERMISSION_DENIED)
+            assertEquals(
+                DisputeResult.Failed(DataError.PERMISSION_DENIED),
+                dispute(tx("other", -500, daysAgo(2)), MESSAGES)
+            )
+        }
+}
+
 class TransactionDetailViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
     private val repository = FakeTransactionsRepository()
+    private val receipts = FakeReceiptGenerator()
 
     private fun viewModel(id: String?) = TransactionDetailViewModel(
         savedStateHandle = SavedStateHandle(
@@ -342,6 +419,8 @@ class TransactionDetailViewModelTest {
             ).toMap()
         ),
         observeTransaction = ObserveTransactionUseCase(repository),
+        createReceipt = CreateReceiptUseCase(receipts),
+        disputeTransaction = DisputeTransactionUseCase(repository),
         sessionManager = SessionManager().apply { toggleBalancesHidden() },
         zone = { UTC }
     )
@@ -371,6 +450,58 @@ class TransactionDetailViewModelTest {
             skipItems(1)
             repository.detail.value = DataResult.Success(null)
             assertEquals(TransactionDetailUiState.Empty, awaitItem())
+        }
+    }
+
+    @Test
+    fun `download receipt goes creating, ready, then idle once shared`() = runTest {
+        val viewModel = viewModel("boutique")
+        viewModel.uiState.test {
+            skipItems(1)
+            repository.detail.value =
+                DataResult.Success(TransactionDetail(SAMPLE[0], CHECKING, isFromCache = false))
+            val content = awaitItem() as TransactionDetailUiState.Content
+            assertTrue(content.canDispute)
+
+            viewModel.onDownloadReceipt()
+            assertEquals(
+                ReceiptStatus.Creating,
+                (awaitItem() as TransactionDetailUiState.Content).receipt
+            )
+            assertEquals(
+                ReceiptStatus.Ready(ReceiptFile("content://receipt")),
+                (awaitItem() as TransactionDetailUiState.Content).receipt
+            )
+
+            viewModel.onReceiptShared()
+            assertEquals(
+                ReceiptStatus.Idle,
+                (awaitItem() as TransactionDetailUiState.Content).receipt
+            )
+        }
+    }
+
+    @Test
+    fun `a receipt failure and a dispute failure are shown`() = runTest {
+        receipts.result = DataResult.Failure(DataError.UNKNOWN)
+        repository.disputeResult = DataResult.Failure(DataError.UNKNOWN)
+        val viewModel = viewModel("boutique")
+        viewModel.uiState.test {
+            skipItems(1)
+            repository.detail.value =
+                DataResult.Success(TransactionDetail(SAMPLE[0], CHECKING, isFromCache = false))
+            skipItems(1)
+
+            viewModel.onDownloadReceipt()
+            skipItems(1)
+            assertEquals(
+                ReceiptStatus.Failed,
+                (awaitItem() as TransactionDetailUiState.Content).receipt
+            )
+
+            viewModel.onDispute(MESSAGES)
+            assertTrue((awaitItem() as TransactionDetailUiState.Content).disputeFailed)
+            assertEquals(listOf("boutique" to MESSAGES), repository.disputes)
         }
     }
 }

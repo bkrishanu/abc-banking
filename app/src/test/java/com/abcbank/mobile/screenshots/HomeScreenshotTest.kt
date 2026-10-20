@@ -111,7 +111,38 @@ class TransactionsScreenshotTest {
                     date = LocalDate.of(2026, 10, 8),
                     time = LocalTime.of(22, 10),
                     balancesHidden = false,
-                    isOffline = false
+                    isOffline = false,
+                    canDispute = false
+                ),
+                onBack = {},
+                onRetry = {}
+            )
+        }
+    }
+}
+
+/** A charge that can be disputed: Download Receipt and Dispute Transaction. */
+class TransactionActionsScreenshotTest {
+    @get:Rule
+    val paparazzi = Paparazzi(deviceConfig = TALL_360)
+
+    @Test
+    fun detailCharge() = paparazzi.snapshot {
+        AbcTheme {
+            TransactionDetailScreen(
+                state = TransactionDetailUiState.Content(
+                    transaction = TransactionsPreviewData.transaction(
+                        "tx-001",
+                        "Aster & Vine Boutique",
+                        TransactionCategory.SHOPPING,
+                        -12_500
+                    ),
+                    account = TransactionsPreviewData.checking,
+                    date = LocalDate.of(2026, 10, 19),
+                    time = LocalTime.of(15, 14),
+                    balancesHidden = false,
+                    isOffline = false,
+                    canDispute = true
                 ),
                 onBack = {},
                 onRetry = {}

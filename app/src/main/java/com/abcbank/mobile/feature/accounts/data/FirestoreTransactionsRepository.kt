@@ -1,5 +1,6 @@
 package com.abcbank.mobile.feature.accounts.data
 
+import com.abcbank.mobile.core.common.Clock
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.common.DispatcherProvider
@@ -12,6 +13,8 @@ import com.abcbank.mobile.core.data.firebase.toDataError
 import com.abcbank.mobile.core.data.firebase.toTimestamp
 import com.abcbank.mobile.core.data.seed.ActivePersonaSource
 import com.abcbank.mobile.core.model.Account
+import com.abcbank.mobile.core.model.Transaction
+import com.abcbank.mobile.feature.accounts.domain.DisputeMessages
 import com.abcbank.mobile.feature.accounts.domain.TransactionDetail
 import com.abcbank.mobile.feature.accounts.domain.TransactionsData
 import com.abcbank.mobile.feature.accounts.domain.TransactionsRepository
@@ -21,6 +24,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import java.time.Instant
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -30,6 +34,7 @@ import kotlinx.coroutines.flow.flowOn
 
 class FirestoreTransactionsRepository @Inject constructor(
     private val auth: AuthDataSource,
+    private val clock: Clock,
     private val activePersona: ActivePersonaSource,
     private val firestore: FirebaseFirestore,
     private val dispatchers: DispatcherProvider
@@ -85,6 +90,57 @@ class FirestoreTransactionsRepository @Inject constructor(
             }
         }
 
+    override suspend fun disputeTransaction(
+        transaction: Transaction,
+        messages: DisputeMessages
+    ): DataResult<Unit> = try {
+        val uid = when (val result = auth.signedInUid()) {
+            is DataResult.Success -> result.value
+            is DataResult.Failure -> return result
+        }
+        val personaId = activePersona.activePersona()?.key
+            ?: return DataResult.Failure(DataError.UNKNOWN)
+        fun collection(name: String) =
+            firestore.collection(FirestorePaths.personaCollection(uid, personaId, name))
+        val now = clock.now().toTimestamp()
+        // Same shape as the seeded dispute (DEMO_DATA.md section 03, Support cases).
+        val supportCase = mapOf(
+            SupportCase.TRANSACTION_ID to transaction.id,
+            SupportCase.TOPIC to messages.topic,
+            SupportCase.STATUS to SupportCase.IN_REVIEW,
+            SupportCase.CREATED_AT to now,
+            SupportCase.MESSAGES to listOf(
+                mapOf(
+                    SupportCase.FROM to SupportCase.CUSTOMER,
+                    SupportCase.BODY to messages.customerMessage,
+                    SupportCase.SENT_AT to now
+                ),
+                mapOf(
+                    SupportCase.FROM to SupportCase.BANK,
+                    SupportCase.BODY to messages.bankReply,
+                    SupportCase.SENT_AT to now
+                )
+            )
+        )
+        firestore.batch()
+            .set(
+                collection(FirestorePaths.SUPPORT_CASES).document("dispute-${transaction.id}"),
+                supportCase
+            )
+            .update(
+                collection(FirestorePaths.TRANSACTIONS).document(transaction.id),
+                TransactionDto.DISPUTED,
+                true
+            )
+            // Not awaited, like every write: applied to the cache now, uploaded when possible.
+            .commit()
+        DataResult.Success(Unit)
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (error: Exception) {
+        DataResult.Failure(error.toDataError())
+    }
+
     /** Signs in, finds the active persona's tree, then hands its collections to [block]. */
     private fun <T> personaFlow(
         block: (collection: (String) -> CollectionReference) -> Flow<DataResult<T>>
@@ -111,6 +167,22 @@ class FirestoreTransactionsRepository @Inject constructor(
 
     private fun QuerySnapshot.toAccounts(): List<Account>? = documents.map {
         AccountDto.fromMap(it.data.orEmpty()).toAccount(it.id) ?: return null
+    }
+
+    // Field names of a supportCases document (ARCHITECTURE.md section 04). A SupportCaseDto
+    // arrives with the support hub, which reads these.
+    private object SupportCase {
+        const val TRANSACTION_ID = "transactionId"
+        const val TOPIC = "topic"
+        const val STATUS = "status"
+        const val CREATED_AT = "createdAt"
+        const val MESSAGES = "messages"
+        const val FROM = "from"
+        const val BODY = "body"
+        const val SENT_AT = "sentAt"
+        const val IN_REVIEW = "IN_REVIEW"
+        const val CUSTOMER = "CUSTOMER"
+        const val BANK = "BANK"
     }
 
     // A document that does not map is reported, never shown half-read (AGENTS.md section 04).

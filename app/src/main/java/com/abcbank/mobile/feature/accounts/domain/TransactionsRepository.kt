@@ -25,4 +25,13 @@ interface TransactionsRepository {
 
     /** Live. Success(null) when there is no such transaction. */
     fun observeTransaction(transactionId: String): Flow<DataResult<TransactionDetail?>>
+
+    /**
+     * Creates the support case and marks the transaction disputed in one batch, applied to the
+     * cache at once and uploaded in the background, like every other write.
+     */
+    suspend fun disputeTransaction(
+        transaction: Transaction,
+        messages: DisputeMessages
+    ): DataResult<Unit>
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Files the app shares through its FileProvider: generated PDFs in the cache only
+     (ARCHITECTURE.md section 04). Nothing in app storage is ever exposed. -->
+<paths>
+    <cache-path name="receipts" path="receipts/" />
+</paths>

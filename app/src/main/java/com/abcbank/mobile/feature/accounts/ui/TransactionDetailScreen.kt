@@ -1,5 +1,6 @@
 package com.abcbank.mobile.feature.accounts.ui
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,9 +21,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -32,12 +39,16 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abcbank.mobile.R
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.DateFormatter
 import com.abcbank.mobile.core.common.MoneyFormatter
+import com.abcbank.mobile.core.designsystem.component.AbcButton
+import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
+import com.abcbank.mobile.core.designsystem.component.AbcConfirmDialog
 import com.abcbank.mobile.core.designsystem.component.AdaptiveRow
 import com.abcbank.mobile.core.designsystem.component.BadgeTone
 import com.abcbank.mobile.core.designsystem.component.ContentCard
@@ -52,6 +63,7 @@ import com.abcbank.mobile.core.designsystem.theme.TABULAR_FIGURES
 import com.abcbank.mobile.core.model.TransactionCategory
 import com.abcbank.mobile.core.model.TransactionDirection
 import com.abcbank.mobile.core.model.TransactionStatus
+import com.abcbank.mobile.feature.accounts.domain.DisputeMessages
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -61,7 +73,44 @@ fun TransactionDetailRoute(
     viewModel: TransactionDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    TransactionDetailScreen(state = state, onBack = onBack, onRetry = viewModel::onRetry)
+    val context = LocalContext.current
+    val shareTitle = stringResource(R.string.receipt_share_title)
+    val receipt = (state as? TransactionDetailUiState.Content)?.receipt
+    val ready = (receipt as? ReceiptStatus.Ready)?.file
+    // Handing a finished file to the share sheet is UI work; building it happened in data.
+    LaunchedEffect(ready) {
+        if (ready != null) {
+            val send = Intent(Intent.ACTION_SEND).apply {
+                type = PDF_MIME_TYPE
+                putExtra(Intent.EXTRA_STREAM, ready.contentUri.toUri())
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(send, shareTitle))
+            viewModel.onReceiptShared()
+        }
+    }
+    val disputeMessages = disputeMessages(state)
+    TransactionDetailScreen(
+        state = state,
+        onBack = onBack,
+        onRetry = viewModel::onRetry,
+        onDownloadReceipt = viewModel::onDownloadReceipt,
+        onConfirmDispute = { disputeMessages?.let(viewModel::onDispute) }
+    )
+}
+
+/** The new case's texts, from string resources like all other copy. */
+@Composable
+private fun disputeMessages(state: TransactionDetailUiState): DisputeMessages? {
+    val content = state as? TransactionDetailUiState.Content ?: return null
+    return DisputeMessages(
+        topic = stringResource(R.string.dispute_topic),
+        customerMessage = stringResource(
+            R.string.dispute_customer_message,
+            content.transaction.merchant
+        ),
+        bankReply = stringResource(R.string.dispute_bank_reply)
+    )
 }
 
 /**
@@ -73,7 +122,9 @@ fun TransactionDetailScreen(
     state: TransactionDetailUiState,
     onBack: () -> Unit,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDownloadReceipt: () -> Unit = {},
+    onConfirmDispute: () -> Unit = {}
 ) {
     val spacing = AbcTheme.spacing
     Column(
@@ -123,7 +174,10 @@ fun TransactionDetailScreen(
                     style = AbcTheme.typography.body,
                     color = AbcTheme.colors.text
                 )
-                is TransactionDetailUiState.Content -> DetailContent(state)
+                is TransactionDetailUiState.Content -> {
+                    DetailContent(state)
+                    DetailActions(state, onDownloadReceipt, onConfirmDispute)
+                }
             }
             Spacer(Modifier.height(spacing.space6))
         }
@@ -229,6 +283,71 @@ private fun DetailContent(state: TransactionDetailUiState.Content) {
     }
 }
 
+/** Download Receipt for every transaction; Dispute only for charges DisputeRules allows. */
+@Composable
+private fun DetailActions(
+    state: TransactionDetailUiState.Content,
+    onDownloadReceipt: () -> Unit,
+    onConfirmDispute: () -> Unit
+) {
+    var confirmDispute by rememberSaveable { mutableStateOf(false) }
+    val spacing = AbcTheme.spacing
+    Spacer(Modifier.height(spacing.space6))
+    AbcButton(
+        text = stringResource(R.string.action_download_receipt),
+        onClick = onDownloadReceipt,
+        variant = AbcButtonVariant.Secondary,
+        loading = state.receipt == ReceiptStatus.Creating
+    )
+    if (state.receipt == ReceiptStatus.Failed) {
+        ActionMessage(stringResource(R.string.receipt_failed), AbcTheme.colors.danger)
+    }
+    when {
+        state.transaction.disputed ->
+            ActionMessage(stringResource(R.string.dispute_under_review), AbcTheme.colors.textMuted)
+        state.canDispute -> {
+            Spacer(Modifier.height(spacing.space3))
+            AbcButton(
+                text = stringResource(R.string.action_dispute_transaction),
+                onClick = { confirmDispute = true },
+                variant = AbcButtonVariant.Danger
+            )
+        }
+    }
+    if (state.disputeFailed) {
+        ActionMessage(
+            stringResource(R.string.dispute_failed),
+            AbcTheme.colors.danger
+        )
+    }
+    if (confirmDispute) {
+        AbcConfirmDialog(
+            title = stringResource(R.string.dispute_dialog_title),
+            text = stringResource(R.string.dispute_dialog_text),
+            confirmLabel = stringResource(R.string.action_dispute),
+            cancelLabel = stringResource(R.string.action_cancel),
+            onConfirm = {
+                confirmDispute = false
+                onConfirmDispute()
+            },
+            onDismiss = { confirmDispute = false }
+        )
+    }
+}
+
+@Composable
+private fun ActionMessage(text: String, color: Color) {
+    Text(
+        text = text,
+        style = AbcTheme.typography.small,
+        color = color,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = AbcTheme.spacing.space2)
+    )
+}
+
 @Composable
 private fun DetailRow(label: String, value: String, valueStyle: TextStyle) {
     AdaptiveRow(
@@ -250,6 +369,7 @@ private fun DetailRow(label: String, value: String, valueStyle: TextStyle) {
 }
 
 private const val AMOUNT_MASK = "••••"
+private const val PDF_MIME_TYPE = "application/pdf"
 
 @Preview(widthDp = 360, heightDp = 900)
 @Composable
@@ -268,7 +388,8 @@ private fun TransactionDetailPreview() {
                 date = LocalDate.of(2026, 10, 8),
                 time = LocalTime.of(22, 10),
                 balancesHidden = false,
-                isOffline = false
+                isOffline = false,
+                canDispute = false
             ),
             onBack = {},
             onRetry = {}

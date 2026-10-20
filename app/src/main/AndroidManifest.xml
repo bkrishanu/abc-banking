@@ -45,6 +45,18 @@
             </intent-filter>
         </activity>
 
+        <!-- Shares generated PDFs (receipts) with the share sheet. Not exported: other apps only get
+             a one-time read grant for the file they are handed. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- Exported by Firebase Auth for web, reCAPTCHA and Google sign-in. The demo uses anonymous
              sign-in only, and only the launcher Activity may be exported (AGENTS.md section 05). -->
         <activity

@@ -1,6 +1,7 @@
 package com.abcbank.mobile.core.designsystem.component
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -126,25 +127,27 @@ fun TransactionLeadingIcon(
 
 /** The category's display name, a label in Title Case. */
 @Composable
-fun categoryLabel(category: TransactionCategory): String = stringResource(
-    when (category) {
-        TransactionCategory.SHOPPING -> R.string.category_shopping
-        TransactionCategory.DINING -> R.string.category_dining
-        TransactionCategory.GROCERIES -> R.string.category_groceries
-        TransactionCategory.ENTERTAINMENT -> R.string.category_entertainment
-        TransactionCategory.TRAVEL -> R.string.category_travel
-        TransactionCategory.TRANSPORT -> R.string.category_transport
-        TransactionCategory.HEALTH -> R.string.category_health
-        TransactionCategory.UTILITIES -> R.string.category_utilities
-        TransactionCategory.HOUSING -> R.string.category_housing
-        TransactionCategory.INCOME -> R.string.category_income
-        TransactionCategory.INTEREST -> R.string.category_interest
-        TransactionCategory.TRANSFER -> R.string.category_transfer
-        TransactionCategory.TRANSFER_IN -> R.string.category_transfer_in
-        TransactionCategory.TRANSFER_OUT -> R.string.category_transfer_out
-        TransactionCategory.DEPOSIT -> R.string.category_deposit
-    }
-)
+fun categoryLabel(category: TransactionCategory): String = stringResource(category.labelRes())
+
+/** The category name's string resource, for places outside Compose such as PDF receipts. */
+@StringRes
+fun TransactionCategory.labelRes(): Int = when (this) {
+    TransactionCategory.SHOPPING -> R.string.category_shopping
+    TransactionCategory.DINING -> R.string.category_dining
+    TransactionCategory.GROCERIES -> R.string.category_groceries
+    TransactionCategory.ENTERTAINMENT -> R.string.category_entertainment
+    TransactionCategory.TRAVEL -> R.string.category_travel
+    TransactionCategory.TRANSPORT -> R.string.category_transport
+    TransactionCategory.HEALTH -> R.string.category_health
+    TransactionCategory.UTILITIES -> R.string.category_utilities
+    TransactionCategory.HOUSING -> R.string.category_housing
+    TransactionCategory.INCOME -> R.string.category_income
+    TransactionCategory.INTEREST -> R.string.category_interest
+    TransactionCategory.TRANSFER -> R.string.category_transfer
+    TransactionCategory.TRANSFER_IN -> R.string.category_transfer_in
+    TransactionCategory.TRANSFER_OUT -> R.string.category_transfer_out
+    TransactionCategory.DEPOSIT -> R.string.category_deposit
+}
 
 @DrawableRes
 fun TransactionCategory.iconRes(): Int = when (this) {

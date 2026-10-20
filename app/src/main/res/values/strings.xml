@@ -153,4 +153,20 @@
     <string name="category_transfer_in">Transfer In</string>
     <string name="category_transfer_out">Transfer Out</string>
     <string name="category_deposit">Deposit</string>
+    <!-- Receipt and dispute -->
+    <string name="action_download_receipt">Download Receipt</string>
+    <string name="action_dispute_transaction">Dispute Transaction</string>
+    <string name="action_dispute">Dispute</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="receipt_title">Transaction Receipt</string>
+    <string name="receipt_footer">Demo receipt from ABC Bank Mobile. No real money moved.</string>
+    <string name="receipt_share_title">Share Receipt</string>
+    <string name="receipt_failed">We couldn\'t create the receipt. Try again.</string>
+    <string name="dispute_dialog_title">Dispute This Transaction?</string>
+    <string name="dispute_dialog_text">We\'ll review this charge and update you in Support within 5 business days.</string>
+    <string name="dispute_topic">I didn\'t make this purchase</string>
+    <string name="dispute_customer_message">I didn\'t make this purchase at %1$s.</string>
+    <string name="dispute_bank_reply">Thanks for letting us know. We\'re reviewing this charge and will update you here within 5 business days.</string>
+    <string name="dispute_under_review">This charge is under review. We\'ll update you in Support.</string>
+    <string name="dispute_failed">We couldn\'t send the dispute. Try again.</string>
 </resources>

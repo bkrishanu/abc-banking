@@ -211,6 +211,8 @@ catalog/products/{productId}        shared, read-only
 catalog/faqs/{faqId}                shared, read-only
 ```
 
+Receipts (2026-10-20): `PdfReceiptGenerator` (`feature/accounts/data`) draws a one-page A5 PDF with `PdfDocument`, colours from the design tokens, into `cacheDir/receipts/`, and hands a `content://` URI from the `FileProvider` (authority `com.abcbank.mobile.files`, not exported, `cache-path` only) to the share sheet with a one-time read grant. Each new receipt deletes the previous one.
+
 No Cloud Storage (Spark plan). Monthly statements and the 1099-INT are built on demand by
 `feature/documents` from the user's accounts and transactions with `PdfDocument`, written to the
 app's cache directory, shared through the `FileProvider` in `file_paths.xml`, and deleted when the viewer closes.
