@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -27,6 +28,7 @@ import com.abcbank.mobile.R
 import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcWordmark
 import com.abcbank.mobile.core.designsystem.component.BankCardArt
+import com.abcbank.mobile.core.designsystem.component.CardArtPattern
 import com.abcbank.mobile.core.designsystem.component.WordmarkTone
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.designsystem.theme.CardGradient
@@ -87,6 +89,7 @@ private fun CardStack() {
         WelcomeCard(
             gradient = AbcTheme.colors.cardSage,
             rotation = WelcomeCardStack.BACK_ROTATION_DEGREES,
+            front = false,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = AbcTheme.spacing.space12)
@@ -94,21 +97,37 @@ private fun CardStack() {
         WelcomeCard(
             gradient = AbcTheme.colors.cardPeach,
             rotation = WelcomeCardStack.FRONT_ROTATION_DEGREES,
+            front = true,
             modifier = Modifier.align(Alignment.TopStart)
         )
     }
 }
 
+/**
+ * One card of the stack (Sample Screens 1): the peach front card has the ribbon art, a chip and a
+ * dark wordmark; the sage back card has waves and a white wordmark. Both float on a soft shadow.
+ */
 @Composable
-private fun WelcomeCard(gradient: CardGradient, rotation: Float, modifier: Modifier = Modifier) {
+private fun WelcomeCard(
+    gradient: CardGradient,
+    rotation: Float,
+    front: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val shape = AbcTheme.shapes.lg
+    val shadow = AbcTheme.colors.shadow
     BankCardArt(
         gradient = gradient,
+        pattern = if (front) CardArtPattern.Ribbons else CardArtPattern.Waves,
+        showChip = front,
+        scrim = !front,
         modifier = modifier
             .fillMaxWidth(WelcomeCardStack.CARD_WIDTH_FRACTION)
             .graphicsLayer { rotationZ = rotation }
+            .shadow(AbcTheme.elevation.floating, shape, ambientColor = shadow, spotColor = shadow)
     ) {
         AbcWordmark(
-            tone = WordmarkTone.OnCard,
+            tone = if (front) WordmarkTone.OnLightCard else WordmarkTone.OnCard,
             style = AbcTheme.typography.h3,
             modifier = Modifier
                 .align(Alignment.BottomEnd)

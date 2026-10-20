@@ -58,8 +58,14 @@ Card art (bank card faces):
 | card-sage | gradient #D3DEC2 to #6E9A5E | Signature card, Home balance header |
 | card-graphite | gradient #3A3A3C to #111111 | Travel card |
 
-If ABC Bank supplies the fluid 3D artwork from the samples, it goes in
-`res/drawable-nodpi/card_art_*.webp` and replaces the gradients. Text on card art is always white with a 20% black scrim.
+Fluid artwork (2026-10-20, to match Sample Screens 1): `BankCardArt` draws it in Compose Canvas from the
+gradient tokens only (`CardGradient.highlight`, `base` and `deep` are derived from the two stops), softened with
+a 2dp blur on Android 12+ (crisp on older versions). Patterns: `Ribbons` (broad folded ribbons sweeping down the
+left side, a lit edge and a top-right glow) for card-peach; `Waves` (four layered waves across the lower half)
+for card-sage and card-graphite. If ABC Bank supplies the real 3D artwork, it goes in
+`res/drawable-nodpi/card_art_*.webp` and replaces the drawn patterns.
+Text on card art: white with a 20% black scrim on sage and graphite; on the light card-peach face, `text` colour
+and no scrim, as in the sample (white fails contrast there).
 
 Rules:
 - One primary colour (black). Orange and green carry meaning: orange for spending/outgoing, green for earning/incoming and success.
@@ -125,7 +131,7 @@ Tokens in `core/designsystem/theme/Shape.kt`.
 | radius-full | 50% | Pills, chips, avatars, icon circles, bottom bar |
 
 Elevation: one level only, for floating elements: bottom bar, the pill action
-row that overlaps the Home header, the card-stack tag, bottom sheets.
+row that overlaps the Home header, the card-stack tag, the Welcome card stack, bottom sheets.
 Compose `shadowElevation = 8.dp`, ambient/spot colour black at 10%.
 Content cards are flat: white on background, no border, no shadow.
 
@@ -159,7 +165,7 @@ Chips (`FilterChipRow`)
 Cards and lists
 - `ContentCard`: surface, radius-xl, padding space-4 (space-5 for charts).
 - `AbcWordmark`: the dotted mark plus "abcbank" in H2 (H3 on card art). Mark is 1.2x the text size, space-2 before the text, so it follows font scale. Tone Brand: mark and "abc" in card-sage end #6E9A5E, "bank" in text. Tone OnCard: all white. Read by TalkBack as "ABC Bank".
-- `BankCardArt`: the card face only. 1.586 aspect ratio, radius-lg, card-art gradient top-left to bottom-right, then `cardScrim` fading up from the bottom edge. Content slot for text. `BankCardView` builds on it.
+- `BankCardArt`: the card face only. 1.586 aspect ratio, radius-lg, card-art gradient with the drawn `Ribbons` or `Waves` pattern (section 02), an optional EMV chip tinted with the card's own tones (left, 38% down, 14% of the card width), and an optional `cardScrim` fading up from the bottom edge. Content slot for text. `BankCardView` builds on it. `AbcWordmark` tone `OnLightCard` (all `text` colour) is for the peach face.
 - `BankCardView`: 1.586 aspect ratio, radius-lg, card art, contactless and network icons top-left, balance, holder name, expiry, last four. Stacked cards peek 24dp below one another. Optional tag (`CardTag`, black pill, "Main card").
 - `BalanceText`: big integer part, small cents. When masked shows "••••••" with the same width class. Never logs or exposes the raw value in accessibility text while masked ("Balance hidden").
 - `TransactionRow`: 40dp leading circle (category icon on accent/positive tint, or contact avatar), title Body, timestamp Small muted, amount right-aligned. Outgoing "-$125.00" in text colour, incoming "+$38.60" in positiveText.
@@ -243,7 +249,7 @@ How the sample PNGs map to app screens. Use them for layout and feel, not as pix
 
 `WelcomeScreen` layout (approved 2026-10-17):
 - Brand `AbcWordmark` at top-left, space-4 below the status bar.
-- Card stack, space-6 below: two `BankCardArt` at 78% of content width with a white H3 wordmark bottom-right. Front: card-peach, top-left, rotated -8deg. Back: card-sage, right-aligned, 48dp (space-12) lower, rotated -4deg. Decorative, hidden from TalkBack.
+- Card stack, space-6 below: two `BankCardArt` at 78% of content width, each with an H3 wordmark bottom-right and the floating shadow (section 05). Front: card-peach `Ribbons` with the chip and a dark wordmark, no scrim, top-left, rotated -8deg. Back: card-sage `Waves` with a white wordmark, right-aligned, 48dp (space-12) lower, rotated -4deg. Decorative, hidden from TalkBack.
 - Headline "Effortless banking, simplified." in Display, space-8 below the cards. Subtext "Everyday banking, simplified, in your pocket." in Body textMuted, space-3 below.
 - Primary "Get Started" pinned to the bottom; everything above it scrolls.
 

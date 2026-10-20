@@ -24,7 +24,8 @@ data class AbcDimens(
     val actionPillHeight: Dp = 56.dp,
     val actionPillOverlap: Dp = 28.dp,
     val unreadDot: Dp = 8.dp,
-    val skeletonLine: Dp = 16.dp
+    val skeletonLine: Dp = 16.dp,
+    val cardArtBlur: Dp = 2.dp
 )
 
 internal val DefaultAbcDimens = AbcDimens()

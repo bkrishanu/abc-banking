@@ -2,6 +2,7 @@ package com.abcbank.mobile.core.designsystem.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 
 /** Colour tokens from DESIGN_SYSTEM.md section 02. The only place raw colour values may appear. */
 @Immutable
@@ -32,9 +33,28 @@ data class AbcColors(
 /** Disabled controls render at 40% alpha (DESIGN_SYSTEM.md section 06). */
 const val DISABLED_ALPHA = 0.4f
 
-/** Bank card face gradient, drawn top-left to bottom-right. */
+/**
+ * Bank card face gradient, drawn top-left to bottom-right. The fluid artwork on the card face
+ * (DESIGN_SYSTEM.md section 02) uses tones derived from the two stops, so every card art colour
+ * still comes from these tokens.
+ */
 @Immutable
-data class CardGradient(val start: Color, val end: Color)
+data class CardGradient(val start: Color, val end: Color) {
+    /** Light sheen on the ribbon folds. */
+    val highlight: Color get() = lerp(start, Color.White, HIGHLIGHT_MIX)
+
+    /** The body of the card behind the ribbons. */
+    val base: Color get() = lerp(start, end, BASE_MIX)
+
+    /** Shadowed side of a fold. */
+    val deep: Color get() = lerp(end, Color.Black, DEEP_MIX)
+
+    private companion object {
+        const val HIGHLIGHT_MIX = 0.55f
+        const val BASE_MIX = 0.18f
+        const val DEEP_MIX = 0.18f
+    }
+}
 
 internal val LightAbcColors = AbcColors(
     background = Color(0xFFF2F2F2),

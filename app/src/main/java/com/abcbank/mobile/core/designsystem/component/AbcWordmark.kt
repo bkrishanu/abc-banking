@@ -30,8 +30,11 @@ enum class WordmarkTone {
     /** Dots and "abc" in sage, "bank" in text colour. Welcome screen. */
     Brand,
 
-    /** All white, for card art. */
-    OnCard
+    /** All white, for dark card art (sage, graphite). */
+    OnCard,
+
+    /** All text colour, for the light card-peach face, as in Sample Screens 1. */
+    OnLightCard
 }
 
 /** The "abcbank" wordmark with the dotted mark (DESIGN_SYSTEM.md sections 01 and 06). */
@@ -42,8 +45,15 @@ fun AbcWordmark(
     style: TextStyle = AbcTheme.typography.h2
 ) {
     val colors = AbcTheme.colors
-    val markColor = if (tone == WordmarkTone.Brand) colors.cardSage.end else colors.onPrimary
-    val bankColor = if (tone == WordmarkTone.Brand) colors.text else colors.onPrimary
+    val markColor = when (tone) {
+        WordmarkTone.Brand -> colors.cardSage.end
+        WordmarkTone.OnCard -> colors.onPrimary
+        WordmarkTone.OnLightCard -> colors.text
+    }
+    val bankColor = when (tone) {
+        WordmarkTone.Brand, WordmarkTone.OnLightCard -> colors.text
+        WordmarkTone.OnCard -> colors.onPrimary
+    }
     val description = stringResource(R.string.cd_abc_bank_logo)
     val abc = stringResource(R.string.wordmark_abc)
     val bank = stringResource(R.string.wordmark_bank)
