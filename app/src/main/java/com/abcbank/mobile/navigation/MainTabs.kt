@@ -27,6 +27,7 @@ import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.feature.cards.ui.CardsRoute
 import com.abcbank.mobile.feature.home.ui.HomeActions
 import com.abcbank.mobile.feature.home.ui.HomeRoute
+import com.abcbank.mobile.feature.insights.ui.InsightsRoute
 import com.abcbank.mobile.feature.profile.ui.ProfileRoute
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
@@ -36,6 +37,9 @@ data object HomeTab
 
 @Serializable
 data object CardsTab
+
+@Serializable
+data object InsightsTab
 
 @Serializable
 data object ProfileTab
@@ -50,9 +54,8 @@ data class MainTabsNavigation(
 )
 
 /**
- * The tabs after login (DESIGN_SYSTEM.md section 06, AbcBottomBar): Home, Cards and Profile, with
- * the floating bar over them. Insights joins when it is built, so the bar never offers a tab with
- * nothing behind it. Each tab keeps its state when another is selected.
+ * The tabs after login (DESIGN_SYSTEM.md section 06, AbcBottomBar): Home, Cards, Insights and
+ * Profile, with the floating bar over them. Each tab keeps its state when another is selected.
  */
 @Composable
 fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
@@ -77,6 +80,7 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                     )
                 }
                 composable<CardsTab> { CardsRoute() }
+                composable<InsightsTab> { InsightsRoute() }
                 composable<ProfileTab> {
                     ProfileRoute(onBack = null, onLoggedOut = navigation.onLoggedOut)
                 }
@@ -97,6 +101,13 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                     selected(CardsTab::class)
                 ) {
                     tabs.selectTab(CardsTab)
+                },
+                BottomBarItem(
+                    R.drawable.ic_chart_column,
+                    stringResource(R.string.tab_insights),
+                    selected(InsightsTab::class)
+                ) {
+                    tabs.selectTab(InsightsTab)
                 },
                 BottomBarItem(
                     R.drawable.ic_user,

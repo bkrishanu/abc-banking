@@ -14,6 +14,14 @@ object MoneyFormatter {
         return parts.whole + parts.fraction
     }
 
+    /** "$12,480" for charts and summaries: rounded to the nearest dollar, half up. */
+    fun formatWhole(money: Money): String {
+        val rounded =
+            (money.absoluteValue().cents + Money.CENTS_PER_DOLLAR / 2) / Money.CENTS_PER_DOLLAR
+        val sign = if (money.isNegative && rounded > 0) "-" else ""
+        return "$sign$${groupThousands(rounded)}"
+    }
+
     /** "+$38.60" for incoming, "-$125.00" for outgoing, "$0.00" for zero. */
     fun formatSigned(money: Money): String =
         if (money.isPositive) "+${format(money)}" else format(money)

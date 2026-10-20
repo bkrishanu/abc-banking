@@ -309,4 +309,27 @@
     <string name="notification_money_moved_body">%1$s moved from %2$s to %3$s.</string>
     <string name="notification_low_balance_title">Low balance</string>
     <string name="notification_low_balance_body">%1$s is below %2$s.</string>
+    <!-- Insights (PRD feature 11) -->
+    <string name="tab_insights">Insights</string>
+    <string name="insights_title">Insights</string>
+    <string name="insights_spending">Spending</string>
+    <string name="insights_date_range">%1$s – %2$s</string>
+    <string name="insights_last_30_days">Last 30 Days</string>
+    <string name="insights_this_month">This Month</string>
+    <string name="insights_last_month">Last Month</string>
+    <string name="insights_other">Other</string>
+    <string name="insights_percent">%1$d%%</string>
+    <string name="insights_of_budget">of %1$s budget</string>
+    <string name="insights_no_spending">No spending in this period.</string>
+    <string name="insights_saved_so_far">Total Saved So Far</string>
+    <string name="insights_goal_line">%1$s of %2$s. %3$s</string>
+    <string name="insights_goal_reached">You\'ve reached your goal.</string>
+    <string name="insights_goal_almost">You\'re on track. You\'ve almost reached your goal.</string>
+    <string name="insights_goal_halfway">You\'re on track. You\'re more than halfway there.</string>
+    <string name="insights_goal_started">You\'re on your way. Keep saving toward your goal.</string>
+    <string name="insights_no_goal">No savings goal yet.</string>
+    <string name="insights_empty">No spending or savings to show yet.</string>
+    <string name="insights_error">Your insights could not be loaded. Try again.</string>
+    <string name="cd_spending_donut">Spending %1$s of %2$s budget, %3$d%%. %4$s</string>
+    <string name="cd_savings_chart">Savings by week, from %1$s to %2$s</string>
 </resources>

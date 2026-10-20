@@ -3,6 +3,7 @@ package com.abcbank.mobile.core.data.seed
 import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.CardDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
+import com.abcbank.mobile.core.data.firebase.SavingsGoalDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
 import com.abcbank.mobile.core.model.Account
@@ -10,7 +11,11 @@ import com.abcbank.mobile.core.model.CreditCardAccount
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.model.Transaction
+import com.abcbank.mobile.core.model.TransactionCategory
 import com.abcbank.mobile.core.model.TransactionDirection
+import com.abcbank.mobile.feature.insights.data.toSavingsGoal
+import com.abcbank.mobile.feature.insights.domain.InsightsRules
+import com.abcbank.mobile.feature.insights.domain.SpendingPeriod
 import com.google.firebase.Timestamp
 import java.io.File
 import java.time.Instant
@@ -61,6 +66,50 @@ class SeedPlanBuilderTest {
                 .mapValues { (_, items) -> items.sumOf { it.amount.cents } }
             assertEquals("${persona.key} days $window", targets, byCategory)
         }
+    }
+
+    @Test
+    fun `insights show each persona's documented spending and savings goal`() = forEachPersona {
+            persona,
+            plan
+        ->
+        val profile =
+            requireNotNull(UserProfileDto.fromMap(plan.profile.forFirestore()).toUserProfile())
+        val today = NOW.atZone(ZONE).toLocalDate()
+        val spending = InsightsRules.spending(
+            transactions(plan),
+            profile.monthlyBudget,
+            SpendingPeriod.LAST_30_DAYS,
+            today,
+            ZONE
+        )
+        // DEMO_DATA.md: the last-30-day totals behind the Insights donut.
+        val (total, percent) = when (persona) {
+            PersonaId.SAMANTA -> 1_248_000L to 66
+            PersonaId.MARCUS -> 275_500L to 92
+            PersonaId.GRACE -> 369_200L to 74
+            PersonaId.DANIEL -> 3_200_000L to 80
+        }
+        assertEquals(persona.key, total, spending.total.cents)
+        assertEquals(persona.key, percent, spending.percentOfBudget)
+        assertEquals(persona.key, total, spending.slices.sumOf { it.amount.cents })
+        if (persona == PersonaId.SAMANTA) {
+            assertEquals(
+                listOf(
+                    TransactionCategory.SHOPPING to 37,
+                    TransactionCategory.ENTERTAINMENT to 21,
+                    null to 42
+                ),
+                spending.slices.map { it.category to it.percentOfSpending }
+            )
+        }
+        val goals = documents(plan, FirestorePaths.SAVINGS_GOALS).map { (id, fields) ->
+            requireNotNull(SavingsGoalDto.fromMap(fields).toSavingsGoal(id)) { "$id does not map" }
+        }
+        val savings = InsightsRules.savings(goals.single(), ZONE)
+        assertEquals(13, savings.points.size)
+        assertEquals(savings.goal.saved, savings.points.last().saved)
+        assertEquals(today.minusDays(90), savings.points.first().date)
     }
 
     @Test

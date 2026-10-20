@@ -225,6 +225,8 @@ Path of every write (example: P2P transfer):
 5. The repository writes the plan as one Firestore batch (revised 2026-10-20, was a transaction). Like every other write it is not awaited: it applies to the cache at once and uploads in the background, so a transfer works offline. A Firestore transaction would fail offline and wait on the network. The balances in the plan come from the snapshot the screen showed; with one user on one device per persona tree there is no concurrent writer to race.
 6. Use case returns a typed `TransferResult`. The ViewModel moves to the receipt state from that result, not from a guess.
 
+Insights reads the profile's monthly budget, transactions since the first day of last month (one single-field query serves every period) and savings goals. `InsightsRules` (pure, unit-tested, and checked against every persona's seed in `SeedPlanBuilderTest`) works out the donut and the savings line; nothing is stored.
+
 Internal transfers take the same path through `MoveMoneyUseCase` without step-up (not outbound). Add New Payee checks the form first (`AddPayeeUseCase.check`), then asks for step-up, then writes the beneficiary. The routing number lookup reads the bundled `assets/seed/catalog.json` (`AssetBankDirectory`), the same list `catalog/banks` was created from, so it works offline and never depends on the console copy.
 
 State:
