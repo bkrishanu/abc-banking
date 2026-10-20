@@ -11,6 +11,7 @@ import com.abcbank.mobile.feature.products.domain.ApplicationAnswers
 import com.abcbank.mobile.feature.products.domain.ApplicationPlan
 import com.abcbank.mobile.feature.products.domain.ApplicationPlanner
 import com.abcbank.mobile.feature.products.domain.ApplicationResult
+import com.abcbank.mobile.feature.products.domain.CardIssuer
 import com.abcbank.mobile.feature.products.domain.Decision
 import com.abcbank.mobile.feature.products.domain.EmploymentStatus
 import com.abcbank.mobile.feature.products.domain.NewCardAccount
@@ -32,6 +33,7 @@ import com.abcbank.mobile.testing.ManualClock
 import java.io.File
 import java.time.Duration
 import java.time.Instant
+import java.time.YearMonth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -47,6 +49,7 @@ import org.junit.Rule
 import org.junit.Test
 
 private val NOW: Instant = Instant.parse("2026-10-20T15:00:00Z")
+private const val HOLDER = "SAMANTA JOHNS"
 private val HYSA = ProductsPreviewData.hysa
 private val CARD = ProductsPreviewData.card
 private val LOAN = ProductsPreviewData.loan
@@ -159,7 +162,8 @@ class ApplicationPlannerTest {
             ProductRules.offer(792, HYSA),
             answers,
             "3f6c2a9e-81d4",
-            NOW
+            NOW,
+            HOLDER
         )
         val account = savings.account as NewSavingsAccount
         assertEquals("hysa-3f6c2a9e", account.id)
@@ -172,7 +176,8 @@ class ApplicationPlannerTest {
             ProductRules.offer(688, CARD),
             answers,
             "a1",
-            NOW
+            NOW,
+            HOLDER
         ).account as NewCardAccount
         assertEquals("Signature Rewards Card", card.nickname)
         assertEquals(Money.ofDollars(3_000), card.creditLimit)
@@ -183,15 +188,60 @@ class ApplicationPlannerTest {
             ProductRules.offer(792, LOAN),
             answers,
             "b2",
-            NOW
+            NOW,
+            HOLDER
         ).account as NewLoanAccount
         assertEquals(Money.ofDollars(10_000), loan.principal)
         assertEquals(Money(31_332), loan.monthlyPayment)
     }
 
     @Test
+    fun `an approved card application issues a card that the app can show`() {
+        val plan = ApplicationPlanner.plan(
+            CARD,
+            ProductRules.offer(792, CARD),
+            answers,
+            "3f6c2a9e-81d4",
+            NOW,
+            HOLDER
+        )
+        val account = plan.account as NewCardAccount
+        val card = requireNotNull(plan.card)
+        assertEquals(account.id, card.accountId)
+        assertEquals(16, card.pan.length)
+        assertTrue(card.pan.startsWith("5399000000"))
+        assertTrue(card.pan.endsWith(account.last4))
+        assertTrue(CardIssuer.passesLuhn(card.pan))
+        assertEquals(3, card.cvv.length)
+        assertEquals(YearMonth.of(2030, 10), card.expiry)
+        // $15,000 limit: $1,500 a day of cash advance, up to $3,000.
+        assertEquals(Money.ofDollars(1_500), card.cashAdvanceDaily)
+        assertEquals(Money.ofDollars(3_000), card.cashAdvanceMax)
+        assertNull(
+            ApplicationPlanner.plan(
+                LOAN,
+                ProductRules.offer(792, LOAN),
+                answers,
+                "x",
+                NOW,
+                HOLDER
+            ).card
+        )
+        listOf("0000", "1180", "9999", "4356").forEach {
+            assertTrue(it, CardIssuer.passesLuhn(CardIssuer.pan(it)))
+        }
+    }
+
+    @Test
     fun `a referred application opens nothing, and endings are stable four digits`() {
-        val plan = ApplicationPlanner.plan(LOAN, ProductRules.offer(640, LOAN), answers, "c3", NOW)
+        val plan = ApplicationPlanner.plan(
+            LOAN,
+            ProductRules.offer(640, LOAN),
+            answers,
+            "c3",
+            NOW,
+            HOLDER
+        )
         assertNull(plan.account)
         assertNull(plan.application.accountId)
         assertEquals(Decision.REFERRED, plan.application.decision)

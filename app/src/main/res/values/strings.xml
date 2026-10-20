@@ -422,7 +422,7 @@
     <string name="application_received_title">Application Received</string>
     <string name="application_received_text">We\'ll review your %1$s application and let you know in your notifications.</string>
     <string name="application_next_savings">Move money in with Send Money, Between My Accounts.</string>
-    <string name="application_next_card">Your card will arrive in 7 to 10 business days.</string>
+    <string name="application_next_card">Your card is in the Cards tab now. A plastic card would arrive in 7 to 10 business days.</string>
     <string name="application_next_loan">Your first payment is due in one month.</string>
     <string name="notification_application_approved_title">Application approved</string>
     <string name="notification_application_approved_body">Your %1$s is open.</string>

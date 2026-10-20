@@ -62,7 +62,12 @@ data class SubmittedApplication(
 )
 
 /** Everything one application writes, as one batch, plus the alert. */
-data class ApplicationPlan(val application: SubmittedApplication, val account: NewAccount?)
+data class ApplicationPlan(
+    val application: SubmittedApplication,
+    val account: NewAccount?,
+    /** The card an approved card application issues, for the Cards tab. */
+    val card: NewCard? = null
+)
 
 /** Works out what an application writes. Pure, so every rule is unit-tested. */
 object ApplicationPlanner {
@@ -75,10 +80,14 @@ object ApplicationPlanner {
         offer: CreditOffer,
         answers: ApplicationAnswers,
         applicationId: String,
-        now: Instant
+        now: Instant,
+        holderName: String
     ): ApplicationPlan {
         val approved = offer.decision == Decision.APPROVED
         val account = if (approved) account(product, offer, answers, applicationId, now) else null
+        val card = (account as? NewCardAccount)?.let {
+            CardIssuer.issue(it, it.nickname, holderName, applicationId)
+        }
         return ApplicationPlan(
             application = SubmittedApplication(
                 id = applicationId,
@@ -89,7 +98,8 @@ object ApplicationPlanner {
                 accountId = account?.id,
                 createdAt = now
             ),
-            account = account
+            account = account,
+            card = card
         )
     }
 

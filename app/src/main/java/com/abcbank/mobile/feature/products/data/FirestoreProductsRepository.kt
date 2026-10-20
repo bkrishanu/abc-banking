@@ -8,6 +8,7 @@ import com.abcbank.mobile.core.common.DispatcherProvider
 import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.ApplicationDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
+import com.abcbank.mobile.core.data.firebase.CardDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
 import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
@@ -16,10 +17,13 @@ import com.abcbank.mobile.core.data.firebase.toDataError
 import com.abcbank.mobile.core.data.firebase.toTimestamp
 import com.abcbank.mobile.core.data.seed.ActivePersonaSource
 import com.abcbank.mobile.core.model.AccountType
+import com.abcbank.mobile.core.model.CardArt
+import com.abcbank.mobile.core.model.CardNetwork
 import com.abcbank.mobile.feature.products.domain.Application
 import com.abcbank.mobile.feature.products.domain.ApplicationPlan
 import com.abcbank.mobile.feature.products.domain.Decision
 import com.abcbank.mobile.feature.products.domain.NewAccount
+import com.abcbank.mobile.feature.products.domain.NewCard
 import com.abcbank.mobile.feature.products.domain.NewCardAccount
 import com.abcbank.mobile.feature.products.domain.NewLoanAccount
 import com.abcbank.mobile.feature.products.domain.NewSavingsAccount
@@ -30,6 +34,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
@@ -135,6 +140,12 @@ class FirestoreProductsRepository @Inject constructor(
                         createdAt = application.createdAt.toTimestamp()
                     ).toMap()
                 )
+                plan.card?.let { card ->
+                    batch.set(
+                        tree.collection(FirestorePaths.CARDS).document(card.id),
+                        card.toDto().toMap()
+                    )
+                }
                 plan.account?.let { account ->
                     batch.set(
                         tree.collection(FirestorePaths.ACCOUNTS).document(account.id),
@@ -157,6 +168,26 @@ class FirestoreProductsRepository @Inject constructor(
     } catch (error: Exception) {
         DataResult.Failure(error.toDataError())
     }
+
+    /** A credit card: the cash advance pair and no retail limits (DEMO_DATA.md section 08). */
+    private fun NewCard.toDto(): CardDto = CardDto(
+        accountId = accountId,
+        tag = tag,
+        network = CardNetwork.MASTERCARD.name,
+        artKey = CardArt.GRAPHITE.name,
+        holderName = holderName,
+        pan = pan,
+        cvv = cvv,
+        last4 = last4,
+        expiry = expiry.format(EXPIRY_FORMAT),
+        frozen = false,
+        atmDailyLimit = cashAdvanceDaily.cents,
+        atmMaxLimit = cashAdvanceMax.cents,
+        international = true,
+        online = true,
+        contactless = true,
+        stackOrder = stackOrder.toLong()
+    )
 
     private fun NewAccount.toDto(): AccountDto = when (this) {
         is NewSavingsAccount -> AccountDto(
@@ -241,3 +272,6 @@ internal fun ApplicationDto.toApplication(id: String): Application? {
             ?: return null
     )
 }
+
+/** "MM/yy", as on the seeded cards. */
+private val EXPIRY_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/yy")

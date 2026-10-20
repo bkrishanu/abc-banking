@@ -117,7 +117,8 @@ internal object ProductsPreviewData {
                 36
             ),
             applicationId = "3f6c2a9e-81d4-4b7a-9c35-0e2d7f1b6a48",
-            now = NOW
+            now = NOW,
+            holderName = profile.holderName
         )
         return base.copy(check = CheckState.DECIDED, submitted = plan)
     }

@@ -449,7 +449,7 @@ Accounts opened by an approved application (decided 2026-10-20), written with th
 | Product | Account | Starting values |
 | --- | --- | --- |
 | ABC High-Yield Savings | SAVINGS "High-Yield Savings" | Available and ledger $0.00, 4.50% APY |
-| ABC Signature Rewards Card | CREDIT "Signature Rewards Card" | The tier's limit, nothing owed, statement $0.00, first due date 25 days after opening, auto-pay off. No card document: the Cards tab shows only issued cards. |
+| ABC Signature Rewards Card | CREDIT "Signature Rewards Card" | The tier's limit, nothing owed, statement $0.00, first due date 25 days after opening, auto-pay off. Also issues a card (agreed 2026-10-20), shown last in the Cards tab: Mastercard, card-graphite art, tag "Signature Rewards Card", the profile's holder name, number 5399 0000 00 + one digit + 0 + the account's last 4, with that digit chosen so the number passes the Luhn check; expiry 4 years from opening (MM/yy); a 3-digit CVV from a hash of the application id; cash advance 10% of the limit a day, up to 20% ($1,500 / $3,000 for 740 and above, $300 / $600 for 660 to 739); all channels on, not frozen. Fake, like every seeded card. |
 | ABC Personal Loan | LOAN "Personal Loan" | Principal and amount owed are the chosen amount, the tier's APR, opened now. The funds are not paid into another account. |
 
 The account id is the product id plus the first 8 characters of the application UUID (`personal-loan-3f6c2a9e`); its last 4 digits come from a hash of the application UUID, so they are fake and stable. One `TRANSACTIONAL` alert is written: "Application approved", "Your ABC Personal Loan is open." (or "Application received", "We're reviewing your ... application." when referred).

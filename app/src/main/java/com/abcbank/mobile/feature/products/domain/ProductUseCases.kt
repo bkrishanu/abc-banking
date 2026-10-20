@@ -104,7 +104,8 @@ class SubmitApplicationUseCase @Inject constructor(
             offer,
             answers,
             UUID.randomUUID().toString(),
-            clock.now()
+            clock.now(),
+            profile.holderName
         )
         return when (val result = repository.submit(plan)) {
             is DataResult.Success -> ApplicationResult.Submitted(plan)
