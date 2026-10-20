@@ -545,4 +545,30 @@
     <string name="document_tax_year">Tax Year</string>
     <string name="document_box1">Box 1, Interest Income</string>
     <string name="document_1099_note">Demo document. Not for tax filing.</string>
+    <!-- Support hub (MobileBuild.md 6, PRD feature 15) -->
+    <string name="profile_support">Help and Support</string>
+    <string name="support_title">Help and Support</string>
+    <string name="support_error">Support could not be loaded. Try again.</string>
+    <string name="support_chat">Chat With Us</string>
+    <string name="support_chat_hint">Answers right away, or a reply from our team</string>
+    <string name="support_dispute">Dispute a Transaction</string>
+    <string name="support_dispute_hint">Pick the charge in your transactions</string>
+    <string name="support_cases">Your Cases</string>
+    <string name="support_no_cases">No support cases. Questions our bot can\'t answer show here.</string>
+    <string name="support_faqs">Common Questions</string>
+    <string name="support_status_open">Open</string>
+    <string name="support_status_in_review">In Review</string>
+    <string name="support_status_resolved">Resolved</string>
+    <string name="support_greeting">Hi. Ask a question about your accounts, cards or payments.</string>
+    <string name="support_suggestions">Try Asking</string>
+    <string name="support_question">Your Question</string>
+    <string name="support_question_placeholder">For example, how do I freeze my card?</string>
+    <string name="support_typing">Looking that up…</string>
+    <string name="support_hand_off">I\'ve passed this to our support team. They\'ll reply here within one business day.</string>
+    <string name="support_case_opened">Added to Your Cases</string>
+    <string name="support_failed">That didn\'t send. Check your connection and try again.</string>
+    <string name="support_message_time">%1$s, %2$s</string>
+    <string name="cd_send">Send</string>
+    <string name="cd_expanded">Expanded</string>
+    <string name="cd_collapsed">Collapsed</string>
 </resources>

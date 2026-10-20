@@ -7,6 +7,7 @@ import com.abcbank.mobile.core.common.DispatcherProvider
 import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
+import com.abcbank.mobile.core.data.firebase.SupportCaseDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
 import com.abcbank.mobile.core.data.firebase.snapshotFlow
 import com.abcbank.mobile.core.data.firebase.toDataError
@@ -105,20 +106,20 @@ class FirestoreTransactionsRepository @Inject constructor(
         val now = clock.now().toTimestamp()
         // Same shape as the seeded dispute (DEMO_DATA.md section 03, Support cases).
         val supportCase = mapOf(
-            SupportCase.TRANSACTION_ID to transaction.id,
-            SupportCase.TOPIC to messages.topic,
-            SupportCase.STATUS to SupportCase.IN_REVIEW,
-            SupportCase.CREATED_AT to now,
-            SupportCase.MESSAGES to listOf(
+            SupportCaseDto.TRANSACTION_ID to transaction.id,
+            SupportCaseDto.TOPIC to messages.topic,
+            SupportCaseDto.STATUS to SupportCaseDto.IN_REVIEW,
+            SupportCaseDto.CREATED_AT to now,
+            SupportCaseDto.MESSAGES to listOf(
                 mapOf(
-                    SupportCase.FROM to SupportCase.CUSTOMER,
-                    SupportCase.BODY to messages.customerMessage,
-                    SupportCase.SENT_AT to now
+                    SupportCaseDto.FROM to SupportCaseDto.CUSTOMER,
+                    SupportCaseDto.BODY to messages.customerMessage,
+                    SupportCaseDto.SENT_AT to now
                 ),
                 mapOf(
-                    SupportCase.FROM to SupportCase.BANK,
-                    SupportCase.BODY to messages.bankReply,
-                    SupportCase.SENT_AT to now
+                    SupportCaseDto.FROM to SupportCaseDto.BANK,
+                    SupportCaseDto.BODY to messages.bankReply,
+                    SupportCaseDto.SENT_AT to now
                 )
             )
         )
@@ -167,22 +168,6 @@ class FirestoreTransactionsRepository @Inject constructor(
 
     private fun QuerySnapshot.toAccounts(): List<Account>? = documents.map {
         AccountDto.fromMap(it.data.orEmpty()).toAccount(it.id) ?: return null
-    }
-
-    // Field names of a supportCases document (ARCHITECTURE.md section 04). A SupportCaseDto
-    // arrives with the support hub, which reads these.
-    private object SupportCase {
-        const val TRANSACTION_ID = "transactionId"
-        const val TOPIC = "topic"
-        const val STATUS = "status"
-        const val CREATED_AT = "createdAt"
-        const val MESSAGES = "messages"
-        const val FROM = "from"
-        const val BODY = "body"
-        const val SENT_AT = "sentAt"
-        const val IN_REVIEW = "IN_REVIEW"
-        const val CUSTOMER = "CUSTOMER"
-        const val BANK = "BANK"
     }
 
     // A document that does not map is reported, never shown half-read (AGENTS.md section 04).

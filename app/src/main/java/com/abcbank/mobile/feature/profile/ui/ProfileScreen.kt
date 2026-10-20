@@ -56,6 +56,7 @@ fun ProfileRoute(
     onBack: (() -> Unit)?,
     onLoggedOut: () -> Unit,
     onDocuments: () -> Unit = {},
+    onSupport: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -72,6 +73,11 @@ fun ProfileRoute(
                 R.drawable.ic_file_text,
                 stringResource(R.string.profile_documents),
                 onDocuments
+            ),
+            ProfileMenuItem(
+                R.drawable.ic_life_buoy,
+                stringResource(R.string.profile_support),
+                onSupport
             )
         )
     )

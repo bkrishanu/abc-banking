@@ -110,6 +110,7 @@ private fun AbcNavGraph(
                     onPayBills = { navController.navigate(BillPayGraph) },
                     onDepositCheck = { navController.navigate(DepositCheckDestination) },
                     onDocuments = { navController.navigate(DocumentsGraph) },
+                    onSupport = { navController.navigate(SupportGraph) },
                     onNotifications = { navController.navigate(NotificationsDestination) },
                     onExploreProducts = { navController.navigate(ProductsGraph) },
                     onLoggedOut = showLoginAfterLogOut
@@ -138,6 +139,7 @@ private fun AbcNavGraph(
             NotificationsRoute(onBack = { navController.popBackStack() })
         }
         documentsGraph(navController)
+        supportGraph(navController) { navController.navigate(TransactionsDestination()) }
         billPayGraph(navController) { navController.navigate(TransactionDetailDestination(it)) }
         transferGraph(navController) { navController.navigate(TransactionDetailDestination(it)) }
         productsGraph(navController) {

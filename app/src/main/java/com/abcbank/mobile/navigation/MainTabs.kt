@@ -53,6 +53,7 @@ data class MainTabsNavigation(
     val onPayBills: () -> Unit,
     val onDepositCheck: () -> Unit,
     val onDocuments: () -> Unit,
+    val onSupport: () -> Unit,
     val onNotifications: () -> Unit,
     val onExploreProducts: () -> Unit,
     val onLoggedOut: () -> Unit
@@ -95,7 +96,8 @@ fun MainTabs(navigation: MainTabsNavigation, modifier: Modifier = Modifier) {
                     ProfileRoute(
                         onBack = null,
                         onLoggedOut = navigation.onLoggedOut,
-                        onDocuments = navigation.onDocuments
+                        onDocuments = navigation.onDocuments,
+                        onSupport = navigation.onSupport
                     )
                 }
             }

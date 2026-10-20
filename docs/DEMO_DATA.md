@@ -471,14 +471,14 @@ FAQs (`catalog/faqs`, used by the support bot; keywords in brackets)
 
 | Question | Answer |
 | --- | --- |
-| How do I freeze my card? [freeze, lock, lost, stolen] | Go to Cards, choose the card and turn on Freeze card. You can turn it off at any time. |
+| How do I freeze my card? [freeze, lock, lost, stolen] | Go to Cards, choose the card and turn on Freeze Card. You can turn it off at any time. |
 | How long does a standard transfer take? [ach, standard, how long] | Standard transfers arrive in 1 to 2 business days. Instant transfers arrive in minutes for a small fee. |
 | What is the instant transfer fee? [fee, instant, cost] | 1.5% of the amount, at least $0.25 and at most $15.00. |
-| How do I dispute a transaction? [dispute, charge, didn't make, fraud] | Open the transaction and tap Dispute transaction. We'll keep you updated in Support. |
-| Where are my statements? [statement, pdf, tax, 1099] | Go to Profile, then Statements and documents. |
-| How do I change my card limits? [limit, atm, withdrawal] | Go to Cards, choose the card and open Limits. You'll confirm it's you first. |
-| Can I use my card abroad? [travel, abroad, international] | Yes. Add a travel notice in Cards so we don't block your payments. |
-| How do I add someone to pay? [beneficiary, payee, add contact] | Go to Send, tap Add new, and enter their routing and account number. |
+| How do I dispute a transaction? [dispute, charge, didn't make, fraud] | Open the transaction and tap Dispute Transaction. We'll keep you updated in Support. |
+| Where are my statements? [statement, pdf, tax, 1099] | Go to Profile, then Statements and Documents. |
+| How do I change my card limits? [limit, atm, withdrawal] | Go to Cards, choose the card and change its Daily Limits. You'll confirm it's you first. |
+| Can I use my card abroad? [travel, abroad, international] | Yes. Add a Travel Notice in Cards so we don't block your payments. |
+| How do I add someone to pay? [beneficiary, payee, add contact, add someone, new payee] | Go to Send Money, tap Add New Payee, and enter their routing and account number. |
 
 Questions that match no keywords get: "I've passed this to our support team. They'll reply here within one business day."
 

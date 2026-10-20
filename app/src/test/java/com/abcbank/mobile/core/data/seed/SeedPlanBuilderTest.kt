@@ -6,6 +6,7 @@ import com.abcbank.mobile.core.data.firebase.CardDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
 import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.core.data.firebase.SavingsGoalDto
+import com.abcbank.mobile.core.data.firebase.SupportCaseDto
 import com.abcbank.mobile.core.data.firebase.TransactionDto
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
 import com.abcbank.mobile.core.model.Account
@@ -22,6 +23,7 @@ import com.abcbank.mobile.feature.insights.domain.InsightsRules
 import com.abcbank.mobile.feature.insights.domain.SpendingPeriod
 import com.abcbank.mobile.feature.notifications.data.toNotification
 import com.abcbank.mobile.feature.payments.data.toBill
+import com.abcbank.mobile.feature.support.data.toSupportCase
 import com.google.firebase.Timestamp
 import java.io.File
 import java.time.Instant
@@ -120,7 +122,10 @@ class SeedPlanBuilderTest {
     }
 
     @Test
-    fun `every seeded bill and notification maps`() = forEachPersona { persona, plan ->
+    fun `every seeded bill, notification and support case maps`() = forEachPersona {
+            persona,
+            plan
+        ->
         val bills = documents(plan, FirestorePaths.BILLS).map { (id, fields) ->
             requireNotNull(BillDto.fromMap(fields).toBill(id)) {
                 "${persona.key} bill $id does not map"
@@ -129,6 +134,9 @@ class SeedPlanBuilderTest {
         assertTrue(persona.key, bills.isNotEmpty())
         documents(plan, FirestorePaths.NOTIFICATIONS).forEach { (id, fields) ->
             assertNotNull("${persona.key} $id", NotificationDto.fromMap(fields).toNotification(id))
+        }
+        documents(plan, FirestorePaths.SUPPORT_CASES).forEach { (id, fields) ->
+            assertNotNull("${persona.key} $id", SupportCaseDto.fromMap(fields).toSupportCase(id))
         }
     }
 
@@ -351,9 +359,16 @@ class SeedPlanBuilderTest {
             instant.atZone(ZONE).toLocalDate()
         ).toInt()
 
-        /** What DemoDataSeeder hands to Firestore: Instants become Timestamps. */
+        /** What DemoDataSeeder hands to Firestore: Instants, nested ones too, become Timestamps. */
         fun Map<String, Any>.forFirestore(): Map<String, Any?> = mapValues { (_, value) ->
-            if (value is Instant) Timestamp(value.epochSecond, value.nano) else value
+            value.toFirestoreValue()
+        }
+
+        private fun Any?.toFirestoreValue(): Any? = when (this) {
+            is Instant -> Timestamp(epochSecond, nano)
+            is Map<*, *> -> entries.associate { (key, value) -> key to value.toFirestoreValue() }
+            is List<*> -> map { it.toFirestoreValue() }
+            else -> this
         }
     }
 }

@@ -36,14 +36,14 @@
     }
   ],
   "faqs": [
-    { "id": "freeze-card", "question": "How do I freeze my card?", "keywords": ["freeze", "lock", "lost", "stolen"], "answer": "Go to Cards, choose the card and turn on Freeze card. You can turn it off at any time." },
+    { "id": "freeze-card", "question": "How do I freeze my card?", "keywords": ["freeze", "lock", "lost", "stolen"], "answer": "Go to Cards, choose the card and turn on Freeze Card. You can turn it off at any time." },
     { "id": "standard-transfer-time", "question": "How long does a standard transfer take?", "keywords": ["ach", "standard", "how long"], "answer": "Standard transfers arrive in 1 to 2 business days. Instant transfers arrive in minutes for a small fee." },
     { "id": "instant-transfer-fee", "question": "What is the instant transfer fee?", "keywords": ["fee", "instant", "cost"], "answer": "1.5% of the amount, at least $0.25 and at most $15.00." },
-    { "id": "dispute-transaction", "question": "How do I dispute a transaction?", "keywords": ["dispute", "charge", "didn't make", "fraud"], "answer": "Open the transaction and tap Dispute transaction. We'll keep you updated in Support." },
-    { "id": "statements", "question": "Where are my statements?", "keywords": ["statement", "pdf", "tax", "1099"], "answer": "Go to Profile, then Statements and documents." },
-    { "id": "card-limits", "question": "How do I change my card limits?", "keywords": ["limit", "atm", "withdrawal"], "answer": "Go to Cards, choose the card and open Limits. You'll confirm it's you first." },
-    { "id": "card-abroad", "question": "Can I use my card abroad?", "keywords": ["travel", "abroad", "international"], "answer": "Yes. Add a travel notice in Cards so we don't block your payments." },
-    { "id": "add-beneficiary", "question": "How do I add someone to pay?", "keywords": ["beneficiary", "payee", "add contact"], "answer": "Go to Send, tap Add new, and enter their routing and account number." }
+    { "id": "dispute-transaction", "question": "How do I dispute a transaction?", "keywords": ["dispute", "charge", "didn't make", "fraud"], "answer": "Open the transaction and tap Dispute Transaction. We'll keep you updated in Support." },
+    { "id": "statements", "question": "Where are my statements?", "keywords": ["statement", "pdf", "tax", "1099"], "answer": "Go to Profile, then Statements and Documents." },
+    { "id": "card-limits", "question": "How do I change my card limits?", "keywords": ["limit", "atm", "withdrawal"], "answer": "Go to Cards, choose the card and change its Daily Limits. You'll confirm it's you first." },
+    { "id": "card-abroad", "question": "Can I use my card abroad?", "keywords": ["travel", "abroad", "international"], "answer": "Yes. Add a Travel Notice in Cards so we don't block your payments." },
+    { "id": "add-beneficiary", "question": "How do I add someone to pay?", "keywords": ["beneficiary", "payee", "add contact", "add someone", "new payee"], "answer": "Go to Send Money, tap Add New Payee, and enter their routing and account number." }
   ],
   "fillerMerchants": {
     "SHOPPING": { "merchants": ["Aster & Vine Boutique", "Northwind Furniture", "Urban Thread", "Pixel & Plug Electronics"], "min": 2500, "max": 40000 },
