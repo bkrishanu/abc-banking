@@ -8,7 +8,7 @@ import javax.inject.Inject
  * Profile > Log Out (ARCHITECTURE.md section 04, Auth and session): forgets the remembered
  * customer ID and ends the in-memory session. The install's anonymous Firebase user and its
  * Firestore data stay, so logging in again with the same customer ID keeps the data; a different
- * ID replaces it after the warning on the login screen.
+ * ID opens that persona's own data tree, which is written on its first login.
  */
 class LogOutUseCase @Inject constructor(
     private val rememberedCustomerStore: RememberedCustomerStore,

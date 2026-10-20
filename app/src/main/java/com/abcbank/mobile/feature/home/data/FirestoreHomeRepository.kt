@@ -12,6 +12,7 @@ import com.abcbank.mobile.core.data.firebase.UserProfileDto
 import com.abcbank.mobile.core.data.firebase.snapshotFlow
 import com.abcbank.mobile.core.data.firebase.toDataError
 import com.abcbank.mobile.core.data.firebase.toTimestamp
+import com.abcbank.mobile.core.data.seed.ActivePersonaSource
 import com.abcbank.mobile.feature.home.domain.HomeData
 import com.abcbank.mobile.feature.home.domain.HomeRepository
 import com.google.firebase.firestore.DocumentSnapshot
@@ -24,11 +25,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 class FirestoreHomeRepository @Inject constructor(
     private val auth: AuthDataSource,
+    private val activePersona: ActivePersonaSource,
     private val firestore: FirebaseFirestore,
     private val dispatchers: DispatcherProvider
 ) : HomeRepository {
@@ -41,9 +44,13 @@ class FirestoreHomeRepository @Inject constructor(
                 return@flow
             }
         }
-        val user = firestore.document(FirestorePaths.user(uid))
+        val personaId = activePersona.activePersona()?.key ?: run {
+            emit(DataResult.Failure(DataError.UNKNOWN))
+            return@flow
+        }
+        val persona = firestore.document(FirestorePaths.persona(uid, personaId))
         fun collection(name: String) =
-            firestore.collection(FirestorePaths.userCollection(uid, name))
+            firestore.collection(FirestorePaths.personaCollection(uid, personaId, name))
 
         // Single-field filters only, so no composite index is needed.
         val transactions = collection(FirestorePaths.TRANSACTIONS)
@@ -53,28 +60,29 @@ class FirestoreHomeRepository @Inject constructor(
 
         emitAll(
             combine(
-                user.snapshotFlow(),
+                persona.snapshotFlow(),
                 collection(FirestorePaths.ACCOUNTS).snapshotFlow(),
                 collection(FirestorePaths.CARDS).snapshotFlow(),
                 transactions.snapshotFlow(),
                 unread.snapshotFlow(),
                 ::toHomeData
-            )
+            ).filterNotNull()
         )
     }
         .catch { error -> emit(DataResult.Failure(error.toDataError())) }
         .flowOn(dispatchers.default)
 
+    /** Null while the persona's tree is still being written after login: Home stays loading. */
     private fun toHomeData(
-        user: DocumentSnapshot,
+        persona: DocumentSnapshot,
         accounts: QuerySnapshot,
         cards: QuerySnapshot,
         transactions: QuerySnapshot,
         unread: QuerySnapshot
-    ): DataResult<HomeData> {
+    ): DataResult<HomeData>? {
+        val profileFields = persona.data ?: return null
         val data = HomeData(
-            profile =
-            user.data?.let { UserProfileDto.fromMap(it).toUserProfile() } ?: return malformed(),
+            profile = UserProfileDto.fromMap(profileFields).toUserProfile() ?: return malformed(),
             accounts = accounts.documents.map {
                 AccountDto.fromMap(it.data.orEmpty()).toAccount(it.id) ?: return malformed()
             },
@@ -86,7 +94,7 @@ class FirestoreHomeRepository @Inject constructor(
             },
             unreadNotifications = unread.size(),
             isFromCache = listOf(
-                user.metadata,
+                persona.metadata,
                 accounts.metadata,
                 cards.metadata,
                 transactions.metadata

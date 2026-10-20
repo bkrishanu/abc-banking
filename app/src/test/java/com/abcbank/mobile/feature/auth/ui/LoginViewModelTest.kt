@@ -8,10 +8,8 @@ import com.abcbank.mobile.core.security.MpinAttempts
 import com.abcbank.mobile.core.security.MpinVerifier
 import com.abcbank.mobile.feature.auth.data.CatalogPersonaDirectory
 import com.abcbank.mobile.feature.auth.domain.CheckCustomerIdUseCase
-import com.abcbank.mobile.feature.auth.domain.GetStoredDemoDataUseCase
 import com.abcbank.mobile.feature.auth.domain.LogInUseCase
 import com.abcbank.mobile.feature.auth.domain.PrepareDemoDataUseCase
-import com.abcbank.mobile.feature.auth.domain.StoredDemoData
 import com.abcbank.mobile.testing.FakeDemoDataRepository
 import com.abcbank.mobile.testing.FakeMpinAttemptStore
 import com.abcbank.mobile.testing.FakeRememberedCustomerStore
@@ -52,9 +50,9 @@ class LoginViewModelTest {
                 check,
                 verifier,
                 rememberedStore,
-                PrepareDemoDataUseCase(demoData)
+                PrepareDemoDataUseCase(demoData),
+                applicationScope = backgroundScope
             ),
-            getStoredDemoData = GetStoredDemoDataUseCase(demoData),
             mpinVerifier = verifier,
             clock = clock
         )
@@ -223,50 +221,7 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun `the pad waits until the stored data has been checked`() = runTest {
-        demoData.storedGate = CompletableDeferred()
-        val viewModel = createViewModel()
-        advanceUntilIdle()
-        viewModel.onCustomerIdChange("SAMJOH01")
-        assertFalse(viewModel.content.isMpinEnabled)
-
-        demoData.storedGate?.complete(Unit)
-        advanceUntilIdle()
-
-        assertTrue(viewModel.content.isMpinEnabled)
-    }
-
-    @Test
-    fun `another persona's data shows the replace warning`() = runTest {
-        demoData.stored = StoredDemoData(PersonaId.SAMANTA, "Samanta Johns", seedVersion = 2L)
-        val viewModel = createViewModel()
-        advanceUntilIdle()
-
-        viewModel.onCustomerIdChange("MARLEE01")
-        assertEquals("Samanta Johns", viewModel.content.replacesDataOf)
-
-        viewModel.onCustomerIdChange("SAMJOH01")
-        assertNull(viewModel.content.replacesDataOf)
-
-        viewModel.onCustomerIdChange("SAMJ")
-        assertNull(viewModel.content.replacesDataOf)
-    }
-
-    @Test
-    fun `no warning when the stored data cannot be read`() = runTest {
-        demoData.stored = StoredDemoData(PersonaId.SAMANTA, "Samanta Johns", seedVersion = 2L)
-        demoData.failWith = DataError.OFFLINE
-        val viewModel = createViewModel()
-        advanceUntilIdle()
-
-        viewModel.onCustomerIdChange("MARLEE01")
-
-        assertNull(viewModel.content.replacesDataOf)
-        assertTrue(viewModel.content.isMpinEnabled)
-    }
-
-    @Test
-    fun `the correct MPIN shows setting up, then seeds and logs in`() = runTest {
+    fun `login finishes at once while the persona's data is still being prepared`() = runTest {
         demoData.seedGate = CompletableDeferred()
         val viewModel = createViewModel()
         advanceUntilIdle()
@@ -275,40 +230,40 @@ class LoginViewModelTest {
         viewModel.enterMpin("123456")
         advanceUntilIdle()
 
-        assertEquals(MpinMessage.SettingUp, viewModel.content.mpinMessage)
-        assertEquals(0, viewModel.content.mpinEntered)
-        assertFalse(viewModel.content.isMpinEnabled)
-        assertNull(rememberedStore.remembered)
+        // Logged in and remembered although the data write has not even been queued yet.
+        assertTrue(viewModel.content.isLoggedIn)
+        assertEquals("GRAWHI01", rememberedStore.remembered?.value)
+        assertEquals(emptyList<PersonaId>(), demoData.seeded)
 
         demoData.seedGate?.complete(Unit)
-        advanceUntilIdle()
+        // Preparation runs in the application scope, which advanceUntilIdle does not drive.
+        runCurrent()
 
-        assertTrue(viewModel.content.isLoggedIn)
         assertEquals(listOf(PersonaId.GRACE), demoData.seeded)
-        assertEquals("GRAWHI01", rememberedStore.remembered?.value)
     }
 
     @Test
-    fun `a failed setup asks for the MPIN again and does not log in`() = runTest {
+    fun `login works with Firebase unreachable`() = runTest {
+        demoData.failWith = DataError.OFFLINE
         val viewModel = createViewModel()
         advanceUntilIdle()
         viewModel.onCustomerIdChange("SAMJOH01")
-        demoData.failWith = DataError.OFFLINE
 
         viewModel.enterMpin("123456")
         advanceUntilIdle()
 
-        assertEquals(MpinMessage.SetupFailed, viewModel.content.mpinMessage)
-        assertTrue(viewModel.content.isMpinEnabled)
-        assertFalse(viewModel.content.isLoggedIn)
-        assertNull(rememberedStore.remembered)
-
-        demoData.failWith = null
-        viewModel.enterMpin("1")
+        assertTrue(viewModel.content.isLoggedIn)
         assertNull(viewModel.content.mpinMessage)
-        viewModel.enterMpin("23456")
+    }
+
+    @Test
+    fun `the pad is ready as soon as the ID is recognised, with no network call first`() = runTest {
+        val viewModel = createViewModel()
         advanceUntilIdle()
 
-        assertTrue(viewModel.content.isLoggedIn)
+        viewModel.onCustomerIdChange("MARLEE01")
+
+        assertTrue(viewModel.content.isMpinEnabled)
+        assertFalse(viewModel.content.isLoggedIn)
     }
 }

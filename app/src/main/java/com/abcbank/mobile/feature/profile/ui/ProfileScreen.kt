@@ -115,7 +115,7 @@ fun ProfileScreen(
                 )
                 is ProfileUiState.Content -> PersonaCard(state)
             }
-            if (state != ProfileUiState.Loading && state != ProfileUiState.LoggedOut) {
+            if (state != ProfileUiState.LoggedOut) {
                 Spacer(Modifier.height(spacing.space6))
                 AbcButton(
                     text = stringResource(R.string.action_log_out),

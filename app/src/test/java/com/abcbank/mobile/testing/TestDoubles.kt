@@ -9,7 +9,6 @@ import com.abcbank.mobile.core.security.MpinAttemptStore
 import com.abcbank.mobile.core.security.MpinAttempts
 import com.abcbank.mobile.core.security.RememberedCustomerStore
 import com.abcbank.mobile.feature.auth.domain.DemoDataRepository
-import com.abcbank.mobile.feature.auth.domain.StoredDemoData
 import java.time.Instant
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -56,23 +55,19 @@ class FakeRememberedCustomerStore : RememberedCustomerStore {
 }
 
 /**
- * Keeps "seeded" data in memory. Set [failWith] to make every call fail, or a gate to hold a call
- * until the test completes it.
+ * Keeps each persona's seeded version in memory. Set [failWith] to make every call fail, or
+ * [seedGate] to hold seeding until the test completes it.
  */
 class FakeDemoDataRepository(
-    var stored: StoredDemoData? = null,
-    var bundledVersion: Long = 2L,
-    var failWith: DataError? = null,
-    private val names: Map<PersonaId, String> = PersonaId.entries.associateWith { it.key }
+    val storedVersions: MutableMap<PersonaId, Long> = mutableMapOf(),
+    var bundledVersion: Long = 3L,
+    var failWith: DataError? = null
 ) : DemoDataRepository {
     val seeded = mutableListOf<PersonaId>()
-    var storedGate: CompletableDeferred<Unit>? = null
     var seedGate: CompletableDeferred<Unit>? = null
 
-    override suspend fun storedDemoData(): DataResult<StoredDemoData?> {
-        storedGate?.await()
-        return failWith?.let { DataResult.Failure(it) } ?: DataResult.Success(stored)
-    }
+    override suspend fun storedSeedVersion(personaId: PersonaId): DataResult<Long?> =
+        failWith?.let { DataResult.Failure(it) } ?: DataResult.Success(storedVersions[personaId])
 
     override suspend fun bundledSeedVersion(personaId: PersonaId): DataResult<Long> =
         failWith?.let { DataResult.Failure(it) } ?: DataResult.Success(bundledVersion)
@@ -81,7 +76,7 @@ class FakeDemoDataRepository(
         seedGate?.await()
         failWith?.let { return DataResult.Failure(it) }
         seeded += personaId
-        stored = StoredDemoData(personaId, names.getValue(personaId), bundledVersion)
+        storedVersions[personaId] = bundledVersion
         return DataResult.Success(Unit)
     }
 }

@@ -3,11 +3,11 @@ package com.abcbank.mobile.feature.profile.ui
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.model.PersonaId
 
-/** Log Out is offered in every state except Loading, so a broken profile never traps the user. */
+/** Log Out is offered in every state, even while loading, so a broken or unwritten profile never traps the user. */
 sealed interface ProfileUiState {
     data object Loading : ProfileUiState
 
-    /** Nothing seeded on this install. */
+    /** Nobody is logged in. */
     data object Empty : ProfileUiState
 
     data class Error(val error: DataError) : ProfileUiState

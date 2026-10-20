@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 /** The signed-in persona's profile, the `users/{uid}` document. */
 interface ProfileRepository {
-    /** Live. Success(null) when nothing has been seeded on this install. */
+    /** Live. Success(null) when nobody is logged in; nothing while the tree is still being written. */
     fun observeProfile(): Flow<DataResult<ProfileData?>>
 }
 

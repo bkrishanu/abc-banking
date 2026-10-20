@@ -13,7 +13,7 @@ This repository outlines the functional scope, screen flows, and technical requi
   - Background dismissal: Mask screen buffer on app switcher; force re-authentication after 300 seconds in background.
 - **Device Binding**: Simulated public-key registration to associate the device hardware with the user session.
 
-> **Decided (PRD 08, 2026-10-17).** Login is a demo customer ID (`SAMJOH01`, `MARLEE01`, `GRAWHI01`, `DANOKA01`) plus the MPIN `123456`. There is no biometric unlock. 5 wrong MPIN entries lock entry for 30 s. A different customer ID wipes and reseeds the install's data; the same ID keeps it. After a session lock the app asks for the MPIN only and shows "Not you?" to log in with another ID. Profile has Log Out and a hidden Reset Demo Data action.
+> **Decided (PRD 08, 2026-10-17).** Login is a demo customer ID (`SAMJOH01`, `MARLEE01`, `GRAWHI01`, `DANOKA01`) plus the MPIN `123456`. There is no biometric unlock. 5 wrong MPIN entries lock entry for 30 s. Each persona's data is written once per install and kept; a different customer ID switches to that persona's data (revised 2026-10-20: login never waits for Firestore). After a session lock the app asks for the MPIN only and shows "Not you?" to log in with another ID. Profile has Log Out and a hidden Reset Demo Data action.
 
 ### 1.2 Step-Up Authentication
 - Dynamic step-up prompt (SMS OTP or In-App Biometric Re-auth) triggered when:

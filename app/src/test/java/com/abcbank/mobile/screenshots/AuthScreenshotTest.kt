@@ -47,18 +47,6 @@ class AuthScreenshotTest {
         content(isMpinEnabled = false, mpinMessage = MpinMessage.LockedOut(secondsLeft = 24))
     )
 
-    @Test
-    fun loginReplacesData() = snapshotLogin(
-        content(customerId = "MARLEE01", replacesDataOf = "Samanta Johns", mpinEntered = 2)
-    )
-
-    @Test
-    fun loginSettingUp() =
-        snapshotLogin(content(isMpinEnabled = false, mpinMessage = MpinMessage.SettingUp))
-
-    @Test
-    fun loginSetupFailed() = snapshotLogin(content(mpinMessage = MpinMessage.SetupFailed))
-
     private fun snapshotLogin(state: LoginUiState) = paparazzi.snapshot {
         AbcTheme {
             LoginScreen(
@@ -108,14 +96,12 @@ private val COMPACT_360 = DeviceConfig.PIXEL_5.copy(
 private fun content(
     customerId: String = "SAMJOH01",
     customerIdError: CustomerIdError? = null,
-    replacesDataOf: String? = null,
     isMpinEnabled: Boolean = true,
     mpinEntered: Int = 0,
     mpinMessage: MpinMessage? = null
 ) = LoginUiState.Content(
     customerId = customerId,
     customerIdError = customerIdError,
-    replacesDataOf = replacesDataOf,
     isMpinEnabled = isMpinEnabled,
     mpinEntered = mpinEntered,
     mpinLength = 6,

@@ -8,6 +8,7 @@ import com.abcbank.mobile.core.data.firebase.FirestorePaths
 import com.abcbank.mobile.core.data.firebase.UserProfileDto
 import com.abcbank.mobile.core.data.firebase.snapshotFlow
 import com.abcbank.mobile.core.data.firebase.toDataError
+import com.abcbank.mobile.core.data.seed.ActivePersonaSource
 import com.abcbank.mobile.feature.profile.domain.ProfileData
 import com.abcbank.mobile.feature.profile.domain.ProfileRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -17,10 +18,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 
 class FirestoreProfileRepository @Inject constructor(
     private val auth: AuthDataSource,
+    private val activePersona: ActivePersonaSource,
     private val firestore: FirebaseFirestore,
     private val dispatchers: DispatcherProvider
 ) : ProfileRepository {
@@ -33,12 +35,19 @@ class FirestoreProfileRepository @Inject constructor(
                 return@flow
             }
         }
+        // Nobody logged in: nothing to show.
+        val personaId = activePersona.activePersona()?.key ?: run {
+            emit(DataResult.Success(null))
+            return@flow
+        }
+        val persona = firestore.document(FirestorePaths.persona(uid, personaId))
         emitAll(
-            firestore.document(FirestorePaths.user(uid)).snapshotFlow().map { snapshot ->
-                val data = snapshot.data ?: return@map DataResult.Success(null)
+            persona.snapshotFlow().mapNotNull { snapshot ->
+                // Still being written after login: stay loading.
+                val data = snapshot.data ?: return@mapNotNull null
                 // A document that does not map is reported, never shown half-read.
                 val profile = UserProfileDto.fromMap(data).toUserProfile()
-                    ?: return@map DataResult.Failure(DataError.MALFORMED_DATA)
+                    ?: return@mapNotNull DataResult.Failure(DataError.MALFORMED_DATA)
                 DataResult.Success(ProfileData(profile, snapshot.metadata.isFromCache))
             }
         )

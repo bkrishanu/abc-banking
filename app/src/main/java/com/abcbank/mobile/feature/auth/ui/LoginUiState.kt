@@ -7,8 +7,6 @@ sealed interface LoginUiState {
     data class Content(
         val customerId: String,
         val customerIdError: CustomerIdError?,
-        /** The stored persona's name when logging in would replace its data (DEMO_DATA.md 01). */
-        val replacesDataOf: String?,
         val isMpinEnabled: Boolean,
         val mpinEntered: Int,
         val mpinLength: Int,
@@ -23,10 +21,4 @@ sealed interface MpinMessage {
     data class WrongMpin(val attemptsLeft: Int) : MpinMessage
 
     data class LockedOut(val secondsLeft: Long) : MpinMessage
-
-    /** The MPIN was right and the persona's data is being loaded. */
-    data object SettingUp : MpinMessage
-
-    /** The persona's data could not be loaded; entering the MPIN again retries. */
-    data object SetupFailed : MpinMessage
 }

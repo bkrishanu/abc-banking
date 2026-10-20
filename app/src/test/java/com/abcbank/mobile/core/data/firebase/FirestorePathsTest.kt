@@ -5,14 +5,25 @@ import org.junit.Test
 
 class FirestorePathsTest {
     @Test
-    fun `user paths sit under the uid`() {
+    fun `persona data sits in its own tree under the uid`() {
         assertEquals("users/u1", FirestorePaths.user("u1"))
         assertEquals(
-            "users/u1/accounts",
-            FirestorePaths.userCollection("u1", FirestorePaths.ACCOUNTS)
+            "users/u1/devices",
+            FirestorePaths.userCollection("u1", FirestorePaths.DEVICES)
         )
-        assertEquals("users/u1/accounts/a1/holdings", FirestorePaths.holdings("u1", "a1"))
-        assertEquals("users/u1/cards/c1/travelNotices", FirestorePaths.travelNotices("u1", "c1"))
+        assertEquals("users/u1/personas/samanta", FirestorePaths.persona("u1", "samanta"))
+        assertEquals(
+            "users/u1/personas/samanta/accounts",
+            FirestorePaths.personaCollection("u1", "samanta", FirestorePaths.ACCOUNTS)
+        )
+        assertEquals(
+            "users/u1/personas/samanta/accounts/a1/holdings",
+            FirestorePaths.holdings("u1", "samanta", "a1")
+        )
+        assertEquals(
+            "users/u1/personas/samanta/cards/c1/travelNotices",
+            FirestorePaths.travelNotices("u1", "samanta", "c1")
+        )
     }
 
     @Test(expected = IllegalArgumentException::class)
@@ -22,6 +33,6 @@ class FirestorePathsTest {
 
     @Test(expected = IllegalArgumentException::class)
     fun `a blank id is rejected`() {
-        FirestorePaths.holdings("u1", " ")
+        FirestorePaths.persona("u1", " ")
     }
 }

@@ -6,6 +6,7 @@ package com.abcbank.mobile.core.data.firebase
  */
 object FirestorePaths {
     const val USERS = "users"
+    const val PERSONAS = "personas"
     const val ACCOUNTS = "accounts"
     const val HOLDINGS = "holdings"
     const val TRANSACTIONS = "transactions"
@@ -24,31 +25,27 @@ object FirestorePaths {
     const val CATALOG_PRODUCTS = "catalog/products"
     const val CATALOG_FAQS = "catalog/faqs"
 
-    /**
-     * Collections directly under `users/{uid}` that a reseed deletes. [DEVICES] is left out: the
-     * device key belongs to the install, not the persona, so it survives a persona switch.
-     */
-    val USER_SUBCOLLECTIONS = listOf(
-        ACCOUNTS,
-        TRANSACTIONS,
-        BENEFICIARIES,
-        CARDS,
-        BILLS,
-        SAVINGS_GOALS,
-        APPLICATIONS,
-        NOTIFICATIONS,
-        SUPPORT_CASES
-    )
-
     fun user(uid: String): String = "$USERS/${segment(uid)}"
 
+    /** Collections that belong to the install, not a persona (devices). */
     fun userCollection(uid: String, collection: String): String = "${user(uid)}/$collection"
 
-    fun holdings(uid: String, accountId: String): String =
-        "${userCollection(uid, ACCOUNTS)}/${segment(accountId)}/$HOLDINGS"
+    /**
+     * One persona's data tree: the document holds the profile, and the persona's accounts, cards,
+     * transactions and so on sit below it. Each persona keeps its own tree, so switching persona
+     * never deletes anything.
+     */
+    fun persona(uid: String, personaId: String): String =
+        "${user(uid)}/$PERSONAS/${segment(personaId)}"
 
-    fun travelNotices(uid: String, cardId: String): String =
-        "${userCollection(uid, CARDS)}/${segment(cardId)}/$TRAVEL_NOTICES"
+    fun personaCollection(uid: String, personaId: String, collection: String): String =
+        "${persona(uid, personaId)}/$collection"
+
+    fun holdings(uid: String, personaId: String, accountId: String): String =
+        "${personaCollection(uid, personaId, ACCOUNTS)}/${segment(accountId)}/$HOLDINGS"
+
+    fun travelNotices(uid: String, personaId: String, cardId: String): String =
+        "${personaCollection(uid, personaId, CARDS)}/${segment(cardId)}/$TRAVEL_NOTICES"
 
     // An id containing "/" would silently point at a different document.
     private fun segment(id: String): String {

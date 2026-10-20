@@ -3,20 +3,17 @@ package com.abcbank.mobile.feature.auth.domain
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.PersonaId
 
-/** The persona this install's data was last seeded with. */
-data class StoredDemoData(val personaId: PersonaId, val name: String, val seedVersion: Long) {
-    /** The stored persona's name if logging in as [personaId] would replace its data. */
-    fun replacedNameFor(personaId: PersonaId): String? = name.takeIf { personaId != this.personaId }
-}
-
-/** The install's seeded demo data (DEMO_DATA.md section 01). */
+/**
+ * Each persona's demo data tree on this install (DEMO_DATA.md section 01). Calls wait for the
+ * install's Firebase sign-in, so they run in the background, never on the login path.
+ */
 interface DemoDataRepository {
-    /** Null when nothing has been seeded yet. */
-    suspend fun storedDemoData(): DataResult<StoredDemoData?>
+    /** The `seedVersion` of [personaId]'s tree on this install, or null when it has none. */
+    suspend fun storedSeedVersion(personaId: PersonaId): DataResult<Long?>
 
     /** The `seedVersion` of the persona file bundled with this build. */
     suspend fun bundledSeedVersion(personaId: PersonaId): DataResult<Long>
 
-    /** Deletes the install's demo data and writes [personaId]'s. */
+    /** Writes [personaId]'s tree. Returns once queued locally, without waiting for the server. */
     suspend fun seedDemoData(personaId: PersonaId): DataResult<Unit>
 }

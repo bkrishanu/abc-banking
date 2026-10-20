@@ -119,7 +119,7 @@ BankingMobileApp/
                                 (MpinAttemptStore, RememberedCustomerStore) implemented in data/prefs
             data/
               firebase/         FirebaseModule, AuthDataSource, Firestore paths, DTOs and mappers
-              seed/             DemoDataSeeder (Firestore delete + write), SeedPlanBuilder (persona JSON -> documents,
+              seed/             DemoDataSeeder (cache-first check, local non-blocking writes), ActivePersonaSource, SeedPlanBuilder (persona JSON -> documents,
                                 running balances, references), FillerGenerator (seeded random 181019), SeedDates,
                                 SeedAssetReader, PersonaCatalog (customer ID -> persona)
               prefs/            DataStore-backed SettingsRepository
@@ -177,31 +177,33 @@ Field encodings (DTOs in `core/data/firebase`, one `<Name>Dto.kt` per document t
 Firestore layout:
 
 ```
-users/{uid}                         profile: personaId, customerId, seedVersion, name, holderName, email, phone,
+users/{uid}                         the install's anonymous user (no fields needed)
+  devices/{deviceId}                publicKey (base64 EC P-256), model, registeredAt (belongs to the install)
+  personas/{personaId}              one tree per persona; this document is the profile:
+                                    personaId, customerId, seedVersion, name, holderName, email, phone,
                                     avatarKey (personaId; maps to drawable avatar_{key}), employment,
                                     annualIncome, monthlyBudget, creditScore,
                                     checkDepositLimit, createdAt
-  accounts/{accountId}              type (CHECKING|SAVINGS|CREDIT|TERM_DEPOSIT|INVESTMENT|LOAN),
+    accounts/{accountId}            type (CHECKING|SAVINGS|CREDIT|TERM_DEPOSIT|INVESTMENT|LOAN),
                                     nickname, last4, availableBalance, ledgerBalance, rate (APY/APR),
                                     creditLimit, statementBalance, minimumDue, dueDate, autoPayFull,
                                     principal, openedAt, maturesAt, portfolioValue
-    holdings/{holdingId}            name, value (INVESTMENT accounts only)
-  transactions/{txId}               accountId, direction (DEBIT|CREDIT), amount, merchant,
+      holdings/{holdingId}          name, value (INVESTMENT accounts only)
+    transactions/{txId}             accountId, direction (DEBIT|CREDIT), amount, merchant,
                                     logoUrl, category, reference, runningBalance, status
                                     (POSTED|PENDING), disputed, createdAt,
                                     clearsAt (pending check deposits only)
-  beneficiaries/{beneficiaryId}     name, shortName, avatarUrl, bankName, routingNumber,
+    beneficiaries/{beneficiaryId}   name, shortName, avatarUrl, bankName, routingNumber,
                                     accountLast4, isRecent, recentOrder
-  cards/{cardId}                    accountId, tag, network, artKey, holderName, pan, cvv, last4,
+    cards/{cardId}                  accountId, tag, network, artKey, holderName, pan, cvv, last4,
                                     expiry, frozen, atmDailyLimit, atmMaxLimit, retailDailyLimit,
                                     retailMaxLimit, international, online, contactless, stackOrder
-    travelNotices/{noticeId}        destination, startDate, endDate
-  bills/{billId}                    billerId, amountDue, dueDate, autoPay, scheduledFor, status
-  savingsGoals/{goalId}             name, target, saved, accountId, startedAt, weeklyHistory[]
-  applications/{applicationId}      productId, step, answers, decision, createdAt
-  notifications/{notificationId}    kind (TRANSACTIONAL|PROMOTIONAL), title, body, read, createdAt
-  supportCases/{caseId}             transactionId?, topic, status, messages[]
-  devices/{deviceId}                publicKey (base64 EC P-256), model, registeredAt
+      travelNotices/{noticeId}      destination, startDate, endDate
+    bills/{billId}                  billerId, amountDue, dueDate, autoPay, scheduledFor, status
+    savingsGoals/{goalId}           name, target, saved, accountId, startedAt, weeklyHistory[]
+    applications/{applicationId}    productId, step, answers, decision, createdAt
+    notifications/{notificationId}  kind (TRANSACTIONAL|PROMOTIONAL), title, body, read, createdAt
+    supportCases/{caseId}           transactionId?, topic, status, messages[]
 catalog/banks/{routingNumber}       shared, read-only
 catalog/billers/{billerId}          shared, read-only
 catalog/products/{productId}        shared, read-only
@@ -228,15 +230,16 @@ State:
 - Optimistic updates: none in v1. Firestore's local write latency is low enough.
 
 Auth and session:
-- First launch: Firebase anonymous sign-in, Welcome, then the login screen (customer ID + MPIN).
+- App start: Firebase anonymous sign-in runs in the background (`AbcBankApp`). Firebase keeps the user across launches, so after the first launch it needs no network. Nothing waits for it.
+- Login is local (redesigned 2026-10-20): the MPIN check and remembering the customer ID never touch the network, so login cannot fail or stall on Firebase.
 - `PersonaCatalog` validates the customer ID (exactly 8 alphanumeric characters, trimmed, case-insensitive) and maps it to a personaId. A wrong format or an unknown ID is an inline error; the MPIN is checked by `MpinVerifier` in `core/security`.
-- On login, if `users/{uid}` holds a different personaId (or none), `DemoDataSeeder` deletes the subtree except `devices` (in batches of 500) and writes the chosen persona from `assets/seed/personas/`, resolving relative dates and generating filler as described in DEMO_DATA.md section 01. The same customer ID keeps its data and is reseeded only if the bundled `seedVersion` is newer than the stored one.
-- The login screen reads the stored persona when it opens (signing in anonymously first if needed) and keeps the MPIN pad disabled until that read finishes. If a recognised customer ID belongs to another persona, a warning line under the field names whose data will be replaced; entering the MPIN confirms. If the read fails, there is no warning and the login itself reports the problem.
-- The decision (keep or seed) is `PrepareDemoDataUseCase` in `feature/auth/domain`; `LogInUseCase` runs it after a correct MPIN and remembers the customer ID only once the data is ready. If seeding fails, the MPIN pad shows an error and entering the MPIN again retries.
-- A seed reads the existing subtree from the server first, so it fails straight away when offline. It then deletes the user document before the subtree and writes the user document last, so a seed that stops halfway leaves no persona on record and the next login seeds again. A seed that takes longer than 45 s is reported as offline.
+- After a correct MPIN, `LogInUseCase` starts `PrepareDemoDataUseCase` in the application scope and returns at once. It reads `personas/{personaId}` from the offline cache; if the tree exists at the bundled `seedVersion` it is kept, with no writes. Otherwise `DemoDataSeeder` writes the persona from `assets/seed/personas/` (dates resolved, filler generated as in DEMO_DATA.md section 01) as Firestore batches that are not awaited: they apply to the cache at once and upload in the background, and pending writes survive restarts. The persona document is in the last batch, so its presence means the tree is complete.
+- The server is asked only when the cache has nothing and the anonymous user existed before this launch (an older install); that check gives up after 5 s and the persona is written again rather than leaving Home empty. A user created this launch skips it.
+- Each persona keeps its own tree, so a different customer ID opens or writes its own tree and switching back is instant. Nothing is deleted on login, and there is no replace warning.
+- Screens find the active persona from the remembered customer ID (`ActivePersonaSource`, local), not from Firestore. Home and Profile stay on their loading state while a just-started tree is still being written, which takes moments because the writes are local.
 - Not written yet: the persona file's `documents` block (statement accounts, 1099-INT interest). Section 04 has no field for it; the statements feature decides where it lives.
 - The remembered customer ID lives in DataStore. Log Out (Profile) clears it and returns to the login screen; the Firestore data stays until a different ID logs in. `LogOutUseCase` (`feature/profile/domain`) also ends the in-memory session (balances shown again). It does not sign out of Firebase: the anonymous user is the install's identity and owns its data. After Log Out, back from the login screen goes to Welcome, never to the old Home.
-- Hidden Reset Demo Data (long-press the app version in Profile, then confirm) deletes the subtree and reseeds the current persona.
+- Hidden Reset Demo Data (long-press the app version in Profile, then confirm) deletes the current persona's tree and writes it again; other personas' trees are untouched.
 - The MPIN (`123456`, every persona) is the only factor: for login, the lock screen and step-up. No biometrics.
 - `MpinVerifier` locks MPIN entry for 30 s after 5 wrong entries, counted across login, lock screen and step-up. The lockout expiry is stored in DataStore so restarting the app does not clear it.
 - `SessionManager` locks the app after 30 min without touch input in the foreground or 300 s in the background (ProcessLifecycleOwner). Locked = navigation shows the lock screen (greeting with the remembered name, MPIN pad, "Not you?" back to full login); data listeners pause.
@@ -245,7 +248,7 @@ Deposit check clearing:
 - A check deposit is written as a PENDING credit transaction with `clearsAt = createdAt + 30 s`; balances do not change.
 - `ClearDueDepositsUseCase` (`feature/payments/domain`) runs in an injected application scope: on app start, on return to foreground, and on a timer for each pending deposit while the app is open. For each due deposit, one Firestore transaction sets it to POSTED, credits the account and writes a "Deposit cleared" notification.
 - `MainActivity` sets `FLAG_SECURE`, so screenshots and the app switcher preview are blank.
-- Device binding: `DeviceKeyManager` creates an EC P-256 key in Android Keystore on first launch and stores the public key in `users/{uid}/devices`. A reseed keeps `devices`: the key belongs to the install, not the persona.
+- Device binding: `DeviceKeyManager` creates an EC P-256 key in Android Keystore on first launch and stores the public key in `users/{uid}/devices`, outside every persona tree: the key belongs to the install, not the persona.
 
 Errors:
 - Validation errors return to the form as field messages from string resources.
@@ -277,7 +280,7 @@ The agent must not "fix" these.
 - No backend and no Cloud Functions. Money movement runs as client-side Firestore transactions. This is a demo on a possibly free (Spark) Firebase plan; in production it would move server-side. Do not add Cloud Functions without approval.
 - The MPIN is hardcoded to `123456` in `MpinVerifier`, per MobileBuild.md 1.1, for every persona. It is a demo lock, not a credential. Do not move it to Firestore or make it configurable.
 - Step-up re-asks for the same MPIN; there is no OTP and no biometric (PRD 08). It is not a real second factor. Do not add AndroidX Biometric or an OTP without approval.
-- The customer ID is not an account. It only picks which persona the install's anonymous user is seeded with, and logging in with another ID wipes the current data.
+- The customer ID is not an account. It only picks which persona tree the install's anonymous user shows. Each persona's tree stays on the install once written (at most four, a few hundred documents each).
 - Anonymous Firebase auth. Each install is its own demo customer with fresh seeded data; reinstalling resets the demo. There are no credentials to leak.
 - No Cloud Storage. The project is on Spark, so statements and tax documents are generated on the device from Firestore data. `google-services.json` lists a default bucket; it stays unused (re-confirmed 2026-10-17), and there are no Storage rules.
 - Check deposits clear on the client after 30 s, not on a server. If the app is closed, they clear on next open.

@@ -10,8 +10,9 @@ same commit. Every person, company, bank and number below is fictional.
 ## 01 How seed data works
 
 - Four demo personas ship with the app. After Get Started, the presenter logs in with a persona's customer ID (section 02) and the MPIN.
-- `DemoDataSeeder` writes that persona's data under `users/{uid}` (the install's anonymous Firebase user) and stores `personaId`, `customerId` and `seedVersion` on the user document.
-- Logging in with a different customer ID, and the hidden Reset Demo Data action in Profile (current persona), delete the `users/{uid}` subtree (except `devices`, which belongs to the install, not the persona) and seed again. The login screen warns before replacing another persona's data, and the reset confirmation dialog says so. These are the only data deletions in the app. Logging in again with the same customer ID keeps its data.
+- `DemoDataSeeder` writes each persona's data into its own tree, `users/{uid}/personas/{personaId}` (under the install's anonymous Firebase user), the first time that persona logs in on the install. The persona document holds the profile with `personaId`, `customerId` and `seedVersion`.
+- Logging in never waits for this: the writes go to Firestore's offline cache and upload in the background (ARCHITECTURE.md section 04). Logging in again with a persona keeps its tree; a newer bundled `seedVersion` writes it again.
+- Logging in with a different customer ID opens that persona's own tree; nothing is deleted. The hidden Reset Demo Data action in Profile deletes the current persona's tree and writes it again, after its confirmation dialog. It is the only data deletion in the app.
 - Shared reference data (`catalog/*`) is created once per Firebase project by a person (ARCHITECTURE.md section 08). Personas only reference it by id.
 - The MPIN for every persona is `123456`. It is also the step-up factor; there is no OTP (PRD section 08).
 

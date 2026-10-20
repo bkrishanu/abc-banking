@@ -5,13 +5,13 @@ import com.abcbank.mobile.core.model.PersonaId
 import javax.inject.Inject
 
 /**
- * Makes sure the install holds [PersonaId]'s data after login (ARCHITECTURE.md section 04, Auth
- * and session): the same persona keeps its data unless the bundled seed is newer; anything else
- * is deleted and seeded again.
+ * Makes sure [PersonaId]'s data tree exists on this install (ARCHITECTURE.md section 04, Auth and
+ * session). An existing tree is kept unless the bundled seed is newer; a missing one is written.
+ * Other personas' trees are never touched.
  */
 class PrepareDemoDataUseCase @Inject constructor(private val repository: DemoDataRepository) {
     suspend operator fun invoke(personaId: PersonaId): DataResult<Unit> {
-        val stored = when (val result = repository.storedDemoData()) {
+        val storedVersion = when (val result = repository.storedSeedVersion(personaId)) {
             is DataResult.Success -> result.value
             is DataResult.Failure -> return result
         }
@@ -19,9 +19,7 @@ class PrepareDemoDataUseCase @Inject constructor(private val repository: DemoDat
             is DataResult.Success -> result.value
             is DataResult.Failure -> return result
         }
-        val keep = stored != null &&
-            stored.personaId == personaId &&
-            stored.seedVersion >= bundledVersion
+        val keep = storedVersion != null && storedVersion >= bundledVersion
         return if (keep) DataResult.Success(Unit) else repository.seedDemoData(personaId)
     }
 }
