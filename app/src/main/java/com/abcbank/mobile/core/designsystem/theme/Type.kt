@@ -30,9 +30,6 @@ val PlusJakartaSans = FontFamily(
     }
 )
 
-/** The 'wght' axis setting for text drawn on a Canvas, such as the PDF generators. */
-fun fontWeightVariation(weight: Int): String = "'wght' $weight"
-
 /** Tabular figures so amounts line up in columns (DESIGN_SYSTEM.md section 03). */
 const val TABULAR_FIGURES = "tnum"
 

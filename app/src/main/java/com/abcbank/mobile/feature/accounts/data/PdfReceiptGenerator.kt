@@ -6,7 +6,6 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import com.abcbank.mobile.R
@@ -17,7 +16,6 @@ import com.abcbank.mobile.core.common.DispatcherProvider
 import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.designsystem.component.labelRes
 import com.abcbank.mobile.core.designsystem.theme.LightAbcColors
-import com.abcbank.mobile.core.designsystem.theme.fontWeightVariation
 import com.abcbank.mobile.core.model.Account
 import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.model.TransactionStatus
@@ -73,23 +71,27 @@ class PdfReceiptGenerator @Inject constructor(
 
     private fun draw(canvas: Canvas, transaction: Transaction, account: Account?) {
         val local = transaction.createdAt.atZone(zone.get())
-        val typeface =
-            ResourcesCompat.getFont(context, R.font.plus_jakarta_sans) ?: Typeface.DEFAULT
-        val regular = FontWeight.Normal.weight
-        val medium = FontWeight.Medium.weight
+        // Static font files: the PDF writer can't embed the variable font the app uses.
+        val regular =
+            ResourcesCompat.getFont(context, R.font.plus_jakarta_sans_regular) ?: Typeface.DEFAULT
+        val medium =
+            ResourcesCompat.getFont(context, R.font.plus_jakarta_sans_medium)
+                ?: Typeface.DEFAULT_BOLD
         // The design tokens, so the receipt matches the app (DESIGN_SYSTEM.md section 02).
         val text = LightAbcColors.text.toArgb()
         val muted = LightAbcColors.textMuted.toArgb()
         val line = LightAbcColors.border.toArgb()
-        fun paint(weight: Int, size: Float, color: Int, align: Paint.Align = Paint.Align.LEFT) =
-            Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                this.typeface = typeface
-                // The font is variable; Canvas picks the weight from its 'wght' axis.
-                fontVariationSettings = fontWeightVariation(weight)
-                textSize = size
-                this.color = color
-                textAlign = align
-            }
+        fun paint(
+            typeface: Typeface,
+            size: Float,
+            color: Int,
+            align: Paint.Align = Paint.Align.LEFT
+        ) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            textSize = size
+            this.color = color
+            textAlign = align
+        }
 
         var y = MARGIN + TITLE_SIZE
         canvas.drawText(

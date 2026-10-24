@@ -95,8 +95,10 @@ Rules:
 
 Font: Plus Jakarta Sans (2026-10-24), bundled as the variable font from google/fonts in
 `res/font/plus_jakarta_sans.ttf` (OFL licence in docs/licenses, no dependency). Compose uses instances of its
-'wght' axis at 300, 400, 500 and 600; Canvas text (the PDF receipts and documents) sets the same axis through
-`Paint.fontVariationSettings` via `fontWeightVariation()`. Swap here if ABC Bank supplies a brand font.
+'wght' axis at 300, 400, 500 and 600. The PDF receipts and documents use the static
+`plus_jakarta_sans_regular.ttf` and `plus_jakarta_sans_medium.ttf` from the font's upstream repository
+(tokotype/PlusJakartaSans, the commit google/fonts pins), because Android's PDF writer cannot embed a variable font
+and falls back to Roboto (found on the emulator, 2026-10-24). Swap here if ABC Bank supplies a brand font.
 
 | Role | Kotlin name | Stitch role | Size | Weight | Line height | Use |
 | --- | --- | --- | --- | --- | --- | --- |

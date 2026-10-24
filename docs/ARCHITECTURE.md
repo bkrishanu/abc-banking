@@ -100,7 +100,7 @@ BankingMobileApp/
         res/
           drawable/             ic_*.xml Lucide icons, illustrations
           drawable-nodpi/       avatar_{personaId}.webp (persona photos), card_art_*.webp (if supplied)
-          font/                 plus_jakarta_sans.ttf (variable)
+          font/                 plus_jakarta_sans.ttf (variable, app), plus_jakarta_sans_regular/_medium.ttf (static, PDFs)
           mipmap-*/             launcher icons
           values/               strings.xml, themes.xml (splash + window only), colors.xml (launcher only)
           xml/                  backup_rules.xml, data_extraction_rules.xml, file_paths.xml

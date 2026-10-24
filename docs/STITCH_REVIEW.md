@@ -117,3 +117,9 @@ Mode banner; `BankCardArt` in the new gradients and the frozen treatment; round 
 offline badge; account rows with tonal icon circles and rate chips; `TransactionRow` icon tints; `MpinPad` and
 `AmountKeypad` keys; `FlowScaffold` step indicator with a progress bar; `StatusBadge` colours; `AbcWordmark`
 mark in terracotta; launcher icon colours.
+
+Older layout bugs to fix in stage 2b (found on the emulator 2026-10-24 at 360dp and 200% font size; the build
+before stage 1 shows them too, so they are not caused by the new tokens):
+- `FeatureTile` breaks words in the middle ("Spendin / g", "Analytic / s"). Labels must wrap between words only.
+- The `CardsScreen` card stack clips the peeking cards' name and balance line ("Travel $1,200,000.00") because
+  the 24dp peek is shorter than the text at large font sizes.
