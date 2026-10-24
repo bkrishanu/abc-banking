@@ -74,7 +74,7 @@ BankingMobileApp/
     DEMO_DATA.md                pre-loaded personas and catalog (source for assets/seed)
     Sample Screens 1.png        visual reference
     Sample Screens 2.png        visual reference
-    licenses/                   third-party licences for bundled assets (Inter-OFL.txt, Lucide-ISC.txt)
+    licenses/                   third-party licences for bundled assets (PlusJakartaSans-OFL.txt, Lucide-ISC.txt)
   .editorconfig                 ktlint configuration
   firebase.json                 Firebase CLI config (rules + emulators)
   .firebaserc                   default project: abc-banking-181019
@@ -100,7 +100,7 @@ BankingMobileApp/
         res/
           drawable/             ic_*.xml Lucide icons, illustrations
           drawable-nodpi/       avatar_{personaId}.webp (persona photos), card_art_*.webp (if supplied)
-          font/                 inter_*.ttf
+          font/                 plus_jakarta_sans.ttf (variable)
           mipmap-*/             launcher icons
           values/               strings.xml, themes.xml (splash + window only), colors.xml (launcher only)
           xml/                  backup_rules.xml, data_extraction_rules.xml, file_paths.xml

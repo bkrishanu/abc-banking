@@ -196,7 +196,7 @@ private const val VERTICAL_PADDING = 0.12f
 
 /**
  * `LineChart` from DESIGN_SYSTEM.md section 06: 2dp positive line over a positive gradient fill,
- * the dashed [average] line, and the selected point with a vertical marker and a black tooltip.
+ * the dashed [average] line, and the selected point with a vertical marker and a primary tooltip.
  * Tapping picks the nearest point. Drawn left to right over 600ms.
  */
 @Composable

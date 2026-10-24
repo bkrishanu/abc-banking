@@ -6,6 +6,7 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import com.abcbank.mobile.R
@@ -15,6 +16,7 @@ import com.abcbank.mobile.core.common.DateFormatter
 import com.abcbank.mobile.core.common.DispatcherProvider
 import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.designsystem.theme.LightAbcColors
+import com.abcbank.mobile.core.designsystem.theme.fontWeightVariation
 import com.abcbank.mobile.feature.documents.domain.BankDocument
 import com.abcbank.mobile.feature.documents.domain.DocumentFile
 import com.abcbank.mobile.feature.documents.domain.DocumentRenderer
@@ -68,26 +70,22 @@ class PdfDocumentRenderer @Inject constructor(
         withContext(dispatchers.io) { File(file.path).delete() }
     }
 
-    private val regular: Typeface by lazy {
-        ResourcesCompat.getFont(context, R.font.inter_regular)
+    private val typeface: Typeface by lazy {
+        ResourcesCompat.getFont(context, R.font.plus_jakarta_sans)
             ?: Typeface.DEFAULT
     }
-    private val medium: Typeface by lazy {
-        ResourcesCompat.getFont(context, R.font.inter_medium)
-            ?: Typeface.DEFAULT_BOLD
-    }
+    private val regular = FontWeight.Normal.weight
+    private val medium = FontWeight.Medium.weight
 
-    private fun paint(
-        typeface: Typeface,
-        size: Float,
-        color: Int,
-        align: Paint.Align = Paint.Align.LEFT
-    ) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        this.typeface = typeface
-        textSize = size
-        this.color = color
-        textAlign = align
-    }
+    private fun paint(weight: Int, size: Float, color: Int, align: Paint.Align = Paint.Align.LEFT) =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            // The font is variable; Canvas picks the weight from its 'wght' axis.
+            fontVariationSettings = fontWeightVariation(weight)
+            textSize = size
+            this.color = color
+            textAlign = align
+        }
 
     private val text get() = LightAbcColors.text.toArgb()
     private val muted get() = LightAbcColors.textMuted.toArgb()

@@ -132,7 +132,7 @@ These were open questions. They are now decided; the other docs follow them.
 | MPIN lockout | 5 wrong entries lock MPIN entry for 30 s, then the count resets. Login, lock screen and step-up share one count. |
 | Instant transfer fee | 1.5% of the amount, minimum $0.25, maximum $15.00. Standard ACH is free. |
 | Deposit check | Enter amount, pick account, placeholder cheque images optional (confirm works without them). Pending credit, posted 30 s later with a "Deposit cleared" alert. |
-| Fonts and card artwork | Open-licence substitutes from DESIGN_SYSTEM.md (Inter, gradient card art) now; swap in ABC Bank assets later without screen changes. |
+| Fonts and card artwork | Open-licence substitutes from DESIGN_SYSTEM.md (Plus Jakarta Sans, gradient card art) now; swap in ABC Bank assets later without screen changes. |
 | Firebase plan | Spark (free). No Cloud Functions, no Cloud Storage. Statement and 1099-INT PDFs are generated in the app. |
 | Login and demo reset | Login with a per-persona customer ID (exactly 8 alphanumeric characters, e.g. `SAMJOH01`) plus MPIN; this replaces the demo profile picker. Each persona keeps its own data on the install; switching ID switches data and deletes nothing (revised 2026-10-20 so login never depends on Firestore writes). Lock screen asks for MPIN only. A "Reset Demo Data" row in Profile reseeds the current persona after a confirmation (visible rather than hidden, decided 2026-10-20). |
 | Personas | Keep the three in DEMO_DATA.md with their names and stories, and add a fourth: Daniel Okafor (`DANOKA01`), high net worth, approved 2026-10-17. |

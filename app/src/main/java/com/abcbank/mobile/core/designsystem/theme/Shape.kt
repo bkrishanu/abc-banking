@@ -11,13 +11,13 @@ import androidx.compose.ui.unit.dp
 @Immutable
 data class AbcShapes(
     val sm: Shape = RoundedCornerShape(8.dp),
-    val md: Shape = RoundedCornerShape(12.dp),
-    val lg: Shape = RoundedCornerShape(20.dp),
-    val xl: Shape = RoundedCornerShape(28.dp),
-    val sheet: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+    val md: Shape = RoundedCornerShape(16.dp),
+    val lg: Shape = RoundedCornerShape(24.dp),
+    val xl: Shape = RoundedCornerShape(32.dp),
+    val sheet: Shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
     // The first and last row of a long list drawn as one content card, row by row.
-    val xlTop: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-    val xlBottom: Shape = RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp),
+    val xlTop: Shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+    val xlBottom: Shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp),
     val full: Shape = CircleShape
 )
 

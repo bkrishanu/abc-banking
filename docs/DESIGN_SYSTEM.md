@@ -10,7 +10,11 @@ and the matching Kotlin token file in the same commit, never a screen.
 
 ## 01 Brand identity
 
-- Personality: calm, warm, confident.
+- Redesign (2026-10-24, stage 1 of the Stitch redesign, see docs/STITCH_REVIEW.md): the palette, type, shapes and
+  button height below come from the Google Stitch project "Warm Private Banking". Components and screens move to the
+  Stitch layouts in stages 2 and 3; until then sections 06 and 10 describe the current layouts in the new tokens.
+  The "Private" and wealth-tier wording in the Stitch mockups is not used: the app stays warm retail banking for every persona.
+- Personality: calm, warm, confident. Trustworthy and warm, like a friendly banker.
 - Tone in UI copy: plain, short sentences, no exclamation marks.
 - Capitalisation (decided 2026-10-20): labels use Title Case: buttons, action pills, screen titles, section headers,
   field labels, tabs, chips and short captions ("Wallet Balance", "Pay Bills", "View All", "Get Started").
@@ -19,10 +23,11 @@ and the matching Kotlin token file in the same commit, never a screen.
   stay lower case unless first.
   The sample screens break this rule ("You're doing good!", "Simlified"). Ship the corrected copy:
   "Effortless banking, simplified." and "You're on track. You've almost reached your goal."
-- Feel: light, spacious, soft. White cards floating on a warm light-grey background,
-  one bold black action per area, colour used for money direction and categories only.
+- Feel: light, spacious, soft. White cards on a warm cream background, one deep teal action per area,
+  terracotta and green used for money direction and categories only.
 - Wordmark: "abcbank" in lowercase with the dotted mark, on the Welcome screen and card art only.
-- Visual reference: [Sample Screens 1.png](Sample%20Screens%201.png), [Sample Screens 2.png](Sample%20Screens%202.png).
+- Visual reference: the Stitch project (screens listed in docs/STITCH_REVIEW.md) for the redesign;
+  [Sample Screens 1.png](Sample%20Screens%201.png) and [Sample Screens 2.png](Sample%20Screens%202.png) for layouts not yet redesigned.
 
 ## 02 Color palette
 
@@ -31,32 +36,45 @@ Tokens live in `core/designsystem/theme/Color.kt` and are read via `AbcTheme.col
 
 | Token | Kotlin name | Value | Use |
 | --- | --- | --- | --- |
-| color-bg | `background` | #F2F2F2 | Screen background |
+| color-bg | `background` | #FAF8F5 | Screen background (warm cream) |
 | color-surface | `surface` | #FFFFFF | Cards, sheets, list containers, chips |
-| color-surface-muted | `surfaceMuted` | #EDEDED | Chart tracks, disabled fields, skeletons |
-| color-border | `border` | #E6E6E6 | Dividers, input outlines, unselected chip outline |
-| color-text | `text` | #111111 | Body text, headings, amounts |
-| color-text-muted | `textMuted` | #6B6B70 | Timestamps, captions, secondary labels |
-| color-primary | `primary` | #111111 | Primary buttons, action pills, bottom bar, "Main card" tag |
-| color-on-primary | `onPrimary` | #FFFFFF | Text and icons on primary |
-| color-accent | `accent` | #FF9A3C | Add/plus FAB, shopping category, highlight dots |
-| color-accent-deep | `accentDeep` | #E2773A | Entertainment category, outgoing indicator |
-| color-positive | `positive` | #6CC04A | Chart fills, incoming indicators, success icons |
-| color-positive-text | `positiveText` | #237A3B | Incoming amounts as text (+$38.60), success copy |
+| color-surface-muted | `surfaceMuted` | #EFEEEB | Chart tracks, disabled fields, skeletons, icon circles |
+| color-border | `border` | #E5DFD7 | Dividers, input outlines, unselected chip outline |
+| color-text | `text` | #142423 | Body text, headings, amounts (charcoal-tinted spruce, never pure black) |
+| color-text-muted | `textMuted` | #5C6665 | Timestamps, captions, secondary labels |
+| color-primary | `primary` | #0E3E3D | Primary buttons, action pills, bottom bar, "Main card" tag (deep slate teal) |
+| color-on-primary | `onPrimary` | #FFFFFF | Text and icons on primary and on card-sage or card-graphite |
+| color-accent | `accent` | #E07A5F | Terracotta fills: add/plus circle, shopping category, highlight dots. Never text, never under white text |
+| color-accent-deep | `accentDeep` | #9A442D | Deep terracotta: entertainment category, outgoing indicator; passes AA as text |
+| color-positive | `positive` | #059669 | Emerald fills: charts, incoming indicators, success icons |
+| color-positive-text | `positiveText` | #047857 | Incoming amounts as text (+$38.60), success copy |
 | color-warning | `warning` | #B45309 | Low balance, non-blocking warnings |
-| color-danger | `danger` | #D93025 | Errors, destructive actions, frozen card badge |
-| color-scrim | `scrim` | #66000000 | Behind bottom sheets and dialogs |
-| color-primary-pressed | `primaryPressed` | #2A2A2A | Pressed state of primary buttons (section 06) |
-| color-shadow | `shadow` | #1A000000 | Ambient and spot shadow of floating elements (section 05) |
+| color-danger | `danger` | #BA1A1A | Errors, destructive actions, frozen card badge |
+| color-scrim | `scrim` | #66142423 | Behind bottom sheets and dialogs |
+| color-primary-pressed | `primaryPressed` | #185352 | Pressed state of primary buttons (section 06) |
+| color-shadow | `shadow` | #1A0E3E3D | Ambient and spot shadow of floating elements, teal-tinted (section 05) |
 | color-card-scrim | `cardScrim` | #33000000 | Bottom of card art, fading up to transparent, so white text stays readable |
 
-Card art (bank card faces):
+Contrast adjustments to the Stitch theme (2026-10-24). Stitch values that fail WCAG AA were replaced with the nearest
+passing shade from the same palette:
+
+| Use | Stitch value | Contrast | Used instead | Contrast |
+| --- | --- | --- | --- | --- |
+| Muted text | #707978 | 3.85:1 on surfaceMuted | #5C6665 | 5.11:1 or more |
+| Incoming amounts | #059669 | 3.55:1 on background | #047857 (`positiveText`); #059669 stays as the `positive` fill | 4.73:1 or more |
+| Warnings | #D97706 | 3.01:1 on background | #B45309 | 4.74:1 on background, 5.02:1 on surface |
+| Terracotta | #E07A5F | 2.78:1 on background | fill only; text uses `accentDeep` #9A442D | 6.12:1 |
+
+The Stitch hand-off guide's alternative values (terracotta #C86240, 36sp balances, 24dp cards) are not used; the
+Stitch project theme is the source of truth.
+
+Card art (bank card faces). The token names are kept from v1 so no screen code changes; the values are the Stitch colours:
 
 | Token | Value | Use |
 | --- | --- | --- |
-| card-peach | gradient #F7DCC8 to #F08A3C | Main card |
-| card-sage | gradient #D3DEC2 to #6E9A5E | Signature card, Home balance header |
-| card-graphite | gradient #3A3A3C to #111111 | Travel card |
+| card-peach | gradient #F4C3AE to #E07A5F (terracotta) | Main card. Text in `text` colour (5.45:1 on the darkest stop) |
+| card-sage | gradient #3A6664 to #0E3E3D (deep teal) | Signature card, Home balance header. White text (6.43:1 or more) |
+| card-graphite | gradient #3A3A3C to #142423 (warm charcoal) | Travel card. White text |
 
 Fluid artwork (2026-10-20, to match Sample Screens 1): `BankCardArt` draws it in Compose Canvas from the
 gradient tokens only (`CardGradient.highlight`, `base` and `deep` are derived from the two stops), softened with
@@ -68,27 +86,29 @@ Text on card art: white with a 20% black scrim on sage and graphite; on the ligh
 and no scrim, as in the sample (white fails contrast there).
 
 Rules:
-- One primary colour (black). Orange and green carry meaning: orange for spending/outgoing, green for earning/incoming and success.
-- Never use orange or green as the only signal. Pair with a sign (+/-) or an arrow.
+- One primary colour (deep teal). Terracotta and green carry meaning: terracotta for spending/outgoing, green for earning/incoming and success.
+- Never use terracotta or green as the only signal. Pair with a sign (+/-) or an arrow.
 - Text passes WCAG AA (4.5:1). That is why amounts use `positiveText`, not `positive`, and white text never sits on `accent`.
 - Dark mode: not supported in v1. Still use tokens so it can be added by swapping the palette.
 
 ## 03 Typography
 
-Font: Inter, bundled in `res/font/` (OFL licence, no dependency). It is the
-closest open-licence match to the sample screens. Swap here if ABC Bank supplies a brand font.
+Font: Plus Jakarta Sans (2026-10-24), bundled as the variable font from google/fonts in
+`res/font/plus_jakarta_sans.ttf` (OFL licence in docs/licenses, no dependency). Compose uses instances of its
+'wght' axis at 300, 400, 500 and 600; Canvas text (the PDF receipts and documents) sets the same axis through
+`Paint.fontVariationSettings` via `fontWeightVariation()`. Swap here if ABC Bank supplies a brand font.
 
-| Role | Kotlin name | Size | Weight | Line height | Use |
-| --- | --- | --- | --- | --- | --- |
-| Display | `display` | 44sp | 300 Light | 48sp, -0.02em | Welcome headline only |
-| Balance | `balance` | 40sp | 400 | 44sp, -0.02em | Wallet and card balances. Cents render at 60% size via `BalanceText` |
-| H1 | `h1` | 28sp | 500 | 34sp, -0.01em | Screen titles, chart totals ($3,650) |
-| H2 | `h2` | 20sp | 500 | 26sp | Section titles inside sheets |
-| H3 | `h3` | 17sp | 500 | 22sp | Section headers (Transactions, Quick transfer) |
-| Body | `body` | 15sp | 400 | 22sp | Default text, list titles |
-| Small | `small` | 13sp | 400 | 18sp | Timestamps, captions, chip labels |
-| Label | `label` | 12sp | 500 | 16sp | Button text on small pills, tags, chart legends |
-| Mono | `mono` | 15sp | 400 | 22sp, Inter tabular figures | Card numbers, reference IDs |
+| Role | Kotlin name | Stitch role | Size | Weight | Line height | Use |
+| --- | --- | --- | --- | --- | --- | --- |
+| Display | `display` | display-lg | 44sp | 300 Light | 52sp, -0.02em | Welcome headline only |
+| Balance | `balance` | display-lg | 44sp | 300 Light | 52sp, -0.02em | Wallet and card balances. Cents render at 60% size via `BalanceText` |
+| H1 | `h1` | headline-lg | 30sp | 600 SemiBold | 38sp, -0.01em | Screen titles, chart totals ($3,650) |
+| H2 | `h2` | headline-sm | 20sp | 600 SemiBold | 26sp | Section titles inside sheets |
+| H3 | `h3` | title-lg | 18sp | 600 SemiBold | 24sp | Section headers (Transactions, Quick transfer) |
+| Body | `body` | body-lg | 16sp | 400 | 24sp | Default text, list titles |
+| Small | `small` | body-md | 14sp | 400 | 20sp | Timestamps, captions, chip labels |
+| Label | `label` | label-md | 12sp | 500 | 16sp | Button text on small pills, tags, chart legends |
+| Mono | `mono` | body-lg | 16sp | 400 | 24sp, tabular figures | Card numbers, reference IDs |
 
 Rules:
 - All money uses tabular figures (`fontFeatureSettings = "tnum"`) so columns align.
@@ -110,7 +130,9 @@ Base unit: 4dp. Only use values from this scale. Tokens in `core/designsystem/th
 | space-8 | 32dp | Above the welcome headline, large group gaps |
 | space-12 | 48dp | Bottom clearance so content scrolls above the floating bottom bar (plus bar height) |
 
-Component sizes (touch target 48dp, button 52dp, text field 56dp, keypad key 64dp, MPIN dot 12dp,
+The Stitch spacing scale (4, 8, 12, 16, 24, 32dp) is the same scale, so no values changed in the redesign.
+
+Component sizes (touch target 48dp, button 56dp (Stitch, 2026-10-24), text field 56dp, keypad key 64dp, MPIN dot 12dp,
 icon 16/20/24dp, border 1dp, focus ring 2dp) live in `core/designsystem/theme/Dimens.kt` as `AbcTheme.dimens`.
 
 Layout:
@@ -124,15 +146,21 @@ Tokens in `core/designsystem/theme/Shape.kt`.
 
 | Token | Value | Use |
 | --- | --- | --- |
-| radius-sm | 8dp | Inputs, small tags, chart value labels |
-| radius-md | 12dp | Full-width buttons (Get Started), keypad keys |
-| radius-lg | 20dp | Bank cards, feature tiles |
-| radius-xl | 28dp | Content cards (transactions panel, chart cards), bottom sheets (top corners), Home balance header |
-| radius-full | 50% | Pills, chips, avatars, icon circles, bottom bar |
+Radii follow the Stitch scale (sm 8, DEFAULT 16, md 24, lg 32), one step larger than v1 (2026-10-24):
+
+| Token | Value | Stitch | Use |
+| --- | --- | --- | --- |
+| radius-sm | 8dp | sm | Inputs, small tags, chart value labels |
+| radius-md | 16dp | DEFAULT | Full-width buttons (Get Started), keypad keys |
+| radius-lg | 24dp | md | Bank cards, feature tiles |
+| radius-xl | 32dp | lg | Content cards (transactions panel, chart cards), bottom sheets (top corners), Home balance header |
+| radius-full | 50% | full | Pills, chips, avatars, icon circles, bottom bar |
+
+Stitch draws buttons and text fields as pills and 16dp rectangles; those component changes come in stage 2.
 
 Elevation: one level only, for floating elements: bottom bar, the pill action
 row that overlaps the Home header, the card-stack tag, the Welcome card stack, bottom sheets.
-Compose `shadowElevation = 8.dp`, ambient/spot colour black at 10%.
+Compose `shadowElevation = 8.dp`, ambient/spot colour `shadow` (teal at 10%).
 Content cards are flat: white on background, no border, no shadow.
 
 ## 06 Components
@@ -149,13 +177,13 @@ Buttons (`AbcButton`)
 | Ghost | transparent | text | Low emphasis (View All, Filter) |
 | Danger | danger | onPrimary | Destructive actions, always confirm first (Freeze card, Dispute) |
 
-- Height 52dp, full width, radius-md, Body 500.
-- States: pressed (primary lightens to #2A2A2A), disabled (40% alpha), focused (2dp accent ring for keyboard/D-pad).
+- Height 56dp, full width, radius-md, Body 500.
+- States: pressed (primary lightens to `primaryPressed` #185352), disabled (40% alpha), focused (2dp accent ring for keyboard/D-pad).
 - Loading: a 20dp progress indicator replaces the label; width stays fixed; taps are ignored.
 
 Action pills
-- `ActionPill` (Sample 2: Transfer, Withdraw): white pill, 56dp tall, black 40dp circle with white icon on the left, Body label. Grouped in a row that overlaps the bottom of the Home header by 28dp, with elevation.
-- `IconPillButton` (Sample 1: Deposit, Send, More): black pill, 40dp tall, white icon in a white-outlined square, Small 500 label. Built 2026-10-20: primary fill, 24dp square with a 1dp onPrimary outline and radius-sm around a 16dp icon, inside a 48dp touch target.
+- `ActionPill` (Sample 2: Transfer, Withdraw): white pill, 56dp tall, primary 40dp circle with white icon on the left, Body label. Grouped in a row that overlaps the bottom of the Home header by 28dp, with elevation.
+- `IconPillButton` (Sample 1: Deposit, Send, More): primary pill, 40dp tall, white icon in a white-outlined square, Small 500 label. Built 2026-10-20: primary fill, 24dp square with a 1dp onPrimary outline and radius-sm around a 16dp icon, inside a 48dp touch target.
 - `GridPill`: 56dp white circle with the grid icon, opens the More actions sheet.
 
 Chips (`FilterChipRow`)
@@ -169,9 +197,9 @@ Choice chips (`ChoiceChip`, 2026-10-20)
 
 Cards and lists
 - `ContentCard`: surface, radius-xl, padding space-4 (space-5 for charts).
-- `AbcWordmark`: the dotted mark plus "abcbank" in H2 (H3 on card art). Mark is 1.2x the text size, space-2 before the text, so it follows font scale. Tone Brand: mark and "abc" in card-sage end #6E9A5E, "bank" in text. Tone OnCard: all white. Read by TalkBack as "ABC Bank".
+- `AbcWordmark`: the dotted mark plus "abcbank" in H2 (H3 on card art). Mark is 1.2x the text size, space-2 before the text, so it follows font scale. Tone Brand: mark and "abc" in card-sage end #0E3E3D, "bank" in text. Tone OnCard: all white. Read by TalkBack as "ABC Bank".
 - `BankCardArt`: the card face only. 1.586 aspect ratio, radius-lg, card-art gradient with the drawn `Ribbons` or `Waves` pattern (section 02), an optional EMV chip tinted with the card's own tones (left, 38% down, 14% of the card width), and an optional `cardScrim` fading up from the bottom edge. Content slot for text. `BankCardView` builds on it. `AbcWordmark` tone `OnLightCard` (all `text` colour) is for the peach face.
-- `BankCardView`: 1.586 aspect ratio, radius-lg, card art, contactless and network icons top-left, balance, holder name, expiry, last four. Stacked cards peek 24dp below one another. Optional tag (`CardTag`, black pill, "Main card").
+- `BankCardView`: 1.586 aspect ratio, radius-lg, card art, contactless and network icons top-left, balance, holder name, expiry, last four. Stacked cards peek 24dp below one another. Optional tag (`CardTag`, primary pill, "Main card").
   Built 2026-10-20: Lucide `nfc` plus two rings for Mastercard or "VISA" in Label; a Danger `StatusBadge` "Frozen" next to the marks (the top-right corner belongs to the tag); "Balance" in Small over `BalanceText` in H1; while revealed, the full number in Mono and "CVV 314" in place of "•••• 3144". Text is dark on card-peach, white elsewhere. At large font scales the face grows taller (it keeps the ratio as a minimum) and the expiry and number move under the name.
 - `BalanceText`: big integer part, small cents. When masked shows "••••••" with the same width class. Never logs or exposes the raw value in accessibility text while masked ("Balance hidden").
 - `TransactionRow`: 40dp leading circle (category icon on accent/positive tint, or contact avatar), title Body, timestamp Small muted, amount right-aligned. Outgoing "-$125.00" in text colour, incoming "+$38.60" in positiveText.
@@ -185,7 +213,7 @@ Cards and lists
 - `CategoryIcon`: the `TransactionRow` leading circle for businesses: accent fill for money out, positive fill for money in, Lucide category icon in `text` colour (white on accent fails contrast). People (Transfer in/out) get `InitialsAvatar` instead: 40dp, initials in Label on surfaceMuted.
 
 Navigation
-- `AbcBottomBar`: floating black pill, 64dp tall, 16dp from screen sides and 12dp above the navigation bar inset. Four destinations: Home, Cards, Insights, Profile. White 24dp icons, active item has a 4dp white dot below. Icons have contentDescription equal to the destination name.
+- `AbcBottomBar`: floating primary (teal) pill, 64dp tall, 16dp from screen sides and 12dp above the navigation bar inset. Four destinations: Home, Cards, Insights, Profile. White 24dp icons, active item has a 4dp white dot below. Icons have contentDescription equal to the destination name.
   Built 2026-10-20 with Home, Cards and Profile; Insights joined the same day with its screen. Icons are Lucide `house`, `credit-card`, `chart-column`, `user` (outline: Lucide has no filled set). Tab screens add `LocalBottomBarClearance` (space-12 plus the bar) at the bottom so content scrolls above the bar.
 - `AbcTopBar`: transparent, H3 title left or centred greeting with avatar ("Hello, Samanta"), trailing icon buttons (notifications bell with unread dot, filter). `GreetingTopBar` is the greeting form: 32dp `ProfileAvatar`, Body greeting, bell with an 8dp accent unread dot; TalkBack reads "Notifications, 4 unread".
 - Flows that leave the tabs (transfer, bill pay, applications) hide the bottom bar and show a back arrow and step indicator ("Step 2 of 5").
@@ -198,7 +226,7 @@ Inputs
 
 Charts (drawn with Compose Canvas, no chart library)
 - `DonutChart`: 24dp stroke, rounded caps, 4dp gaps between segments, track surfaceMuted. Centre shows total / budget and percentage chip. Segment labels are white circles with Small percentage.
-- `LineChart`: 2dp positive stroke with vertical gradient fill (positive 30% to 0%), dashed average line in positive at 40%, selected point with vertical marker and a black value tooltip.
+- `LineChart`: 2dp positive stroke with vertical gradient fill (positive 30% to 0%), dashed average line in positive at 40%, selected point with vertical marker and a primary value tooltip.
 - Legends use `LegendChip`: dot + Small label on a pill; inside a surface card the pill is the background colour, so it shows.
 - Built 2026-10-20 in `Charts.kt`. Donut segment labels sit on the ring's centre line and grow into pills at large font sizes. Line chart labels are centred under their points and kept inside the chart; a label that would overlap the one before it is left out. Tapping the line chart selects the nearest point. TalkBack reads one summary per chart (`cd_spending_donut`, `cd_savings_chart`), not the drawing. `LocalChartEntrance` turns the entrance off for screenshot tests, which capture the first frame.
 
@@ -228,6 +256,7 @@ Launcher icon (chosen 2026-10-17, concept B "Peach card"):
 - Adaptive icon in `res/mipmap-anydpi/ic_launcher.xml` and `ic_launcher_round.xml`, all vectors, no PNGs (minSdk 26).
 - Background `drawable/ic_launcher_background.xml`: card-peach gradient #F7DCC8 to #F08A3C, top-left to bottom-right, so the icon matches the Main card.
 - Foreground `drawable/ic_launcher_foreground.xml`: the abcbank dotted mark in #111111. 13 rounded squares (corner radius 28% of side) on the diagonals c + r = 3, 5, 7 of a 6 x 6 grid of 7.6dp cells, centred on the 108dp canvas and inside the 66dp safe zone. Size and opacity grow towards the top-right (side 24% to 92% of a cell, opacity 48% to 100%), traced from the wordmark in Sample Screens 1.
+- Not yet updated for the redesign (2026-10-24): the launcher drawables still use the v1 peach and #111111; they are vectors outside the theme and move to the Stitch colours in stage 2.
 - Monochrome `drawable/ic_launcher_monochrome.xml`: the same mark, for Android 13+ themed icons.
 - If ABC Bank supplies a brand icon, replace these three drawables only.
 
@@ -269,7 +298,7 @@ How the sample PNGs map to app screens. Use them for layout and feel, not as pix
 
 `HomeScreen` layout (2026-10-20):
 - `GreetingTopBar` (tapping the avatar or greeting opens Profile until the bottom bar exists), then the offline banner when reading from the cache.
-- Balance header, space-4 below: card-sage gradient, radius-xl, padding space-5. "Wallet Balance" (Small) with the eye toggle (Lucide `eye-off` to hide, `eye` to show, 48dp target), `BalanceText`, then two chips: arrow-up "+$x" in positiveText and arrow-down "-$y" in text, Label on surface pills, last-30-day money in and out of the wallet account. Header text is `text` colour, not white: white fails contrast on the light end of the sage gradient, and `text` passes on both ends.
+- Balance header, space-4 below: card-sage gradient, radius-xl, padding space-5. "Wallet Balance" (Small) with the eye toggle (Lucide `eye-off` to hide, `eye` to show, 48dp target), `BalanceText`, then two chips: arrow-up "+$x" in positiveText and arrow-down "-$y" in text, Label on surface pills, last-30-day money in and out of the wallet account. Header text and the eye icon are `onPrimary` (2026-10-24): card-sage is now deep teal, where white passes (6.43:1 or more) and `text` would not.
 - Action pills overlap the header's bottom edge by 28dp: `ActionPill` Transfer (`arrow-up-right`), `ActionPill` Pay Bills (`receipt`), `GridPill`. One row at 360dp; at narrower widths or large fonts they wrap downward.
 - space-6, `SectionHeader` "Features" with "View All" (opens More Actions), then a carousel of `FeatureTile`s, space-3 apart, bleeding to the screen edges (2026-10-20): Instant Bank Transfers (`arrow-up-right` on accent), Spending Analytics (`chart-column` on positive, opens Insights), Deposit a Check (`arrow-down` on surfaceMuted) and Explore Products (`layout-grid` on accentDeep). Sample 2's Multi-currency tile is out of scope (PRD section 07). Tile illustrations are a 48dp tinted circle with a 24dp icon.
 - space-6, `SectionHeader` "Accounts", one `ContentCard` with a row per account (dividers between): nickname and "••last4" on the start side; the amount in Body tabular on the end side with Small muted details: checking "Available" or "Ledger $x" when a pending item makes them differ, savings APY, card current balance with available, statement and due date, line of credit amount owed with available and APR, term deposit principal with APY and maturity date, investments portfolio value. A low balance adds "Below $500.00" in warning.

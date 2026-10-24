@@ -13,7 +13,7 @@ data class AbcDimens(
     val iconSmall: Dp = 16.dp,
     val iconMedium: Dp = 20.dp,
     val iconLarge: Dp = 24.dp,
-    val buttonHeight: Dp = 52.dp,
+    val buttonHeight: Dp = 56.dp,
     val buttonProgress: Dp = 20.dp,
     val textFieldHeight: Dp = 56.dp,
     val keypadKeyHeight: Dp = 64.dp,

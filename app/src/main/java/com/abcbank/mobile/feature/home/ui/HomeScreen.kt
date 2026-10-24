@@ -211,7 +211,7 @@ private fun BalanceHeader(
                 Text(
                     text = stringResource(R.string.home_wallet_balance),
                     style = AbcTheme.typography.small,
-                    color = colors.text
+                    color = colors.onPrimary
                 )
                 IconButton(
                     onClick = onToggleBalances,
@@ -228,7 +228,7 @@ private fun BalanceHeader(
                                 R.string.cd_hide_balances
                             }
                         ),
-                        tint = colors.text,
+                        tint = colors.onPrimary,
                         modifier = Modifier.size(AbcTheme.dimens.iconMedium)
                     )
                 }
@@ -236,7 +236,8 @@ private fun BalanceHeader(
             BalanceText(
                 money = state.walletBalance,
                 hidden = state.balancesHidden,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                color = colors.onPrimary
             )
             Spacer(Modifier.height(spacing.space3))
             FlowRow(
