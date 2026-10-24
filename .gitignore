@@ -4,6 +4,8 @@ app/google-services.json
 *.jks
 *.keystore
 keystore.properties
+# MCP server config can hold API keys (for example the Stitch server)
+.mcp.json
 
 # Gradle and build output
 .gradle/
