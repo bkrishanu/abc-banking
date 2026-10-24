@@ -231,6 +231,7 @@
     <string name="tab_home">Home</string>
     <string name="tab_cards">Cards</string>
     <string name="tab_profile">Profile</string>
+    <string name="tab_transfer">Transfer</string>
     <!-- Transfers (MobileBuild.md 3.1 and 3.2) -->
     <string name="cd_decimal_point">Decimal point</string>
     <string name="flow_step">Step %1$d of %2$d</string>

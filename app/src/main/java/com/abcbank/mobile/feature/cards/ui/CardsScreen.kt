@@ -64,6 +64,7 @@ import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
 import com.abcbank.mobile.core.designsystem.component.StatusBadge
 import com.abcbank.mobile.core.designsystem.component.StepUpSheet
+import com.abcbank.mobile.core.designsystem.component.TitleTopBar
 import com.abcbank.mobile.core.designsystem.component.gradient
 import com.abcbank.mobile.core.designsystem.theme.AbcMotion
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
@@ -151,12 +152,7 @@ fun CardsScreen(state: CardsUiState, events: CardsEvents, modifier: Modifier = M
             .padding(horizontal = spacing.space4)
     ) {
         Spacer(Modifier.height(spacing.space4))
-        Text(
-            text = stringResource(R.string.cards_title),
-            style = AbcTheme.typography.h1,
-            color = AbcTheme.colors.text,
-            modifier = Modifier.semantics { heading() }
-        )
+        TitleTopBar(title = stringResource(R.string.cards_title))
         Spacer(Modifier.height(spacing.space6))
         when (state) {
             CardsUiState.Loading -> SkeletonBlock(

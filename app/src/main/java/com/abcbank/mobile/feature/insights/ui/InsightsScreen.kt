@@ -50,6 +50,7 @@ import com.abcbank.mobile.core.designsystem.component.LineChart
 import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
+import com.abcbank.mobile.core.designsystem.component.TitleTopBar
 import com.abcbank.mobile.core.designsystem.component.categoryLabel
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.designsystem.theme.TABULAR_FIGURES
@@ -96,12 +97,7 @@ fun InsightsScreen(
             .padding(horizontal = spacing.space4)
     ) {
         Spacer(Modifier.height(spacing.space4))
-        Text(
-            text = stringResource(R.string.insights_title),
-            style = AbcTheme.typography.h1,
-            color = AbcTheme.colors.text,
-            modifier = Modifier.semantics { heading() }
-        )
+        TitleTopBar(title = stringResource(R.string.insights_title))
         Spacer(Modifier.height(spacing.space6))
         when (state) {
             InsightsUiState.Loading -> Column(

@@ -36,7 +36,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +53,7 @@ import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.ProfileAvatar
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
+import com.abcbank.mobile.core.designsystem.component.TitleTopBar
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.model.PersonaId
 
@@ -130,12 +130,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(spacing.space4))
         }
         Column(Modifier.padding(horizontal = spacing.space4)) {
-            Text(
-                text = stringResource(R.string.profile_title),
-                style = AbcTheme.typography.h1,
-                color = AbcTheme.colors.text,
-                modifier = Modifier.semantics { heading() }
-            )
+            TitleTopBar(title = stringResource(R.string.profile_title))
             Spacer(Modifier.height(spacing.space6))
             when (state) {
                 ProfileUiState.Loading, ProfileUiState.LoggedOut -> ProfileSkeleton()

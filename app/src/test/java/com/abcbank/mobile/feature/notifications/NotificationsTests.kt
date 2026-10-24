@@ -1,6 +1,7 @@
 package com.abcbank.mobile.feature.notifications
 
 import app.cash.turbine.test
+import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.data.firebase.NotificationDto
 import com.abcbank.mobile.feature.notifications.data.toNotification
@@ -12,8 +13,11 @@ import com.abcbank.mobile.feature.notifications.domain.NotificationRules
 import com.abcbank.mobile.feature.notifications.domain.NotificationsData
 import com.abcbank.mobile.feature.notifications.domain.NotificationsRepository
 import com.abcbank.mobile.feature.notifications.domain.ObserveNotificationsUseCase
+import com.abcbank.mobile.feature.notifications.domain.ObserveUnreadCountUseCase
 import com.abcbank.mobile.feature.notifications.ui.NotificationsUiState
 import com.abcbank.mobile.feature.notifications.ui.NotificationsViewModel
+import com.abcbank.mobile.feature.notifications.ui.TabBellUiState
+import com.abcbank.mobile.feature.notifications.ui.TabBellViewModel
 import com.abcbank.mobile.testing.MainDispatcherRule
 import com.abcbank.mobile.testing.ManualClock
 import com.google.firebase.Timestamp
@@ -182,6 +186,48 @@ class NotificationsViewModelTest {
             repository.data.value = DataResult.Success(NotificationsData(emptyList(), false))
             val content = awaitItem() as NotificationsUiState.Content
             assertTrue(content.items.isEmpty())
+        }
+    }
+}
+
+class ObserveUnreadCountUseCaseTest {
+    private val repository = FakeNotificationsRepository()
+    private val useCase = ObserveUnreadCountUseCase(repository)
+
+    @Test
+    fun `counts unread alerts of both kinds`() = runTest {
+        useCase().test {
+            repository.data.value = DataResult.Success(NotificationsData(ALERTS, false))
+            assertEquals(4, awaitItem())
+            repository.markRead(listOf("offer", "yesterday"))
+            assertEquals(2, awaitItem())
+        }
+    }
+
+    @Test
+    fun `a failure counts as nothing unread`() = runTest {
+        useCase().test {
+            repository.data.value = DataResult.Failure(DataError.UNKNOWN)
+            assertEquals(0, awaitItem())
+        }
+    }
+}
+
+class TabBellViewModelTest {
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    private val repository = FakeNotificationsRepository()
+
+    @Test
+    fun `loads, then follows the unread count`() = runTest {
+        val viewModel = TabBellViewModel(ObserveUnreadCountUseCase(repository))
+        viewModel.uiState.test {
+            assertEquals(TabBellUiState.Loading, awaitItem())
+            repository.data.value = DataResult.Success(NotificationsData(ALERTS, false))
+            assertEquals(TabBellUiState.Content(4), awaitItem())
+            repository.markRead(ALERTS.map { it.id })
+            assertEquals(TabBellUiState.Content(0), awaitItem())
         }
     }
 }

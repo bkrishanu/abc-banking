@@ -111,6 +111,22 @@ class ObserveNotificationsUseCase @Inject constructor(
         }
 }
 
+/** The unread count for the bell on every tab (DESIGN_SYSTEM.md section 06, `TitleTopBar`). */
+class ObserveUnreadCountUseCase @Inject constructor(
+    private val repository: NotificationsRepository
+) {
+    /**
+     * A failure counts as nothing unread: the bell still opens the notification center, which
+     * shows the error itself.
+     */
+    operator fun invoke(): Flow<Int> = repository.observeNotifications().map { result ->
+        when (result) {
+            is DataResult.Failure -> 0
+            is DataResult.Success -> result.value.notifications.count { !it.read }
+        }
+    }
+}
+
 class MarkNotificationsReadUseCase @Inject constructor(
     private val repository: NotificationsRepository
 ) {

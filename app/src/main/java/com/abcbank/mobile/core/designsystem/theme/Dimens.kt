@@ -29,7 +29,7 @@ data class AbcDimens(
     val chipHeight: Dp = 40.dp,
     val cardPeek: Dp = 24.dp,
     val bottomBarHeight: Dp = 64.dp,
-    val bottomBarDot: Dp = 4.dp
+    val stepProgressHeight: Dp = 4.dp
 )
 
 internal val DefaultAbcDimens = AbcDimens()
