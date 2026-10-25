@@ -26,6 +26,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.abcbank.mobile.R
@@ -65,7 +67,8 @@ fun BankCardView(face: BankCardFace, balanceHidden: Boolean, modifier: Modifier 
     val spacing = AbcTheme.spacing
     val description = cardDescription(face, balanceHidden)
     BankCardArt(
-        gradient = face.art.gradient(),
+        // A frozen card loses its colour, as in Stitch; the Frozen badge says why.
+        gradient = if (face.frozen) face.art.gradient().desaturated() else face.art.gradient(),
         pattern = if (light) CardArtPattern.Ribbons else CardArtPattern.Waves,
         scrim = !light,
         // At large font scales the face grows taller instead of clipping its text.
@@ -140,6 +143,58 @@ fun BankCardView(face: BankCardFace, balanceHidden: Boolean, modifier: Modifier 
                 }
             }
         }
+    }
+}
+
+/**
+ * `FrozenCardBanner` from DESIGN_SYSTEM.md section 06 (Stitch Cards, adopted extra): under a frozen
+ * card, a snowflake in an accentDeep circle, what freezing means, and Primary "Unfreeze".
+ */
+@Composable
+fun FrozenCardBanner(onUnfreeze: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = AbcTheme.colors
+    val spacing = AbcTheme.spacing
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(AbcTheme.shapes.xl)
+            .background(colors.accentTint)
+            .padding(spacing.space4),
+        verticalArrangement = Arrangement.spacedBy(spacing.space3)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.semantics(mergeDescendants = true) {}
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(AbcTheme.dimens.iconCircle)
+                    .clip(AbcTheme.shapes.full)
+                    .background(colors.accentDeep)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_snowflake),
+                    contentDescription = null,
+                    tint = colors.onPrimary,
+                    modifier = Modifier.size(AbcTheme.dimens.iconMedium)
+                )
+            }
+            Spacer(Modifier.width(spacing.space3))
+            Column {
+                Text(
+                    text = stringResource(R.string.cards_frozen_banner_title),
+                    style = AbcTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.text
+                )
+                Text(
+                    text = stringResource(R.string.cards_frozen_banner_text),
+                    style = AbcTheme.typography.small,
+                    color = colors.textMuted
+                )
+            }
+        }
+        AbcButton(text = stringResource(R.string.action_unfreeze), onClick = onUnfreeze)
     }
 }
 
@@ -266,6 +321,7 @@ private fun BankCardViewPreview() {
                 balanceHidden = false,
                 modifier = Modifier.fillMaxWidth()
             )
+            FrozenCardBanner(onUnfreeze = {})
         }
     }
 }

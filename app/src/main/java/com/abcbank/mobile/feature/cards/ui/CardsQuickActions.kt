@@ -6,11 +6,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,38 +30,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.abcbank.mobile.R
 import com.abcbank.mobile.core.designsystem.component.ContentCard
-import com.abcbank.mobile.core.designsystem.component.IconPillButton
 import com.abcbank.mobile.core.designsystem.component.InitialsAvatar
+import com.abcbank.mobile.core.designsystem.component.QuickActionButton
+import com.abcbank.mobile.core.designsystem.component.QuickActionRow
 import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.model.Beneficiary
 
 /**
- * Sample 1's row under the card stack: Deposit, Send and More pills, then Quick Transfer with the
+ * The row under the card stack: Send, Deposit and More quick actions, then Quick Transfer with the
  * recent payees (tap one to send them money) and an Add button for a new payee.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CardsQuickActions(state: CardsUiState.Content, navigation: CardsNavigation) {
     val spacing = AbcTheme.spacing
-    FlowRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(spacing.space2, Alignment.CenterHorizontally)
-    ) {
-        IconPillButton(
-            stringResource(R.string.cards_action_deposit),
-            R.drawable.ic_plus,
-            navigation.onDeposit
+    QuickActionRow {
+        QuickActionButton(
+            label = stringResource(R.string.quick_action_send),
+            icon = R.drawable.ic_send,
+            onClick = navigation.onSend,
+            emphasized = true,
+            offline = state.isOffline
         )
-        IconPillButton(
-            stringResource(R.string.cards_action_send),
-            R.drawable.ic_arrow_up,
-            navigation.onSend
+        QuickActionButton(
+            label = stringResource(R.string.quick_action_deposit),
+            icon = R.drawable.ic_landmark,
+            onClick = navigation.onDeposit,
+            offline = state.isOffline
         )
-        IconPillButton(
-            stringResource(R.string.cards_action_more),
-            R.drawable.ic_layout_grid,
-            navigation.onMore
+        QuickActionButton(
+            label = stringResource(R.string.quick_action_more),
+            icon = R.drawable.ic_layout_grid,
+            onClick = navigation.onMore
         )
     }
     Spacer(Modifier.height(spacing.space4))

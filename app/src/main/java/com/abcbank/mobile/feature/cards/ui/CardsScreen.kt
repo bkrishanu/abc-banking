@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -59,6 +60,7 @@ import com.abcbank.mobile.core.designsystem.component.CardArtPattern
 import com.abcbank.mobile.core.designsystem.component.CardTag
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.ErrorState
+import com.abcbank.mobile.core.designsystem.component.FrozenCardBanner
 import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
@@ -205,6 +207,10 @@ private fun CardsContent(state: CardsUiState.Content, events: CardsEvents) {
     }
     CardStack(state, events.onSelectCard)
     Spacer(Modifier.height(spacing.space4))
+    if (card.frozen) {
+        FrozenCardBanner(onUnfreeze = { events.onSetFrozen(false) })
+        Spacer(Modifier.height(spacing.space4))
+    }
     CardsQuickActions(state, events.navigation)
     Spacer(Modifier.height(spacing.space4))
     AbcButton(
@@ -284,7 +290,12 @@ private fun CardsContent(state: CardsUiState.Content, events: CardsEvents) {
 @Composable
 private fun CardStack(state: CardsUiState.Content, onSelect: (String) -> Unit) {
     val others = state.cards.filter { it.card.id != state.selected.card.id }
-    val peek = AbcTheme.dimens.cardPeek
+    // The strip must fit a line of Small text, which is far taller than 24dp at 200% font scale.
+    val peek = maxOf(
+        AbcTheme.dimens.cardPeek,
+        with(LocalDensity.current) { AbcTheme.typography.small.lineHeight.toDp() } +
+            AbcTheme.spacing.space1 * 2
+    )
     Layout(
         modifier = Modifier.fillMaxWidth(),
         content = {

@@ -5,12 +5,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +30,8 @@ import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 /**
  * `FeatureTile` from DESIGN_SYSTEM.md section 06 (Sample 2, Features carousel): 140dp wide, at
  * least 120dp tall, radius-lg, surface, an illustration at the top (a 48dp tinted circle with a
- * Lucide icon) and the Body title at the bottom. The whole tile is one button.
+ * Lucide icon) and the Body title at the bottom. The whole tile is one button. At large font
+ * scales the tile widens to its title's longest word, so the title wraps between words only.
  */
 @Composable
 fun FeatureTile(
@@ -40,7 +43,8 @@ fun FeatureTile(
 ) {
     Column(
         modifier = modifier
-            .width(TILE_WIDTH)
+            .widthIn(min = TILE_WIDTH)
+            .width(IntrinsicSize.Min)
             .heightIn(min = TILE_HEIGHT)
             .clip(AbcTheme.shapes.lg)
             .background(AbcTheme.colors.surface)

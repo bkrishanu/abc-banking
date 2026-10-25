@@ -111,7 +111,7 @@ BankingMobileApp/
           core/
             designsystem/
               theme/            Color.kt, Type.kt, Spacing.kt, Shape.kt, Dimens.kt, AbcMotion.kt, AbcTheme.kt
-              component/        AbcButton, ActionPill, BankCardView, TransactionRow, charts, sheets...
+              component/        AbcButton, QuickActionButton, BankCardView, TransactionRow, charts, sheets...
             model/              domain models shared across features (Money, Account, Transaction, Card...)
             common/             Result type, DispatcherProvider, Clock, formatters (pure, no Android)
             security/           SessionManager, MpinVerifier (incl. lockout),

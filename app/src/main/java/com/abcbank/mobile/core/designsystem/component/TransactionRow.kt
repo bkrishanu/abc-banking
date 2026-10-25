@@ -87,7 +87,10 @@ fun TransactionRow(
     }
 }
 
-/** The leading circle for a category: accent for money out, positive for money in. */
+/**
+ * The leading circle for a category, tonal as in Stitch: accentDeep on accentTint for money out,
+ * positiveText on positiveTint for money in.
+ */
 @Composable
 fun CategoryIcon(category: TransactionCategory, incoming: Boolean, modifier: Modifier = Modifier) {
     val colors = AbcTheme.colors
@@ -95,14 +98,13 @@ fun CategoryIcon(category: TransactionCategory, incoming: Boolean, modifier: Mod
         modifier = modifier
             .size(AbcTheme.dimens.iconCircle)
             .clip(AbcTheme.shapes.full)
-            .background(if (incoming) colors.positive else colors.accent),
+            .background(if (incoming) colors.positiveTint else colors.accentTint),
         contentAlignment = Alignment.Center
     ) {
-        // Dark icon, not white: white on accent fails the contrast rule in section 02.
         Icon(
             painter = painterResource(category.iconRes()),
             contentDescription = null,
-            tint = colors.text,
+            tint = if (incoming) colors.positiveText else colors.accentDeep,
             modifier = Modifier.size(AbcTheme.dimens.iconMedium)
         )
     }

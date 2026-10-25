@@ -31,13 +31,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abcbank.mobile.R
@@ -46,14 +44,14 @@ import com.abcbank.mobile.core.common.DateFormatter
 import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
-import com.abcbank.mobile.core.designsystem.component.ActionPill
 import com.abcbank.mobile.core.designsystem.component.BalanceText
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.ErrorState
 import com.abcbank.mobile.core.designsystem.component.GreetingTopBar
-import com.abcbank.mobile.core.designsystem.component.GridPill
 import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
+import com.abcbank.mobile.core.designsystem.component.QuickActionButton
+import com.abcbank.mobile.core.designsystem.component.QuickActionRow
 import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
 import com.abcbank.mobile.core.designsystem.component.TransactionLeadingIcon
@@ -181,9 +179,8 @@ private fun HomeContent(
 }
 
 /**
- * The sage wallet header with the action pills overlapping its bottom edge by 28dp
- * (DESIGN_SYSTEM.md sections 06 and 10). Text is dark: white fails contrast on the light end of
- * the sage gradient.
+ * The sage wallet header, then the quick actions below it (DESIGN_SYSTEM.md sections 06 and 10).
+ * Text is white on the deep teal card-sage gradient.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -194,7 +191,6 @@ private fun BalanceHeader(
 ) {
     val colors = AbcTheme.colors
     val spacing = AbcTheme.spacing
-    val overlap = AbcTheme.dimens.actionPillOverlap
     Column {
         Column(
             modifier = Modifier
@@ -204,7 +200,7 @@ private fun BalanceHeader(
                     Brush.linearGradient(listOf(colors.cardSage.start, colors.cardSage.end))
                 )
                 .padding(start = spacing.space5, end = spacing.space5, top = spacing.space3)
-                .padding(bottom = spacing.space5 + overlap),
+                .padding(bottom = spacing.space5),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -261,43 +257,33 @@ private fun BalanceHeader(
                 )
             }
         }
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .pullUp(overlap),
-            horizontalArrangement = Arrangement.spacedBy(
-                spacing.space2,
-                Alignment.CenterHorizontally
-            ),
-            verticalArrangement = Arrangement.spacedBy(spacing.space2)
-        ) {
-            ActionPill(
-                label = stringResource(R.string.home_action_transfer),
-                icon = R.drawable.ic_arrow_up_right,
-                onClick = actions.onTransfer
+        Spacer(Modifier.height(spacing.space4))
+        QuickActionRow {
+            QuickActionButton(
+                label = stringResource(R.string.quick_action_send),
+                icon = R.drawable.ic_send,
+                onClick = actions.onTransfer,
+                emphasized = true,
+                offline = state.isOffline
             )
-            ActionPill(
+            QuickActionButton(
                 label = stringResource(R.string.home_action_pay_bills),
                 icon = R.drawable.ic_receipt,
-                onClick = actions.onPayBills
+                onClick = actions.onPayBills,
+                offline = state.isOffline
             )
-            GridPill(
-                contentDescription = stringResource(R.string.cd_more_actions),
+            QuickActionButton(
+                label = stringResource(R.string.quick_action_deposit),
+                icon = R.drawable.ic_landmark,
+                onClick = actions.onDepositCheck,
+                offline = state.isOffline
+            )
+            QuickActionButton(
+                label = stringResource(R.string.quick_action_more),
+                icon = R.drawable.ic_layout_grid,
                 onClick = actions.onMoreActions
             )
         }
-    }
-}
-
-/**
- * Draws the content [distance] higher and gives that space back, so it overlaps whatever is above.
- * If the pills wrap onto a second row at narrow widths, that row grows downward, not over the header.
- */
-private fun Modifier.pullUp(distance: Dp): Modifier = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints)
-    val offset = distance.roundToPx()
-    layout(placeable.width, (placeable.height - offset).coerceAtLeast(0)) {
-        placeable.place(0, -offset)
     }
 }
 

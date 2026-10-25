@@ -37,9 +37,11 @@
     <string name="action_retry">Try Again</string>
     <string name="action_view_all">View All</string>
     <string name="state_offline">You\'re offline. Showing saved data.</string>
+    <string name="state_offline_synced">You\'re offline. Showing data saved at %1$s.</string>
     <string name="state_offline_no_data">You\'re offline. Connect to the internet and try again.</string>
     <string name="cd_balance_hidden">Balance hidden</string>
     <string name="cd_more_actions">More actions</string>
+    <string name="quick_action_offline">Offline</string>
     <string name="cd_notifications">Notifications</string>
     <string name="cd_profile">Profile</string>
     <plurals name="cd_notifications_unread">
@@ -79,7 +81,6 @@
     <string name="cd_money_out">Money out, last 30 days, %1$s</string>
     <string name="cd_money_in_hidden">Money in, last 30 days, hidden</string>
     <string name="cd_money_out_hidden">Money out, last 30 days, hidden</string>
-    <string name="home_action_transfer">Transfer</string>
     <string name="home_action_pay_bills">Pay Bills</string>
     <string name="home_accounts">Accounts</string>
     <string name="home_latest_transactions">Latest Transactions</string>
@@ -192,6 +193,9 @@
     <string name="cards_freeze_dialog_title">Freeze This Card?</string>
     <string name="cards_freeze_dialog_text">Card, ATM and online payments will be declined until you unfreeze it.</string>
     <string name="action_freeze">Freeze</string>
+    <string name="action_unfreeze">Unfreeze</string>
+    <string name="cards_frozen_banner_title">This card is frozen</string>
+    <string name="cards_frozen_banner_text">Card, ATM and online payments are declined until you unfreeze it.</string>
     <string name="cards_limits">Daily Limits</string>
     <string name="cards_limit_atm">ATM Withdrawals</string>
     <string name="cards_limit_cash_advance">Cash Advance</string>
@@ -587,9 +591,9 @@
     <string name="home_feature_deposit">Deposit a Check</string>
     <string name="home_feature_products">Explore Products</string>
     <!-- Cards tab quick actions (Sample 1) -->
-    <string name="cards_action_deposit">Deposit</string>
-    <string name="cards_action_send">Send</string>
-    <string name="cards_action_more">More</string>
+    <string name="quick_action_send">Send</string>
+    <string name="quick_action_deposit">Deposit</string>
+    <string name="quick_action_more">More</string>
     <string name="cards_quick_transfer">Quick Transfer</string>
     <string name="cards_add_payee">Add</string>
     <string name="cd_quick_transfer_to">Send money to %1$s</string>

@@ -9,18 +9,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.abcbank.mobile.R
@@ -49,20 +55,39 @@ fun SkeletonBlock(modifier: Modifier = Modifier, shape: Shape = AbcTheme.shapes.
     )
 }
 
-/** "You're offline. Showing saved data." in Small, above content read from the cache. */
+/**
+ * A wifi-off icon and "You're offline. Showing saved data." in Small, above content read from the
+ * cache. With [syncedAt] (for example "3:14 pm") it says when that data was saved, as in Stitch.
+ */
 @Composable
-fun OfflineBanner(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(R.string.state_offline),
-        style = AbcTheme.typography.small,
-        color = AbcTheme.colors.textMuted,
-        textAlign = TextAlign.Center,
+fun OfflineBanner(modifier: Modifier = Modifier, syncedAt: String? = null) {
+    val colors = AbcTheme.colors
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(AbcTheme.shapes.full)
-            .background(AbcTheme.colors.surface)
-            .padding(horizontal = AbcTheme.spacing.space4, vertical = AbcTheme.spacing.space2)
-    )
+            .background(colors.surface)
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = AbcTheme.spacing.space4, vertical = AbcTheme.spacing.space2),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space2)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_wifi_off),
+            contentDescription = null,
+            tint = colors.accentDeep,
+            modifier = Modifier.size(AbcTheme.dimens.iconSmall)
+        )
+        Text(
+            text = if (syncedAt != null) {
+                stringResource(R.string.state_offline_synced, syncedAt)
+            } else {
+                stringResource(R.string.state_offline)
+            },
+            style = AbcTheme.typography.small,
+            color = colors.textMuted
+        )
+    }
 }
 
 /** One plain line and a Retry button. Never vendor or Firebase error text. */
@@ -99,6 +124,7 @@ private fun ScreenStatesPreview() {
                     .height(AbcTheme.dimens.skeletonLine)
             )
             OfflineBanner()
+            OfflineBanner(syncedAt = "3:14 pm")
             ErrorState(message = "We couldn't load your accounts.", onRetry = {})
         }
     }

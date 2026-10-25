@@ -50,6 +50,32 @@ fun StatusBadge(text: String, modifier: Modifier = Modifier, tone: BadgeTone = B
     }
 }
 
+/** Earn for savings and deposit rates (APY), Cost for borrowing rates (APR). */
+enum class RateTone { Earn, Cost }
+
+/**
+ * `RateChip` from DESIGN_SYSTEM.md section 06 (Stitch account rows: "3.10% APY"): a Label in a
+ * tinted radius-full pill, positiveText on positiveTint for Earn and accentDeep on accentTint
+ * for Cost. Both pairs pass AA as text.
+ */
+@Composable
+fun RateChip(text: String, tone: RateTone, modifier: Modifier = Modifier) {
+    val colors = AbcTheme.colors
+    val (fill, ink) = when (tone) {
+        RateTone.Earn -> colors.positiveTint to colors.positiveText
+        RateTone.Cost -> colors.accentTint to colors.accentDeep
+    }
+    Text(
+        text = text,
+        style = AbcTheme.typography.label,
+        color = ink,
+        modifier = modifier
+            .clip(AbcTheme.shapes.full)
+            .background(fill)
+            .padding(horizontal = AbcTheme.spacing.space2, vertical = AbcTheme.spacing.space1)
+    )
+}
+
 @Preview(showBackground = true, backgroundColor = 0xFFFAF8F5)
 @Composable
 private fun StatusBadgePreview() {
@@ -61,6 +87,8 @@ private fun StatusBadgePreview() {
             StatusBadge("Pending")
             StatusBadge("Disputed", tone = BadgeTone.Warning)
             StatusBadge("Frozen", tone = BadgeTone.Danger)
+            RateChip("4.50% APY", RateTone.Earn)
+            RateChip("21.99% APR", RateTone.Cost)
         }
     }
 }

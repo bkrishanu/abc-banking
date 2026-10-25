@@ -15,8 +15,8 @@ docs/DESIGN_SYSTEM.md (current tokens and components). Update this file as stage
 | 1 | Tokens: palette, Plus Jakarta Sans, radii, 56dp buttons | Merged (`ae3e73a`) |
 | 1 fix | PDFs embed Plus Jakarta Sans through static Regular and Medium files | Merged (`b25a2c2`) |
 | 2a | Docked bottom bar, floating Transfer button, title and greeting top bars with a shared bell, step progress bar | Merged (`bea85e5` and this file) |
-| 2b-1 | Controls: pill buttons, text fields, keypads, badges, wordmark, launcher icon, three tint tokens | Committed on `redesign/stage-2b1-controls` |
-| 2b-2 | Content components: quick actions, card art, rows, tiles, card stack, offline banner | Next |
+| 2b-1 | Controls: pill buttons, text fields, keypads, badges, wordmark, launcher icon, three tint tokens | Merged (`6c80f0b`, `025c13b`) |
+| 2b-2 | Content components: quick actions, frozen card, tonal category icons, rate chip, tiles, card stack, offline banner | Committed on `redesign/stage-2b2-content` |
 | 3 | Screens, one tab or flow per branch | After 2b |
 
 Working agreement for every stage: list the files and wait for a go-ahead when there are more than five; one
@@ -45,7 +45,13 @@ Split in two (decided 2026-10-25). 2b-1 (`redesign/stage-2b1-controls`) is done:
 | Launcher icon | `res/drawable/ic_launcher_*.xml` | Stitch colours (still v1 peach and black) |
 | Strings, docs | `strings.xml`, docs/DESIGN_SYSTEM.md section 06 | New labels, component specs |
 
-Home's own Transfer pill duplicates the floating Transfer button until Home's quick actions are replaced here.
+2b-2 notes (2026-10-25):
+- Home's Transfer pill is gone; Home and Cards use `QuickActionButton` rows.
+- `RateChip` and the `positiveTint` category circles exist; Home's account rows adopt the tonal icon circles and rate
+  chips in stage 3 (Home), with the balance card extras.
+- `OfflineBanner` takes an optional sync time. No screen passes one yet: the repositories only report `isFromCache`,
+  not when data was last synced. Recording that time is data-layer work for stage 3; ask before adding it.
+- Open question for the user: should quick actions be disabled while offline, or stay a cue only (current)?
 
 Decided 2026-10-25: the Home balance card extras (Discreet Mode banner, low balance warning inside the card) are built
 inside `HomeScreen` in stage 3, not as 2b components.

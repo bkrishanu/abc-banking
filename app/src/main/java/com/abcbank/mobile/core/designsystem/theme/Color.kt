@@ -21,6 +21,7 @@ data class AbcColors(
     val accentTint: Color,
     val positive: Color,
     val positiveText: Color,
+    val positiveTint: Color,
     val warning: Color,
     val warningTint: Color,
     val danger: Color,
@@ -41,6 +42,16 @@ const val DISABLED_ALPHA = 0.4f
  * (DESIGN_SYSTEM.md section 02) uses tones derived from the two stops, so every card art colour
  * still comes from these tokens.
  */
+private fun Color.grey(): Color {
+    val level = LUMA_RED * red + LUMA_GREEN * green + LUMA_BLUE * blue
+    return Color(level, level, level, alpha)
+}
+
+// Rec. 709 luma weights, so a grey card keeps the contrast its text was checked against.
+private const val LUMA_RED = 0.2126f
+private const val LUMA_GREEN = 0.7152f
+private const val LUMA_BLUE = 0.0722f
+
 @Immutable
 data class CardGradient(val start: Color, val end: Color) {
     /** Light sheen on the ribbon folds. */
@@ -51,6 +62,9 @@ data class CardGradient(val start: Color, val end: Color) {
 
     /** Shadowed side of a fold. */
     val deep: Color get() = lerp(end, Color.Black, DEEP_MIX)
+
+    /** The same face in greys of the same luma, for a frozen card (DESIGN_SYSTEM.md section 06). */
+    fun desaturated(): CardGradient = CardGradient(start.grey(), end.grey())
 
     private companion object {
         const val HIGHLIGHT_MIX = 0.55f
@@ -74,6 +88,7 @@ internal val LightAbcColors = AbcColors(
     accentTint = Color(0xFFF7E9E3),
     positive = Color(0xFF059669),
     positiveText = Color(0xFF047857),
+    positiveTint = Color(0xFFE1F2ED),
     warning = Color(0xFFB45309),
     warningTint = Color(0xFFF6EAE1),
     danger = Color(0xFFBA1A1A),
