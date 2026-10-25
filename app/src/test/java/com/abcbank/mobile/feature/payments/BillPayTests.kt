@@ -127,6 +127,33 @@ class BillRulesTest {
     }
 
     @Test
+    fun `a due bill is due soon within 7 days or once overdue, never when paid or scheduled`() {
+        fun soon(dueIn: Long, status: BillStatus = BillStatus.DUE) =
+            BillRules.isDueSoon(bill(VOLT, 9_500, dueIn, status), TODAY.plusDays(dueIn), TODAY)
+
+        assertEquals(4L, BillRules.daysUntil(TODAY.plusDays(4), TODAY))
+        assertEquals(-2L, BillRules.daysUntil(TODAY.minusDays(2), TODAY))
+        assertTrue(soon(0))
+        assertTrue(soon(7))
+        assertFalse(soon(8))
+        assertTrue(soon(-2))
+        assertFalse(soon(3, BillStatus.PAID))
+        assertFalse(soon(3, BillStatus.SCHEDULED))
+    }
+
+    @Test
+    fun `the total due adds up due and scheduled bills, not paid ones`() {
+        val total = BillRules.totalDue(
+            listOf(
+                bill(VOLT, 9_500),
+                bill(COUNTY, 1_875_000, status = BillStatus.SCHEDULED),
+                bill(Biller("x", "Paid One", "Mobile"), 5_000, status = BillStatus.PAID)
+            )
+        )
+        assertEquals(Money(1_884_500), total)
+    }
+
+    @Test
     fun `payments can be scheduled from tomorrow through the due date`() {
         val due = TODAY.plusDays(4)
         assertFalse(BillRules.canScheduleFor(TODAY, TODAY, due))

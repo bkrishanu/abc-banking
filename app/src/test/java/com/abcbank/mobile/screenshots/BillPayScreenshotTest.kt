@@ -25,6 +25,14 @@ class BillPayScreenshotTest {
     fun bills() = snapshot { BillsScreen(BillPayPreviewData.samanta(), BillPayEvents()) }
 
     @Test
+    fun billsRecentlyPaid() = snapshot {
+        BillsScreen(
+            BillPayPreviewData.samanta(bills = BillPayPreviewData.billsAfterPaying),
+            BillPayEvents()
+        )
+    }
+
+    @Test
     fun directory() = snapshot { AddBillerScreen(BillPayPreviewData.samanta(), BillPayEvents()) }
 
     @Test

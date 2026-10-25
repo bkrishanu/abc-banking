@@ -1,9 +1,12 @@
 package com.abcbank.mobile.feature.payments.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,8 +24,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +41,7 @@ import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
 import com.abcbank.mobile.core.designsystem.component.AbcDatePickerDialog
 import com.abcbank.mobile.core.designsystem.component.AbcSwitchRow
 import com.abcbank.mobile.core.designsystem.component.AbcTextField
+import com.abcbank.mobile.core.designsystem.component.AdaptiveRow
 import com.abcbank.mobile.core.designsystem.component.BadgeTone
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.FlowScaffold
@@ -46,6 +53,7 @@ import com.abcbank.mobile.core.designsystem.component.SummaryRow
 import com.abcbank.mobile.core.designsystem.component.SummaryRows
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.designsystem.theme.TABULAR_FIGURES
+import com.abcbank.mobile.core.model.Money
 import com.abcbank.mobile.feature.payments.domain.BillListing
 import com.abcbank.mobile.feature.payments.domain.BillStatus
 import com.abcbank.mobile.feature.payments.domain.Biller
@@ -73,7 +81,10 @@ data class BillPayEvents(
     val onStepUpCancel: () -> Unit = {}
 )
 
-/** Pay Bills (MobileBuild.md 3.3): the customer's bills, unpaid first, and Add a Biller. */
+/**
+ * Pay Bills (MobileBuild.md 3.3): what is due in total, the bills to pay as cards with their due
+ * badges, then Recently Paid, and Add a Biller.
+ */
 @Composable
 fun BillsScreen(state: BillPayUiState, events: BillPayEvents, modifier: Modifier = Modifier) {
     val spacing = AbcTheme.spacing
@@ -102,8 +113,8 @@ fun BillsScreen(state: BillPayUiState, events: BillPayEvents, modifier: Modifier
             OfflineBanner()
             Spacer(Modifier.height(spacing.space4))
         }
-        SectionHeader(title = stringResource(R.string.bills_yours))
         if (content.bills.isEmpty()) {
+            SectionHeader(title = stringResource(R.string.bills_yours))
             Text(
                 stringResource(R.string.bills_empty),
                 style = AbcTheme.typography.body,
@@ -111,12 +122,65 @@ fun BillsScreen(state: BillPayUiState, events: BillPayEvents, modifier: Modifier
             )
             return@FlowScaffold
         }
-        ContentCard(padding = spacing.space2) {
-            content.bills.forEachIndexed { index, listing ->
-                if (index > 0) HorizontalDivider(color = AbcTheme.colors.border)
-                BillRow(listing, content.balancesHidden) { events.onOpenBill(listing.bill.id) }
+        val (paid, open) = content.bills.partition { it.bill.status == BillStatus.PAID }
+        content.earliestDue?.let { earliest ->
+            TotalDueCard(content.totalDue, earliest, content.balancesHidden)
+            Spacer(Modifier.height(spacing.space6))
+        }
+        if (open.isNotEmpty()) {
+            SectionHeader(title = stringResource(R.string.bills_yours))
+            BillCards(open, content.balancesHidden, events.onOpenBill)
+        }
+        if (paid.isNotEmpty()) {
+            Spacer(Modifier.height(spacing.space6))
+            SectionHeader(title = stringResource(R.string.bills_recently_paid))
+            BillCards(paid, content.balancesHidden, events.onOpenBill)
+        }
+    }
+}
+
+/** Total Due across unpaid bills, and the earliest due day (Stitch Pay Bills summary). */
+@Composable
+private fun TotalDueCard(total: Money, earliest: LocalDate, hidden: Boolean) {
+    val colors = AbcTheme.colors
+    ContentCard {
+        AdaptiveRow(
+            modifier = Modifier.semantics(mergeDescendants = true) {},
+            start = {
+                Column {
+                    Text(
+                        stringResource(R.string.bills_total_due),
+                        style = AbcTheme.typography.small,
+                        color = colors.textMuted
+                    )
+                    Text(
+                        text = if (hidden) AMOUNT_MASK else MoneyFormatter.format(total),
+                        style = AbcTheme.typography.h2.copy(fontFeatureSettings = TABULAR_FIGURES),
+                        color = colors.text
+                    )
+                }
+            }
+        ) {
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    stringResource(R.string.bills_earliest_due),
+                    style = AbcTheme.typography.small,
+                    color = colors.textMuted
+                )
+                Text(
+                    DateFormatter.shortDate(earliest),
+                    style = AbcTheme.typography.body,
+                    color = colors.text
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun BillCards(bills: List<BillListing>, hidden: Boolean, onOpen: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space2)) {
+        bills.forEach { listing -> BillRow(listing, hidden) { onOpen(listing.bill.id) } }
     }
 }
 
@@ -133,6 +197,8 @@ private fun BillStatePlaceholder(state: BillPayUiState, onRetry: () -> Unit) {
     }
 }
 
+/** One bill card: receipt icon, biller, when, its badges, and the amount. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun BillRow(listing: BillListing, hidden: Boolean, onClick: () -> Unit) {
     val spacing = AbcTheme.spacing
@@ -141,8 +207,10 @@ private fun BillRow(listing: BillListing, hidden: Boolean, onClick: () -> Unit) 
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = AbcTheme.dimens.touchTarget)
+            .clip(AbcTheme.shapes.xl)
+            .background(colors.surface)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(spacing.space2),
+            .padding(spacing.space3),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconCircle(R.drawable.ic_receipt)
@@ -150,8 +218,17 @@ private fun BillRow(listing: BillListing, hidden: Boolean, onClick: () -> Unit) 
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(spacing.space1)) {
             Text(listing.biller.name, style = AbcTheme.typography.body, color = colors.text)
             Text(billWhen(listing), style = AbcTheme.typography.small, color = colors.textMuted)
-            if (listing.bill.autoPay && listing.bill.status != BillStatus.PAID) {
-                StatusBadge(stringResource(R.string.bills_auto_pay))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(spacing.space2),
+                verticalArrangement = Arrangement.spacedBy(spacing.space1)
+            ) {
+                StatusBadge(
+                    billBadge(listing),
+                    tone = if (listing.dueSoon) BadgeTone.Warning else BadgeTone.Neutral
+                )
+                if (listing.bill.autoPay && listing.bill.status != BillStatus.PAID) {
+                    StatusBadge(stringResource(R.string.bills_auto_pay))
+                }
             }
         }
         Spacer(Modifier.width(spacing.space2))
@@ -161,6 +238,20 @@ private fun BillRow(listing: BillListing, hidden: Boolean, onClick: () -> Unit) 
             color = colors.text
         )
     }
+}
+
+/** Paid, Scheduled, Overdue, Due Today or "Due in 4 Days"; warning only while due soon. */
+@Composable
+private fun billBadge(listing: BillListing): String = when {
+    listing.bill.status == BillStatus.PAID -> stringResource(R.string.bills_paid)
+    listing.bill.status == BillStatus.SCHEDULED -> stringResource(R.string.bills_scheduled)
+    listing.daysUntilDue < 0 -> stringResource(R.string.bills_overdue)
+    listing.daysUntilDue == 0L -> stringResource(R.string.account_due_today)
+    else -> pluralStringResource(
+        R.plurals.account_due_in,
+        listing.daysUntilDue.toInt(),
+        listing.daysUntilDue.toInt()
+    )
 }
 
 /** "Due Oct 24", "Scheduled for Oct 23" or "Paid Oct 20". */

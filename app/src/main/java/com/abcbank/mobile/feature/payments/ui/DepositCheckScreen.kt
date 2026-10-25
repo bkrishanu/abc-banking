@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -31,6 +32,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -43,6 +45,7 @@ import com.abcbank.mobile.core.designsystem.component.AmountKeypad
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.FlowScaffold
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
+import com.abcbank.mobile.core.designsystem.component.StatusBadge
 import com.abcbank.mobile.core.designsystem.component.SummaryRow
 import com.abcbank.mobile.core.designsystem.component.SummaryRows
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
@@ -192,38 +195,55 @@ fun DepositCheckScreen(
                 balancesHidden = content.balancesHidden,
                 onClick = if (content.accounts.size > 1) ({ picker = true }) else null
             )
-            DepositAmount(content)
-            AmountKeypad(
-                onKey = events.onKey,
-                onDelete = events.onDeleteKey,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text(
-                stringResource(R.string.deposit_images),
-                style = AbcTheme.typography.small,
-                color = AbcTheme.colors.textMuted
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(spacing.space3)) {
-                ChequeTile(
-                    label = stringResource(R.string.deposit_front),
-                    attached = content.frontImage,
-                    image = R.drawable.cheque_front,
-                    onToggle = events.onToggleFront,
-                    modifier = Modifier.weight(1f)
+            // The amount and its keypad in one panel (Stitch Deposit Check). The panel keeps the
+            // screen colour with an outline: the keys are white and would vanish on a white card.
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(AbcTheme.shapes.xl)
+                    .border(AbcTheme.dimens.borderWidth, AbcTheme.colors.border, AbcTheme.shapes.xl)
+                    .padding(spacing.space4)
+            ) {
+                Text(
+                    stringResource(R.string.deposit_amount),
+                    style = AbcTheme.typography.small,
+                    color = AbcTheme.colors.textMuted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                ChequeTile(
-                    label = stringResource(R.string.deposit_back),
-                    attached = content.backImage,
-                    image = R.drawable.cheque_back,
-                    onToggle = events.onToggleBack,
-                    modifier = Modifier.weight(1f)
+                DepositAmount(content)
+                Spacer(Modifier.height(spacing.space4))
+                AmountKeypad(
+                    onKey = events.onKey,
+                    onDelete = events.onDeleteKey,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-            Text(
-                stringResource(R.string.deposit_images_note),
-                style = AbcTheme.typography.small,
-                color = AbcTheme.colors.textMuted
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.space2)) {
+                Text(
+                    stringResource(R.string.deposit_images),
+                    style = AbcTheme.typography.small,
+                    color = AbcTheme.colors.textMuted
+                )
+                ChequeRow(
+                    title = stringResource(R.string.deposit_front_title),
+                    attached = content.frontImage,
+                    image = R.drawable.cheque_front,
+                    onToggle = events.onToggleFront
+                )
+                ChequeRow(
+                    title = stringResource(R.string.deposit_back_title),
+                    attached = content.backImage,
+                    image = R.drawable.cheque_back,
+                    onToggle = events.onToggleBack
+                )
+                Text(
+                    stringResource(R.string.deposit_images_note),
+                    style = AbcTheme.typography.small,
+                    color = AbcTheme.colors.textMuted
+                )
+            }
+            AvailabilityNote()
         }
     }
     if (picker && content != null) {
@@ -272,35 +292,27 @@ private fun DepositAmount(content: DepositCheckUiState.Content) {
     }
 }
 
-/** A placeholder cheque image slot: tap to attach the bundled image, tap again to remove it. */
+/**
+ * A placeholder cheque image as a row: thumbnail, title, an Added badge, and Add or Remove. The
+ * whole row toggles the bundled image; nothing is captured or uploaded.
+ */
 @Composable
-private fun ChequeTile(
-    label: String,
-    attached: Boolean,
-    image: Int,
-    onToggle: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun ChequeRow(title: String, attached: Boolean, image: Int, onToggle: () -> Unit) {
     val colors = AbcTheme.colors
-    val shape = AbcTheme.shapes.md
-    Column(
-        modifier = modifier
-            .clip(shape)
+    val spacing = AbcTheme.spacing
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(AbcTheme.shapes.xl)
             .background(colors.surface)
-            .border(
-                AbcTheme.dimens.borderWidth,
-                if (attached) colors.primary else colors.border,
-                shape
-            )
             .toggleable(value = attached, role = Role.Checkbox, onValueChange = { onToggle() })
-            .padding(AbcTheme.spacing.space3),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space2)
+            .padding(spacing.space3),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .fillMaxWidth()
+                .width(AbcTheme.dimens.chequeThumbnailWidth)
                 .aspectRatio(CHEQUE_ASPECT_RATIO)
                 .clip(AbcTheme.shapes.sm)
                 .background(colors.surfaceMuted)
@@ -312,21 +324,51 @@ private fun ChequeTile(
                 modifier = if (attached) {
                     Modifier.fillMaxWidth()
                 } else {
-                    Modifier.size(
-                        AbcTheme.dimens.iconLarge
-                    )
+                    Modifier.size(AbcTheme.dimens.iconMedium)
                 }
             )
         }
+        Spacer(Modifier.width(spacing.space3))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(spacing.space1)) {
+            Text(title, style = AbcTheme.typography.body, color = colors.text)
+            if (attached) StatusBadge(stringResource(R.string.deposit_image_added))
+        }
+        Spacer(Modifier.width(spacing.space2))
         Text(
-            text = stringResource(
-                if (attached) R.string.deposit_image_attached else R.string.deposit_image_add,
-                label
-            ),
-            style = AbcTheme.typography.small,
-            color = colors.text,
-            textAlign = TextAlign.Center
+            text = stringResource(if (attached) R.string.action_remove else R.string.action_add),
+            style = AbcTheme.typography.small.copy(fontWeight = FontWeight.SemiBold),
+            color = if (attached) colors.text else colors.accentDeep
         )
+    }
+}
+
+/** When the money is available, from the app's real rule (DepositRules.CLEARING_TIME). */
+@Composable
+private fun AvailabilityNote() {
+    val colors = AbcTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(AbcTheme.shapes.xl)
+            .background(colors.surfaceMuted)
+            .padding(AbcTheme.spacing.space4)
+            .semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.Top
+    ) {
+        IconCircle(R.drawable.ic_landmark, background = colors.surface)
+        Spacer(Modifier.width(AbcTheme.spacing.space3))
+        Column {
+            Text(
+                stringResource(R.string.deposit_availability_title),
+                style = AbcTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                color = colors.text
+            )
+            Text(
+                stringResource(R.string.deposit_availability_text),
+                style = AbcTheme.typography.small,
+                color = colors.textMuted
+            )
+        }
     }
 }
 

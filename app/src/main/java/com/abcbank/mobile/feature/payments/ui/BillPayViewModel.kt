@@ -74,7 +74,10 @@ sealed interface BillPayUiState {
         val busy: Boolean,
         val failed: Boolean,
         val balancesHidden: Boolean,
-        val isOffline: Boolean
+        val isOffline: Boolean,
+        /** The unpaid bills' total and the first due day, for the summary card. */
+        val totalDue: Money = Money.ZERO,
+        val earliestDue: LocalDate? = null
     ) : BillPayUiState {
         /** Paying needs an unpaid bill and an account with enough available. */
         val canPay: Boolean
@@ -283,6 +286,8 @@ class BillPayViewModel @Inject constructor(
         val query = flow.form.query.trim()
         return BillPayUiState.Content(
             bills = overview.bills,
+            totalDue = overview.totalDue,
+            earliestDue = overview.earliestDue,
             directory = overview.directory.filter {
                 query.isEmpty() ||
                     it.name.contains(query, ignoreCase = true) ||

@@ -34,7 +34,8 @@ data class AbcDimens(
     val cardPeek: Dp = 24.dp,
     val bottomBarHeight: Dp = 64.dp,
     val stepProgressHeight: Dp = 4.dp,
-    val progressBarHeight: Dp = 6.dp
+    val progressBarHeight: Dp = 6.dp,
+    val chequeThumbnailWidth: Dp = 88.dp
 )
 
 internal val DefaultAbcDimens = AbcDimens()

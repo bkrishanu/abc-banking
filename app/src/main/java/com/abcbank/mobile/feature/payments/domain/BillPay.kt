@@ -10,6 +10,7 @@ import com.abcbank.mobile.core.model.TransactionDirection
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.flow.Flow
 
@@ -77,6 +78,9 @@ object BillRules {
     private const val CATEGORY_PROPERTY_TAX = "Property tax"
     private const val CATEGORY_INSURANCE = "Insurance"
 
+    /** An unpaid bill due within this many days shows its due badge in warning (2026-10-25). */
+    const val DUE_SOON_DAYS = 7L
+
     fun validateAccountNumber(number: String): BillAccountError? =
         if (number.length in ACCOUNT_DIGITS &&
             number.all { it in '0'..'9' }
@@ -104,6 +108,20 @@ object BillRules {
         CATEGORY_PROPERTY_TAX, CATEGORY_INSURANCE -> TransactionCategory.HOUSING
         else -> TransactionCategory.UTILITIES
     }
+
+    /** Days from today to the due day; negative once it has passed. */
+    fun daysUntil(due: LocalDate, today: LocalDate): Long = ChronoUnit.DAYS.between(today, due)
+
+    /**
+     * Due within [DUE_SOON_DAYS] days, or already overdue. Only bills still to pay: paid and
+     * scheduled ones are taken care of.
+     */
+    fun isDueSoon(bill: Bill, due: LocalDate, today: LocalDate): Boolean =
+        bill.status == BillStatus.DUE && daysUntil(due, today) <= DUE_SOON_DAYS
+
+    /** What the unpaid bills (due or scheduled) add up to, for the Pay Bills summary. */
+    fun totalDue(bills: List<Bill>): Money =
+        Money(bills.filter { it.status != BillStatus.PAID }.sumOf { it.amountDue.cents })
 
     /** A payment date from tomorrow up to the due date (DEMO_DATA.md: scheduled before it is due). */
     fun canScheduleFor(date: LocalDate, today: LocalDate, due: LocalDate): Boolean =

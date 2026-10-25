@@ -30,7 +30,11 @@ data class BillListing(
     val biller: Biller,
     val dueDay: LocalDate,
     val scheduledDay: LocalDate?,
-    val paidDay: LocalDate?
+    val paidDay: LocalDate?,
+    /** Days from today to [dueDay]; negative once it has passed. */
+    val daysUntilDue: Long = 0,
+    /** Unpaid and due within a week (or overdue): the badge shows in warning. */
+    val dueSoon: Boolean = false
 )
 
 data class BillsOverview(
@@ -39,7 +43,10 @@ data class BillsOverview(
     val directory: List<Biller>,
     val accounts: List<Account>,
     val today: LocalDate,
-    val isFromCache: Boolean
+    val isFromCache: Boolean,
+    /** The unpaid bills' total and the first of their due days, for the summary card. */
+    val totalDue: Money = Money.ZERO,
+    val earliestDue: LocalDate? = null
 )
 
 class ObserveBillsUseCase @Inject constructor(
@@ -59,14 +66,18 @@ class ObserveBillsUseCase @Inject constructor(
                     val byId = billers.associateBy { it.id }
                     val zoneId = zone.get()
                     fun Instant.day(): LocalDate = atZone(zoneId).toLocalDate()
+                    val today = clock.now().day()
                     val listings = result.value.bills.mapNotNull { bill ->
                         byId[bill.billerId]?.let {
+                            val due = bill.dueDate.day()
                             BillListing(
                                 bill,
                                 it,
-                                bill.dueDate.day(),
+                                due,
                                 bill.scheduledFor?.day(),
-                                bill.paidAt?.day()
+                                bill.paidAt?.day(),
+                                daysUntilDue = BillRules.daysUntil(due, today),
+                                dueSoon = BillRules.isDueSoon(bill, due, today)
                             )
                         }
                     }
@@ -78,8 +89,10 @@ class ObserveBillsUseCase @Inject constructor(
                                 paid.sortedByDescending { it.bill.paidAt },
                             directory = billers,
                             accounts = result.value.accounts,
-                            today = clock.now().day(),
-                            isFromCache = result.value.isFromCache
+                            today = today,
+                            isFromCache = result.value.isFromCache,
+                            totalDue = BillRules.totalDue(open.map { it.bill }),
+                            earliestDue = open.minOfOrNull { it.dueDay }
                         )
                     )
                 }
