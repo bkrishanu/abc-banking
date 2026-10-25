@@ -1,7 +1,9 @@
 package com.abcbank.mobile.core.model
 
 import java.time.Instant
+import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 
 enum class CardNetwork {
     MASTERCARD,
@@ -61,4 +63,8 @@ data class TravelNotice(
     val destination: String,
     val startDate: Instant,
     val endDate: Instant
-)
+) {
+    /** Active from its start date through its end date, inclusive, in [zone] (MobileBuild.md 4.2). */
+    fun isActiveOn(today: LocalDate, zone: ZoneId): Boolean =
+        today in startDate.atZone(zone).toLocalDate()..endDate.atZone(zone).toLocalDate()
+}

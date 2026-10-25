@@ -16,8 +16,9 @@ docs/DESIGN_SYSTEM.md (current tokens and components). Update this file as stage
 | 1 fix | PDFs embed Plus Jakarta Sans through static Regular and Medium files | Merged (`b25a2c2`) |
 | 2a | Docked bottom bar, floating Transfer button, title and greeting top bars with a shared bell, step progress bar | Merged (`bea85e5` and this file) |
 | 2b-1 | Controls: pill buttons, text fields, keypads, badges, wordmark, launcher icon, three tint tokens | Merged (`6c80f0b`, `025c13b`) |
-| 2b-2 | Content components: quick actions, frozen card, tonal category icons, rate chip, tiles, card stack, offline banner | Committed on `redesign/stage-2b2-content` |
-| 3 | Screens, one tab or flow per branch | After 2b |
+| 2b-2 | Content components: quick actions, frozen card, tonal category icons, rate chip, tiles, card stack, offline banner | Merged (`364a783`) |
+| 3 Home | Hidden-balances and travel notice banners, balance card with account and low balance warning, Quick Transfer, one card per account with icons and chips | Committed on `redesign/stage-3-home` |
+| 3 rest | Screens, one tab or flow per branch | Next: Cards |
 
 Working agreement for every stage: list the files and wait for a go-ahead when there are more than five; one
 branch per stage; run `assembleDebug`, `ktlintCheck`, `lint`, `testDebugUnitTest` and `verifyPaparazziDebug`;
@@ -51,7 +52,7 @@ Split in two (decided 2026-10-25). 2b-1 (`redesign/stage-2b1-controls`) is done:
   chips in stage 3 (Home), with the balance card extras.
 - `OfflineBanner` takes an optional sync time. No screen passes one yet: the repositories only report `isFromCache`,
   not when data was last synced. Recording that time is data-layer work for stage 3; ask before adding it.
-- Open question for the user: should quick actions be disabled while offline, or stay a cue only (current)?
+- Decided 2026-10-25: quick actions stay usable while offline; the badge is a cue only.
 
 Decided 2026-10-25: the Home balance card extras (Discreet Mode banner, low balance warning inside the card) are built
 inside `HomeScreen` in stage 3, not as 2b components.
@@ -75,11 +76,21 @@ One branch per tab or flow, in this order, each using the row for that screen in
 Never carry over from the mockups: real brands or regulatory claims, contact photos, concierge or private banker
 features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md section 02.
 
+Home (stage 3, decided 2026-10-25): "Balances are hidden" banner with Show (not Discreet Mode wording); Quick Transfer
+row, Grace's active travel notice banner and the "Due in N Days" chip added; one card per account. Not added: the
+1099-INT ready card.
+
 ## 04 Other open items
 
-- **Seed dates (investigate after stage 2, read-only first).** On the emulator, Samanta's day-0 transactions show
-  "Oct 20, 11:57 pm" instead of 3:14 pm, 11:40 am and 8:09 am (DEMO_DATA.md section 03); other days look right.
-  The data was seeded on Oct 20 and kept. Find the cause, then ask before changing seeding.
+- **Offline sync time (ask at the end of the whole redesign).** `OfflineBanner` can show "Showing data saved at
+  3:14 pm", but no repository records when data last came from the server. Adding that touches the repositories, so
+  the user wants to decide after all screens are done.
+- **Seed rule for day-0 items (own branch, approved 2026-10-25).** Seeding just after midnight moves every
+  later-today item to "10 minutes before now", which can be the previous day (Samanta's day-0 items showed
+  "Oct 20, 11:57 pm" because the emulator seeded at about 12:07 am IST). Fix: never move an item before midnight of
+  the seed day, and keep the order. Touches the seeding code and DEMO_DATA.md section 01. Reset Demo Data during the
+  day fixes the emulator meanwhile (done 2026-10-25 for Samanta).
+
 - **TalkBack on a real phone.** Labels were checked through the accessibility tree; listen once with TalkBack on.
 - **Add New Payee shows "Step 1 of 5"** in its screenshot test. Check whether that is intended.
 

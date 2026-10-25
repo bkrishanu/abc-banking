@@ -117,7 +117,9 @@ fun MainTabs(
                             onExploreProducts = navigation.onExploreProducts,
                             onInsights = { tabs.selectTab(InsightsTab) },
                             onCards = { tabs.selectTab(CardsTab) },
-                            onMoreActions = { showMoreActions = true }
+                            onMoreActions = { showMoreActions = true },
+                            onQuickTransfer = navigation.onQuickTransfer,
+                            onAddPayee = navigation.onAddPayee
                         )
                     )
                 }

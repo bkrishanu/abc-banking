@@ -41,6 +41,9 @@ class HomeScreenshotTest {
     fun marcusLowBalanceNoInvestments() = snapshot(HomePreviewData.marcus())
 
     @Test
+    fun graceTravelNotice() = snapshot(HomePreviewData.grace())
+
+    @Test
     fun balancesHiddenOffline() = snapshot(HomePreviewData.samanta(hidden = true, offline = true))
 
     @Test

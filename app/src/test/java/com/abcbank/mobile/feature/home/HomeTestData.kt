@@ -3,6 +3,7 @@ package com.abcbank.mobile.feature.home
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.Account
 import com.abcbank.mobile.core.model.AccountType
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardArt
 import com.abcbank.mobile.core.model.CardChannels
@@ -17,6 +18,7 @@ import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.model.TransactionCategory
 import com.abcbank.mobile.core.model.TransactionDirection
 import com.abcbank.mobile.core.model.TransactionStatus
+import com.abcbank.mobile.core.model.TravelNotice
 import com.abcbank.mobile.core.model.UserProfile
 import com.abcbank.mobile.feature.home.domain.HomeData
 import com.abcbank.mobile.feature.home.domain.HomeRepository
@@ -107,5 +109,26 @@ fun homeData(
     transactions: List<Transaction> = emptyList(),
     unread: Int = 0,
     fromCache: Boolean = false,
-    personaId: PersonaId = PersonaId.SAMANTA
-) = HomeData(profile(personaId), accounts, cards, transactions, unread, fromCache)
+    personaId: PersonaId = PersonaId.SAMANTA,
+    beneficiaries: List<Beneficiary> = emptyList(),
+    travelNotices: List<TravelNotice> = emptyList()
+) = HomeData(
+    profile(personaId),
+    accounts,
+    cards,
+    transactions,
+    unread,
+    beneficiaries,
+    travelNotices,
+    fromCache
+)
+
+fun payee(id: String, recentOrder: Int?) =
+    Beneficiary(id, id, id, "ABC Bank", "500000018", "5532", recentOrder)
+
+fun notice(id: String, startDaysFromNow: Long, endDaysFromNow: Long) = TravelNotice(
+    id = id,
+    destination = id,
+    startDate = HOME_NOW.plusSeconds(startDaysFromNow * 86_400),
+    endDate = HOME_NOW.plusSeconds(endDaysFromNow * 86_400)
+)

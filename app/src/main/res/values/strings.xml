@@ -88,6 +88,18 @@
     <string name="home_explore_products">Explore Products</string>
     <string name="home_no_transactions">No transactions in the last 30 days.</string>
     <string name="home_empty">Your accounts will show here.</string>
+    <string name="home_hidden_title">Balances are hidden</string>
+    <string name="home_hidden_text">Tap Show to see your amounts.</string>
+    <string name="action_show">Show</string>
+    <string name="home_travel_title">Travel Notice Active</string>
+    <string name="home_travel_dates">%1$s – %2$s</string>
+    <string name="action_manage">Manage</string>
+    <string name="home_low_balance">Your balance is under %1$s.</string>
+    <string name="account_due_today">Due Today</string>
+    <plurals name="account_due_in">
+        <item quantity="one">Due in %1$d Day</item>
+        <item quantity="other">Due in %1$d Days</item>
+    </plurals>
     <string name="home_error">We couldn\'t load your accounts.</string>
 
     <!-- Profile -->
@@ -594,8 +606,8 @@
     <string name="quick_action_send">Send</string>
     <string name="quick_action_deposit">Deposit</string>
     <string name="quick_action_more">More</string>
-    <string name="cards_quick_transfer">Quick Transfer</string>
-    <string name="cards_add_payee">Add</string>
+    <string name="quick_transfer">Quick Transfer</string>
+    <string name="quick_transfer_add">Add</string>
     <string name="cd_quick_transfer_to">Send money to %1$s</string>
     <string name="cd_add_payee">Add a new payee</string>
 </resources>

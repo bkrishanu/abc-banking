@@ -4,6 +4,7 @@ import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.Money
 import com.abcbank.mobile.core.model.TravelNotice
+import com.abcbank.mobile.core.model.quickPayees
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -64,13 +65,10 @@ object CardRules {
     }
 
     /** A notice is active from its start date through its end date, inclusive. */
-    fun isActive(notice: TravelNotice, today: LocalDate, zone: ZoneId): Boolean {
-        val start = notice.startDate.atZone(zone).toLocalDate()
-        val end = notice.endDate.atZone(zone).toLocalDate()
-        return today in start..end
-    }
+    fun isActive(notice: TravelNotice, today: LocalDate, zone: ZoneId): Boolean =
+        notice.isActiveOn(today, zone)
 
     /** The Quick Transfer row: recent payees in their saved order (DEMO_DATA.md, beneficiaries). */
     fun quickPayees(beneficiaries: List<Beneficiary>): List<Beneficiary> =
-        beneficiaries.filter { it.recentOrder != null }.sortedBy { it.recentOrder }
+        beneficiaries.quickPayees()
 }

@@ -1,6 +1,7 @@
 package com.abcbank.mobile.feature.home.ui
 
 import com.abcbank.mobile.core.model.AccountType
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.CreditCardAccount
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.InvestmentAccount
@@ -30,6 +31,9 @@ internal object HomePreviewData {
         firstName = "Samanta",
         unreadNotifications = 4,
         walletBalance = Money(15_583_200),
+        walletName = "Everyday Checking",
+        walletLast4 = "3144",
+        walletIsLow = false,
         moneyIn = Money(1_430_936),
         moneyOut = Money(1_036_443),
         balancesHidden = hidden,
@@ -66,7 +70,8 @@ internal object HomePreviewData {
                     minimumDue = Money(28_500), dueDate = EPOCH, autoPayFull = false
                 ),
                 isLowBalance = false,
-                dueDate = TODAY.plusDays(18)
+                dueDate = TODAY.plusDays(18),
+                dueInDays = 18
             ),
             HomeAccountItem(
                 LoanAccount(
@@ -146,6 +151,13 @@ internal object HomePreviewData {
                 0
             )
         ),
+        quickPayees = listOf(
+            payee("mark-robinson", "Mark Robinson", "Mark R.", 0),
+            payee("kris-patel", "Kris Patel", "Kris", 1),
+            payee("helen-torres", "Helen Torres", "Helen T.", 2),
+            payee("tonys-gym", "Tony's Gym", "Tony Gym", 3)
+        ),
+        travelNotice = null,
         isOffline = offline
     )
 
@@ -154,6 +166,9 @@ internal object HomePreviewData {
         firstName = "Marcus",
         unreadNotifications = 4,
         walletBalance = Money(41_217),
+        walletName = "Everyday Checking",
+        walletLast4 = "2087",
+        walletIsLow = true,
         moneyIn = Money(433_692),
         moneyOut = Money(509_501),
         balancesHidden = false,
@@ -190,7 +205,8 @@ internal object HomePreviewData {
                     minimumDue = Money(4_000), dueDate = EPOCH, autoPayFull = false
                 ),
                 isLowBalance = false,
-                dueDate = TODAY.plusDays(3)
+                dueDate = TODAY.plusDays(3),
+                dueInDays = 3
             )
         ),
         showNoInvestments = true,
@@ -223,8 +239,84 @@ internal object HomePreviewData {
                 0
             )
         ),
+        quickPayees = listOf(payee("sarah-lee", "Sarah Lee", "Sarah Lee", 0)),
+        travelNotice = null,
         isOffline = false
     )
+
+    /** Grace on day 0 of her Toronto trip (DEMO_DATA.md section 04): the travel notice banner. */
+    fun grace() = HomeUiState.Content(
+        personaId = PersonaId.GRACE,
+        firstName = "Grace",
+        unreadNotifications = 1,
+        walletBalance = Money(1_824_066),
+        walletName = "Everyday Checking",
+        walletLast4 = "4471",
+        walletIsLow = false,
+        moneyIn = Money(428_000),
+        moneyOut = Money(18_895),
+        balancesHidden = false,
+        accounts = listOf(
+            HomeAccountItem(
+                DepositAccount(
+                    "checking",
+                    AccountType.CHECKING,
+                    "Everyday Checking",
+                    "4471",
+                    available = Money(1_824_066),
+                    ledger = Money(1_824_066),
+                    apy = null
+                ),
+                isLowBalance = false
+            ),
+            HomeAccountItem(
+                DepositAccount(
+                    "savings",
+                    AccountType.SAVINGS,
+                    "High-Yield Savings",
+                    "3019",
+                    available = Money(9_650_000),
+                    ledger = Money(9_650_000),
+                    apy = Rate(450)
+                ),
+                isLowBalance = false
+            ),
+            HomeAccountItem(
+                InvestmentAccount("investment", "Investment Portfolio", "8126", Money(41_288_015)),
+                isLowBalance = false
+            )
+        ),
+        showNoInvestments = false,
+        latestTransactions = listOf(
+            item(
+                "tx-001",
+                "Maple Leaf Café, Toronto",
+                TransactionCategory.DINING,
+                -2_340,
+                TransactionDay.TODAY,
+                10,
+                5
+            ),
+            item(
+                "tx-002",
+                "State Teachers Pension",
+                TransactionCategory.INCOME,
+                428_000,
+                TransactionDay.YESTERDAY,
+                7,
+                0
+            )
+        ),
+        quickPayees = listOf(
+            payee("emily-whitfield", "Emily Whitfield", "Emily Whitfield", 0),
+            payee("james-whitfield", "James Whitfield", "James Whitfield", 1)
+        ),
+        travelNotice = HomeTravelNotice("Toronto, Canada", TODAY.minusDays(3), TODAY.plusDays(10)),
+        isOffline = false
+    )
+
+    private fun payee(id: String, name: String, shortName: String, order: Int) =
+        Beneficiary(id, name, shortName, "ABC Bank", "500000018", "0000", order)
 
     private fun item(
         id: String,

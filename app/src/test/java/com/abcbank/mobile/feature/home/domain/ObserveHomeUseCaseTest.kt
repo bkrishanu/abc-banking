@@ -7,8 +7,11 @@ import com.abcbank.mobile.core.model.Money
 import com.abcbank.mobile.core.model.TransactionStatus
 import com.abcbank.mobile.feature.home.FakeHomeRepository
 import com.abcbank.mobile.feature.home.HOME_NOW
+import com.abcbank.mobile.feature.home.card
 import com.abcbank.mobile.feature.home.deposit
 import com.abcbank.mobile.feature.home.homeData
+import com.abcbank.mobile.feature.home.notice
+import com.abcbank.mobile.feature.home.payee
 import com.abcbank.mobile.feature.home.transaction
 import com.abcbank.mobile.testing.ManualClock
 import java.time.Instant
@@ -17,6 +20,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -97,6 +101,54 @@ class ObserveHomeUseCaseTest {
 
         assertEquals(listOf("t1", "t2", "t3", "t4", "t5"), result.latestTransactions.map { it.id })
         assertTrue(result.hasInvestments)
+    }
+
+    @Test
+    fun `the wallet account is named and flagged when it is low`() = runTest {
+        val result = summary(
+            homeData(
+                accounts = listOf(deposit("checking", AccountType.CHECKING, 41_217)),
+                cards = listOf(card("main", "checking", 0))
+            )
+        )
+
+        assertEquals("checking", result.walletAccount?.id)
+        assertTrue(result.walletIsLow)
+        assertFalse(summary(homeData()).walletIsLow)
+    }
+
+    @Test
+    fun `quick payees are the recent ones in their saved order`() = runTest {
+        val result = summary(
+            homeData(
+                beneficiaries = listOf(
+                    payee("helen", 2),
+                    payee("oakwood", null),
+                    payee("mark", 0)
+                )
+            )
+        )
+
+        assertEquals(listOf("mark", "helen"), result.quickPayees.map { it.id })
+    }
+
+    @Test
+    fun `the travel notice shown is the active one that ends first`() = runTest {
+        val result = summary(
+            homeData(
+                travelNotices = listOf(
+                    notice("later", 30, 40),
+                    notice("long", -3, 10),
+                    notice("short", -1, 2),
+                    notice("over", -9, -2)
+                )
+            )
+        )
+
+        assertEquals("short", result.activeTravelNotice?.id)
+        assertNull(
+            summary(homeData(travelNotices = listOf(notice("later", 30, 40)))).activeTravelNotice
+        )
     }
 
     @Test

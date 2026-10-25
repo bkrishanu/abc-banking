@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -63,19 +64,33 @@ class HomeViewModel @Inject constructor(
             firstName = summary.firstName,
             unreadNotifications = summary.unreadNotifications,
             walletBalance = summary.walletBalance,
+            walletName = summary.walletAccount?.nickname,
+            walletLast4 = summary.walletAccount?.last4,
+            walletIsLow = summary.walletIsLow,
             moneyIn = summary.moneyIn,
             moneyOut = summary.moneyOut,
             balancesHidden = hidden,
             accounts = summary.accounts.map { item ->
+                val dueDate = (item.account as? CreditCardAccount)?.dueDate?.localDate(zone)
                 HomeAccountItem(
                     account = item.account,
                     isLowBalance = item.isLowBalance,
-                    dueDate = (item.account as? CreditCardAccount)?.dueDate?.localDate(zone),
+                    dueDate = dueDate,
+                    dueInDays = dueDate?.let { ChronoUnit.DAYS.between(today, it) }
+                        ?.takeIf { it >= 0 },
                     maturesOn = (item.account as? TermDepositAccount)?.maturesAt?.localDate(zone)
                 )
             },
             showNoInvestments = !summary.hasInvestments,
             latestTransactions = summary.latestTransactions.map { it.toItem(zone, today) },
+            quickPayees = summary.quickPayees,
+            travelNotice = summary.activeTravelNotice?.let {
+                HomeTravelNotice(
+                    it.destination,
+                    it.startDate.localDate(zone),
+                    it.endDate.localDate(zone)
+                )
+            },
             isOffline = summary.isOffline
         )
     }

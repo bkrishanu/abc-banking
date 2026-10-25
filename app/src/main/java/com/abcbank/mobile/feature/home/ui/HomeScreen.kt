@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -33,17 +35,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abcbank.mobile.R
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.DateFormatter
+import com.abcbank.mobile.core.common.LowBalanceRule
 import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.designsystem.component.AbcButton
 import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
+import com.abcbank.mobile.core.designsystem.component.AdaptiveRow
 import com.abcbank.mobile.core.designsystem.component.BalanceText
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.ErrorState
@@ -52,6 +60,7 @@ import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.QuickActionButton
 import com.abcbank.mobile.core.designsystem.component.QuickActionRow
+import com.abcbank.mobile.core.designsystem.component.QuickTransferRow
 import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
 import com.abcbank.mobile.core.designsystem.component.TransactionLeadingIcon
@@ -76,7 +85,9 @@ data class HomeActions(
     val onInsights: () -> Unit = {},
     val onDepositCheck: () -> Unit = {},
     val onDocuments: () -> Unit = {},
-    val onCards: () -> Unit = {}
+    val onCards: () -> Unit = {},
+    val onQuickTransfer: (beneficiaryId: String) -> Unit = {},
+    val onAddPayee: () -> Unit = {}
 )
 
 @Composable
@@ -144,15 +155,35 @@ private fun HomeContent(
         Spacer(Modifier.height(spacing.space2))
         OfflineBanner()
     }
+    if (state.balancesHidden) {
+        Spacer(Modifier.height(spacing.space3))
+        HiddenBalancesBanner(onShow = onToggleBalances)
+    }
+    state.travelNotice?.let { notice ->
+        Spacer(Modifier.height(spacing.space3))
+        TravelNoticeBanner(notice, onManage = actions.onCards)
+    }
     Spacer(Modifier.height(spacing.space4))
     BalanceHeader(state, actions, onToggleBalances)
+    Spacer(Modifier.height(spacing.space6))
+
+    SectionHeader(
+        title = stringResource(R.string.quick_transfer),
+        actionLabel = stringResource(R.string.action_view_all),
+        onAction = actions.onTransfer
+    )
+    QuickTransferRow(
+        payees = state.quickPayees,
+        onPayee = actions.onQuickTransfer,
+        onAddPayee = actions.onAddPayee
+    )
     Spacer(Modifier.height(spacing.space6))
 
     HomeFeatures(actions)
     Spacer(Modifier.height(spacing.space6))
 
     SectionHeader(title = stringResource(R.string.home_accounts))
-    AccountsCard(state.accounts, state.balancesHidden, actions.onAccount)
+    AccountCards(state.accounts, state.balancesHidden, actions.onAccount)
     if (state.showNoInvestments) {
         Spacer(Modifier.height(spacing.space4))
         EmptyCard(stringResource(R.string.home_no_investments), actions.onExploreProducts)
@@ -199,15 +230,15 @@ private fun BalanceHeader(
                 .background(
                     Brush.linearGradient(listOf(colors.cardSage.start, colors.cardSage.end))
                 )
-                .padding(start = spacing.space5, end = spacing.space5, top = spacing.space3)
-                .padding(bottom = spacing.space5),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(start = spacing.space5, end = spacing.space2, top = spacing.space2)
+                .padding(bottom = spacing.space5)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(R.string.home_wallet_balance),
                     style = AbcTheme.typography.small,
-                    color = colors.onPrimary
+                    color = colors.onPrimary,
+                    modifier = Modifier.weight(1f)
                 )
                 IconButton(
                     onClick = onToggleBalances,
@@ -229,32 +260,48 @@ private fun BalanceHeader(
                     )
                 }
             }
-            BalanceText(
-                money = state.walletBalance,
-                hidden = state.balancesHidden,
-                modifier = Modifier.fillMaxWidth(),
-                color = colors.onPrimary
-            )
-            Spacer(Modifier.height(spacing.space3))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(
-                    spacing.space2,
-                    Alignment.CenterHorizontally
-                ),
-                verticalArrangement = Arrangement.spacedBy(spacing.space2)
-            ) {
-                FlowChip(
-                    icon = R.drawable.ic_arrow_up,
-                    money = state.moneyIn,
+            Column(Modifier.padding(end = spacing.space3)) {
+                BalanceText(
+                    money = state.walletBalance,
                     hidden = state.balancesHidden,
-                    incoming = true
+                    modifier = Modifier.fillMaxWidth(),
+                    color = colors.onPrimary,
+                    textAlign = TextAlign.Start
                 )
-                FlowChip(
-                    icon = R.drawable.ic_arrow_down,
-                    money = -state.moneyOut,
-                    hidden = state.balancesHidden,
-                    incoming = false
-                )
+                if (state.walletName != null && state.walletLast4 != null) {
+                    Text(
+                        text = stringResource(
+                            R.string.account_name_last4,
+                            state.walletName,
+                            state.walletLast4
+                        ),
+                        style = AbcTheme.typography.small,
+                        color = colors.onPrimary
+                    )
+                }
+                // The warning says the balance is low, so it hides with the balances.
+                if (state.walletIsLow && !state.balancesHidden) {
+                    Spacer(Modifier.height(spacing.space3))
+                    LowBalanceWarning()
+                }
+                Spacer(Modifier.height(spacing.space3))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(spacing.space2),
+                    verticalArrangement = Arrangement.spacedBy(spacing.space2)
+                ) {
+                    FlowChip(
+                        icon = R.drawable.ic_arrow_up,
+                        money = state.moneyIn,
+                        hidden = state.balancesHidden,
+                        incoming = true
+                    )
+                    FlowChip(
+                        icon = R.drawable.ic_arrow_down,
+                        money = -state.moneyOut,
+                        hidden = state.balancesHidden,
+                        incoming = false
+                    )
+                }
             }
         }
         Spacer(Modifier.height(spacing.space4))
@@ -284,6 +331,144 @@ private fun BalanceHeader(
                 onClick = actions.onMoreActions
             )
         }
+    }
+}
+
+/** Inside the balance card when the wallet account is under the threshold (Stitch, adopted). */
+@Composable
+private fun LowBalanceWarning() {
+    val colors = AbcTheme.colors
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(AbcTheme.shapes.md)
+            .background(colors.warningTint)
+            .padding(horizontal = AbcTheme.spacing.space3, vertical = AbcTheme.spacing.space2)
+    ) {
+        Box(
+            Modifier
+                .size(AbcTheme.dimens.statusDot)
+                .clip(AbcTheme.shapes.full)
+                .background(colors.warning)
+        )
+        Spacer(Modifier.width(AbcTheme.spacing.space2))
+        Text(
+            text = stringResource(
+                R.string.home_low_balance,
+                MoneyFormatter.format(LowBalanceRule.THRESHOLD)
+            ),
+            style = AbcTheme.typography.small,
+            color = colors.text
+        )
+    }
+}
+
+/** While balances are hidden: says so, with Show to bring them back (Stitch Discreet Mode). */
+@Composable
+private fun HiddenBalancesBanner(onShow: () -> Unit) {
+    val colors = AbcTheme.colors
+    AdaptiveRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(AbcTheme.shapes.xl)
+            .background(colors.surface)
+            .padding(start = AbcTheme.spacing.space4, end = AbcTheme.spacing.space2)
+            .padding(vertical = AbcTheme.spacing.space2),
+        start = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_eye_off),
+                    contentDescription = null,
+                    tint = colors.text,
+                    modifier = Modifier.size(AbcTheme.dimens.iconMedium)
+                )
+                Spacer(Modifier.width(AbcTheme.spacing.space3))
+                Column(Modifier.semantics(mergeDescendants = true) {}) {
+                    Text(
+                        text = stringResource(R.string.home_hidden_title),
+                        style = AbcTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                        color = colors.text
+                    )
+                    Text(
+                        text = stringResource(R.string.home_hidden_text),
+                        style = AbcTheme.typography.small,
+                        color = colors.textMuted
+                    )
+                }
+            }
+        }
+    ) {
+        PillAction(stringResource(R.string.action_show), onShow, onDark = false)
+    }
+}
+
+/** The active travel notice, in the deep teal band from Stitch, with Manage (the Cards tab). */
+@Composable
+private fun TravelNoticeBanner(notice: HomeTravelNotice, onManage: () -> Unit) {
+    val colors = AbcTheme.colors
+    val dates = stringResource(
+        R.string.home_travel_dates,
+        DateFormatter.shortDate(notice.start),
+        DateFormatter.shortDate(notice.end)
+    )
+    AdaptiveRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(AbcTheme.shapes.xl)
+            .background(colors.primary)
+            .padding(start = AbcTheme.spacing.space4, end = AbcTheme.spacing.space2)
+            .padding(vertical = AbcTheme.spacing.space2),
+        start = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_plane),
+                    contentDescription = null,
+                    tint = colors.onPrimary,
+                    modifier = Modifier.size(AbcTheme.dimens.iconMedium)
+                )
+                Spacer(Modifier.width(AbcTheme.spacing.space3))
+                Column(Modifier.semantics(mergeDescendants = true) {}) {
+                    Text(
+                        text = stringResource(R.string.home_travel_title),
+                        style = AbcTheme.typography.label,
+                        color = colors.onPrimary
+                    )
+                    Text(
+                        text = notice.destination,
+                        style = AbcTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                        color = colors.onPrimary
+                    )
+                    Text(text = dates, style = AbcTheme.typography.small, color = colors.onPrimary)
+                }
+            }
+        }
+    ) {
+        PillAction(stringResource(R.string.action_manage), onManage, onDark = true)
+    }
+}
+
+/** A compact pill for a banner's one action, inside a 48dp touch target. */
+@Composable
+private fun PillAction(label: String, onClick: () -> Unit, onDark: Boolean) {
+    val colors = AbcTheme.colors
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .heightIn(min = AbcTheme.dimens.touchTarget)
+            .clip(AbcTheme.shapes.full)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(AbcTheme.spacing.space1)
+    ) {
+        Text(
+            text = label,
+            style = AbcTheme.typography.small.copy(fontWeight = FontWeight.SemiBold),
+            color = if (onDark) colors.primary else colors.onPrimary,
+            modifier = Modifier
+                .clip(AbcTheme.shapes.full)
+                .background(if (onDark) colors.surface else colors.primary)
+                .padding(horizontal = AbcTheme.spacing.space4, vertical = AbcTheme.spacing.space2)
+        )
     }
 }
 
@@ -438,6 +623,10 @@ private fun HomeSamantaPreview() = HomePreview(HomePreviewData.samanta())
 @Preview(widthDp = 360, heightDp = 1100)
 @Composable
 private fun HomeMarcusPreview() = HomePreview(HomePreviewData.marcus())
+
+@Preview(widthDp = 360, heightDp = 1400)
+@Composable
+private fun HomeGracePreview() = HomePreview(HomePreviewData.grace())
 
 @Preview(widthDp = 360, heightDp = 800)
 @Composable

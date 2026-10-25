@@ -5,13 +5,17 @@ import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.common.LowBalanceRule
 import com.abcbank.mobile.core.model.Account
 import com.abcbank.mobile.core.model.AccountType
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.CreditCardAccount
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.Money
 import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.model.TransactionDirection
+import com.abcbank.mobile.core.model.TravelNotice
+import com.abcbank.mobile.core.model.quickPayees
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Provider
@@ -26,6 +30,10 @@ data class HomeSummary(
     val firstName: String,
     /** The Main card's linked account balance (DEMO_DATA.md section 03). */
     val walletBalance: Money,
+    /** The account behind the wallet balance, named under it on the balance card. */
+    val walletAccount: Account?,
+    /** The wallet account is under the low balance threshold, warned about inside the card. */
+    val walletIsLow: Boolean,
     /** Credits and debits on the wallet account over the last 30 days, pending included. */
     val moneyIn: Money,
     val moneyOut: Money,
@@ -33,6 +41,10 @@ data class HomeSummary(
     val hasInvestments: Boolean,
     val latestTransactions: List<Transaction>,
     val unreadNotifications: Int,
+    /** Recent payees in their saved order, for the Quick Transfer row. */
+    val quickPayees: List<Beneficiary>,
+    /** The travel notice active today that ends first, if any. */
+    val activeTravelNotice: TravelNotice?,
     val isOffline: Boolean
 )
 
@@ -50,13 +62,20 @@ class ObserveHomeUseCase @Inject constructor(
             .toInstant()
         return repository.observeHome(since).map { result ->
             when (result) {
-                is DataResult.Success -> DataResult.Success(summarize(result.value, since))
+                is DataResult.Success -> DataResult.Success(
+                    summarize(result.value, since, clock.now().atZone(zone).toLocalDate(), zone)
+                )
                 is DataResult.Failure -> result
             }
         }
     }
 
-    private fun summarize(data: HomeData, since: Instant): HomeSummary {
+    private fun summarize(
+        data: HomeData,
+        since: Instant,
+        today: LocalDate,
+        zone: ZoneId
+    ): HomeSummary {
         val walletAccount = walletAccount(data)
         val walletTransactions = data.recentTransactions.filter {
             it.accountId == walletAccount?.id && !it.createdAt.isBefore(since)
@@ -65,6 +84,8 @@ class ObserveHomeUseCase @Inject constructor(
             personaId = data.profile.personaId,
             firstName = data.profile.firstName,
             walletBalance = walletAccount?.let(::spendable) ?: Money.ZERO,
+            walletAccount = walletAccount,
+            walletIsLow = walletAccount?.let(LowBalanceRule::isLow) ?: false,
             moneyIn = walletTransactions.total(TransactionDirection.CREDIT),
             moneyOut = walletTransactions.total(TransactionDirection.DEBIT),
             accounts = data.accounts
@@ -83,6 +104,10 @@ class ObserveHomeUseCase @Inject constructor(
                 )
                 .take(LATEST_COUNT),
             unreadNotifications = data.unreadNotifications,
+            quickPayees = data.beneficiaries.quickPayees(),
+            activeTravelNotice = data.travelNotices
+                .filter { it.isActiveOn(today, zone) }
+                .minByOrNull { it.endDate },
             isOffline = data.isFromCache
         )
     }

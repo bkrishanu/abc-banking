@@ -4,6 +4,8 @@ import app.cash.turbine.test
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.AccountType
+import com.abcbank.mobile.core.model.CreditCardAccount
+import com.abcbank.mobile.core.model.Money
 import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.security.SessionManager
 import com.abcbank.mobile.feature.home.FakeHomeRepository
@@ -11,13 +13,17 @@ import com.abcbank.mobile.feature.home.HOME_NOW
 import com.abcbank.mobile.feature.home.deposit
 import com.abcbank.mobile.feature.home.domain.ObserveHomeUseCase
 import com.abcbank.mobile.feature.home.homeData
+import com.abcbank.mobile.feature.home.notice
 import com.abcbank.mobile.feature.home.transaction
 import com.abcbank.mobile.testing.MainDispatcherRule
 import com.abcbank.mobile.testing.ManualClock
+import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -35,6 +41,19 @@ class HomeViewModelTest {
         sessionManager = session,
         clock = clock,
         zone = { ZoneOffset.UTC }
+    )
+
+    private fun creditCard(id: String, due: Instant) = CreditCardAccount(
+        id = id,
+        nickname = id,
+        last4 = "5821",
+        creditLimit = Money(5_000_000),
+        currentBalance = Money(1_176_500),
+        availableCredit = Money(3_823_500),
+        statementBalance = Money(1_176_500),
+        minimumDue = Money(28_500),
+        dueDate = due,
+        autoPayFull = false
     )
 
     @Test
@@ -56,6 +75,51 @@ class HomeViewModelTest {
                 }
             )
             assertFalse(content.showNoInvestments)
+        }
+    }
+
+    @Test
+    fun `a card's due date counts down in days, and a passed one has no count`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.uiState.test {
+            awaitItem()
+            repository.result.value = DataResult.Success(
+                homeData(
+                    accounts = listOf(
+                        deposit("checking", AccountType.CHECKING, 15_583_200),
+                        creditCard("soon", HOME_NOW.plusSeconds(3 * 86_400)),
+                        creditCard("today", HOME_NOW),
+                        creditCard("passed", HOME_NOW.minusSeconds(86_400))
+                    )
+                )
+            )
+            val content = awaitItem() as HomeUiState.Content
+            val days = content.accounts.associate { it.account.id to it.dueInDays }
+
+            assertEquals(3L, days["soon"])
+            assertEquals(0L, days["today"])
+            assertNull(days["passed"])
+        }
+    }
+
+    @Test
+    fun `the active travel notice shows with its local days`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.uiState.test {
+            awaitItem()
+            repository.result.value = DataResult.Success(
+                homeData(travelNotices = listOf(notice("Toronto, Canada", -3, 10)))
+            )
+            val content = awaitItem() as HomeUiState.Content
+
+            assertEquals(
+                HomeTravelNotice(
+                    "Toronto, Canada",
+                    LocalDate.of(2026, 10, 16),
+                    LocalDate.of(2026, 10, 29)
+                ),
+                content.travelNotice
+            )
         }
     }
 
