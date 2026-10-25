@@ -193,6 +193,19 @@ class LedgerRulesTest {
     }
 
     @Test
+    fun `type counts follow the other filters but ignore the selected type`() {
+        val all = LedgerRules.typeCounts(SAMPLE, TransactionFilter(type = TypeFilter.EARNINGS))
+        assertEquals(5, all[TypeFilter.ALL])
+        assertEquals(3, all[TypeFilter.SPENDINGS])
+        assertEquals(2, all[TypeFilter.EARNINGS])
+
+        val searched = LedgerRules.typeCounts(SAMPLE, TransactionFilter(query = "pay"))
+        assertEquals(1, searched[TypeFilter.ALL])
+        assertEquals(0, searched[TypeFilter.SPENDINGS])
+        assertEquals(1, searched[TypeFilter.EARNINGS])
+    }
+
+    @Test
     fun `groups are today, yesterday, last 30 days and earlier, newest first`() {
         val sections = LedgerRules.group(SAMPLE, TODAY, UTC)
 

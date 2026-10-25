@@ -110,15 +110,24 @@
     <string name="action_log_out">Log Out</string>
 
     <!-- Transactions -->
+    <string name="transactions_type_count">%1$s %2$d</string>
+    <string name="transactions_all_categories">All Categories</string>
+    <plurals name="transactions_categories_count">
+        <item quantity="one">%1$d Category</item>
+        <item quantity="other">%1$d Categories</item>
+    </plurals>
+    <plurals name="transactions_items">
+        <item quantity="one">%1$d Item</item>
+        <item quantity="other">%1$d Items</item>
+    </plurals>
+    <string name="transactions_search_offline">Search saved transactions</string>
+    <string name="transaction_category_when">%1$s · %2$s</string>
     <string name="transactions_title">Transactions</string>
     <string name="transactions_search_label">Search</string>
     <string name="transactions_search_placeholder">Merchant name</string>
     <string name="transactions_type_all">All</string>
     <string name="transactions_type_spendings">Spendings</string>
     <string name="transactions_type_earnings">Earnings</string>
-    <string name="transactions_filter">Filter</string>
-    <string name="transactions_filter_count">Filter (%1$d)</string>
-    <string name="transactions_filter_title">Filter Transactions</string>
     <string name="transactions_date_range">Date Range</string>
     <string name="transactions_range_30">Last 30 Days</string>
     <string name="transactions_range_90">Last 90 Days</string>

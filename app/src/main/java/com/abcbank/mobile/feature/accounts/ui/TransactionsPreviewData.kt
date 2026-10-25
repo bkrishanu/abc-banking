@@ -61,7 +61,17 @@ internal object TransactionsPreviewData {
         LedgerRow(transaction, TODAY.minusDays(daysAgo), LocalTime.of(hour, minute))
 
     fun content(filter: TransactionFilter = TransactionFilter()) = TransactionsUiState.Content(
-        header = LedgerHeader(account = null, filter = filter, isOffline = false),
+        header = LedgerHeader(
+            account = null,
+            filter = filter,
+            isOffline = false,
+            // The eight rows below: six charges and two credits.
+            typeCounts = mapOf(
+                TypeFilter.ALL to 8,
+                TypeFilter.SPENDINGS to 6,
+                TypeFilter.EARNINGS to 2
+            )
+        ),
         sections = listOf(
             LedgerSectionItem(
                 LedgerGroup.TODAY,
@@ -172,7 +182,8 @@ internal object TransactionsPreviewData {
                 categories = setOf(TransactionCategory.TRAVEL),
                 query = "sky"
             ),
-            isOffline = false
+            isOffline = false,
+            typeCounts = TypeFilter.entries.associateWith { 0 }
         ),
         sections = emptyList(),
         hiddenByFilters = true,

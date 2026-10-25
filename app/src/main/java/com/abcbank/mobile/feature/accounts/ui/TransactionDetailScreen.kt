@@ -4,7 +4,8 @@ import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -28,6 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -184,6 +185,7 @@ fun TransactionDetailScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DetailContent(state: TransactionDetailUiState.Content) {
     val spacing = AbcTheme.spacing
@@ -201,11 +203,26 @@ private fun DetailContent(state: TransactionDetailUiState.Content) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(spacing.space2)
         ) {
-            TransactionLeadingIcon(transaction.category, transaction.merchant, incoming)
+            TransactionLeadingIcon(
+                transaction.category,
+                transaction.merchant,
+                incoming,
+                modifier = Modifier.size(AbcTheme.dimens.quickActionCircle)
+            )
             Text(
                 text = transaction.merchant,
                 style = AbcTheme.typography.h2,
                 color = colors.text,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stringResource(
+                    R.string.transaction_category_when,
+                    DateFormatter.fullDate(state.date),
+                    DateFormatter.time(state.time)
+                ),
+                style = AbcTheme.typography.small,
+                color = colors.textMuted,
                 textAlign = TextAlign.Center
             )
             val amount = MoneyFormatter.formatSigned(transaction.signedAmount)
@@ -217,48 +234,44 @@ private fun DetailContent(state: TransactionDetailUiState.Content) {
                     contentDescription = if (state.balancesHidden) hiddenDescription else amount
                 }
             )
+            // Status and category as badges (Stitch), so the rows below stay about money.
             val pending = transaction.status == TransactionStatus.PENDING
-            if (pending || transaction.disputed) {
-                Row(horizontalArrangement = Arrangement.spacedBy(spacing.space2)) {
-                    if (pending) StatusBadge(stringResource(R.string.transaction_status_pending))
-                    if (transaction.disputed) {
-                        StatusBadge(
-                            stringResource(R.string.transaction_disputed),
-                            tone = BadgeTone.Warning
-                        )
-                    }
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(
+                    spacing.space2,
+                    Alignment.CenterHorizontally
+                ),
+                verticalArrangement = Arrangement.spacedBy(spacing.space1)
+            ) {
+                StatusBadge(
+                    stringResource(
+                        if (pending) {
+                            R.string.transaction_status_pending
+                        } else {
+                            R.string.transaction_status_posted
+                        }
+                    )
+                )
+                if (transaction.disputed) {
+                    StatusBadge(
+                        stringResource(R.string.transaction_disputed),
+                        tone = BadgeTone.Warning
+                    )
                 }
+                StatusBadge(categoryLabel(transaction.category))
             }
         }
     }
     Spacer(Modifier.height(spacing.space4))
     ContentCard {
         val rows = buildList {
-            add(
-                stringResource(R.string.transaction_detail_date) to
-                    DateFormatter.fullDate(state.date)
-            )
-            add(stringResource(R.string.transaction_detail_time) to DateFormatter.time(state.time))
             state.account?.let {
                 add(
                     stringResource(R.string.transaction_detail_account) to
                         stringResource(R.string.account_name_last4, it.nickname, it.last4)
                 )
             }
-            add(
-                stringResource(R.string.transaction_detail_category) to
-                    categoryLabel(transaction.category)
-            )
             transaction.memo?.let { add(stringResource(R.string.transaction_detail_memo) to it) }
-            add(
-                stringResource(R.string.transaction_detail_status) to stringResource(
-                    if (transaction.status == TransactionStatus.PENDING) {
-                        R.string.transaction_status_pending
-                    } else {
-                        R.string.transaction_status_posted
-                    }
-                )
-            )
             add(
                 stringResource(R.string.transaction_detail_running_balance) to
                     if (state.balancesHidden) {
@@ -270,17 +283,16 @@ private fun DetailContent(state: TransactionDetailUiState.Content) {
                     }
             )
         }
-        rows.forEachIndexed { index, (label, value) ->
-            if (index > 0) HorizontalDivider(color = colors.border)
-            DetailRow(label, value, AbcTheme.typography.body)
+        // Each row on its own tinted tile (Stitch details table).
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.space2)) {
+            rows.forEach { (label, value) -> DetailRow(label, value, AbcTheme.typography.body) }
+            // The reference is long; AdaptiveRow moves it under its label when it does not fit.
+            DetailRow(
+                stringResource(R.string.transaction_detail_reference),
+                transaction.reference,
+                AbcTheme.typography.mono
+            )
         }
-        HorizontalDivider(color = colors.border)
-        // The reference is long; AdaptiveRow moves it under its label when it does not fit.
-        DetailRow(
-            stringResource(R.string.transaction_detail_reference),
-            transaction.reference,
-            AbcTheme.typography.mono
-        )
     }
 }
 
@@ -354,7 +366,9 @@ private fun DetailRow(label: String, value: String, valueStyle: TextStyle) {
     AdaptiveRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = AbcTheme.spacing.space3)
+            .clip(AbcTheme.shapes.md)
+            .background(AbcTheme.colors.background)
+            .padding(horizontal = AbcTheme.spacing.space3, vertical = AbcTheme.spacing.space3)
             .semantics(mergeDescendants = true) {},
         start = {
             Text(text = label, style = AbcTheme.typography.small, color = AbcTheme.colors.textMuted)

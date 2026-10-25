@@ -5,6 +5,7 @@ import com.abcbank.mobile.core.model.Account
 import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.feature.accounts.domain.LedgerGroup
 import com.abcbank.mobile.feature.accounts.domain.TransactionFilter
+import com.abcbank.mobile.feature.accounts.domain.TypeFilter
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -30,7 +31,9 @@ data class LedgerHeader(
     /** Set when the ledger was opened from one account. */
     val account: Account?,
     val filter: TransactionFilter,
-    val isOffline: Boolean
+    val isOffline: Boolean,
+    /** What each type tab would show under the other filters ("All 9"). */
+    val typeCounts: Map<TypeFilter, Int> = emptyMap()
 )
 
 data class LedgerSectionItem(val group: LedgerGroup, val rows: List<LedgerRow>)

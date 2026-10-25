@@ -24,7 +24,9 @@ data class Ledger(
     val hiddenByFilters: Boolean,
     val accounts: Map<String, Account>,
     val today: LocalDate,
-    val isOffline: Boolean
+    val isOffline: Boolean,
+    /** What each type tab would show under the other filters. */
+    val typeCounts: Map<TypeFilter, Int> = emptyMap()
 )
 
 /**
@@ -62,7 +64,8 @@ class ObserveLedgerUseCase @Inject constructor(
                             hiddenByFilters = kept.isEmpty() && inScope.isNotEmpty(),
                             accounts = accounts,
                             today = today,
-                            isOffline = result.value.isFromCache
+                            isOffline = result.value.isFromCache,
+                            typeCounts = LedgerRules.typeCounts(inScope, filter)
                         )
                     )
                 }

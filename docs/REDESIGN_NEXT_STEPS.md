@@ -9,7 +9,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 
 ## 01 Where things stand
 
-`main` is pushed and matches GitHub. No open branches.
+`main` is pushed and matches GitHub. Open branch: `redesign/stage-3-transactions` (committed, waiting for review).
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -26,7 +26,8 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 | 3 Insights | Period tabs above the cards, Spending card with left/over chip and breakdown rows, Top Categories, Stitch savings card | Merged (`fa09770`) |
 | 3 Send Money | Payee search and cards, Stitch-order amount step with swap, speed cards with totals, review hero with Edit and Cancel, receipt with copy and new balance | Merged (`b37644a`) |
 | 3 Pay Bills and Deposit | Total Due summary, bill cards with due badges, Recently Paid, deposit keypad panel, image rows, availability note | Merged (`0fb6fd9`) |
-| 3 Transactions | | **Next** |
+| 3 Transactions | Tab counts, range and category chips, one card per transaction with its category, group counts, offline search hint; detail with badges and tinted rows | Committed on `redesign/stage-3-transactions` |
+| 3 Notifications, Documents, Support | | **Next** |
 
 ## 02 Working agreement
 
@@ -53,8 +54,8 @@ One branch per tab or flow, in this order. Each uses the row for that screen in 
 3. ~~Insights~~ (done)
 4. ~~Send Money flow~~ (done)
 5. ~~Pay Bills and Deposit Check~~ (done)
-6. **Transactions and Transaction Detail** (next) (recipient, add payee, amount, speed, review, receipt) and Between My Accounts
-7. Notifications, Statements and Documents, Help and Support
+6. ~~Transactions and Transaction Detail~~ (done)
+7. **Notifications, Statements and Documents, Help and Support** (next) (recipient, add payee, amount, speed, review, receipt) and Between My Accounts
 8. Explore Products and the application flow
 9. Welcome, Login, Lock, Step-up sheet
 10. Profile
@@ -84,6 +85,9 @@ features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md sect
 - Pay Bills: paying still starts from the bill screen (no Pay Now on the list); due badges turn Warning for a due bill
   within 7 days (new rule `BillRules.DUE_SOON_DAYS`); paid bills sit under Recently Paid. Deposit Check: amount and
   keypad in one outlined panel, cheque images as rows, and an availability note with the real 30-second clearing.
+- Transactions: date range and category chips replace the Filter sheet (each chip opens its own small sheet); one
+  card per transaction (user choice); counts on the type tabs; group headers with item counts; category in each
+  row's subtitle. Detail: status and category as badges, date and time under the merchant, rows on tinted tiles.
 - Badges use an opaque tint, a tone dot and the label in `text` (warning text on its own tint fails AA).
 
 ## 05 Open items
@@ -98,16 +102,16 @@ Copy this into Claude Code at the start of the next session:
 ```text
 We are continuing the Stitch redesign of ABC Bank Mobile. Read AGENTS.md, then docs/REDESIGN_NEXT_STEPS.md
 (where things stand, the working agreement and decisions), docs/END_OF_BUILD_FIXES.md, docs/STITCH_REVIEW.md section 03, and
-the Transactions parts of docs/DESIGN_SYSTEM.md (sections 06 and 10) and docs/MobileBuild.md 2.2.
+the Notifications, Documents and Support parts of docs/DESIGN_SYSTEM.md (sections 06 and 10) and
+docs/MobileBuild.md.
 
-Start stage 3, Transactions and Transaction Detail:
-1. Confirm main is clean and matches GitHub. Read
+Start stage 3, Notifications, Statements and Documents, Help and Support:
+1. Confirm main is clean and matches GitHub, and that redesign/stage-3-transactions has been merged. Read
    docs/END_OF_BUILD_FIXES.md; add new end-of-build items there.
-2. Look at the Stitch mockups (project 2409467982313725814, rows 23 and 24 of the review, and 41 for offline)
-   and the current transaction screens, then ask me about every open choice with your recommendation before
-   changing anything.
+2. Look at the Stitch mockups (project 2409467982313725814, rows 25, 28 and 29 of the review) and the current
+   screens, then ask me about every open choice with your recommendation before changing anything.
 3. List the files you expect to touch and wait for my go-ahead.
-4. Build it on redesign/stage-3-transactions, run the five checks, look at every golden, check all four personas
+4. Build it on redesign/stage-3-notifications, run the five checks, look at every golden, check all four personas
    on the emulator (also 360dp at 200% font and balances hidden), update the docs, commit, and stop for review.
 Do not push or merge until I ask.
 ```

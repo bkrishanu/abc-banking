@@ -1,8 +1,13 @@
 package com.abcbank.mobile.feature.accounts.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,17 +19,17 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
@@ -37,13 +42,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,7 +64,6 @@ import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.ErrorState
 import com.abcbank.mobile.core.designsystem.component.FilterChipRow
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
-import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
 import com.abcbank.mobile.core.designsystem.component.TransactionLeadingIcon
 import com.abcbank.mobile.core.designsystem.component.TransactionRow
@@ -108,8 +113,9 @@ fun TransactionsRoute(
 }
 
 /**
- * The transaction ledger (MobileBuild.md 2.2, PRD feature 6): search, Spendings / Earnings chips
- * and a filter sheet that combine, over rows grouped Today, Yesterday, Last 30 Days and Earlier.
+ * The transaction ledger (MobileBuild.md 2.2, PRD feature 6): search, All / Spendings / Earnings
+ * tabs with counts, and date range and category chips that combine, over one card per
+ * transaction grouped Today, Yesterday, Last 30 Days and Earlier.
  */
 @Composable
 fun TransactionsScreen(
@@ -117,7 +123,7 @@ fun TransactionsScreen(
     events: TransactionsEvents,
     modifier: Modifier = Modifier
 ) {
-    var showFilters by rememberSaveable { mutableStateOf(false) }
+    var openFilter by rememberSaveable { mutableStateOf<FilterPart?>(null) }
     val spacing = AbcTheme.spacing
     LazyColumn(
         modifier = modifier
@@ -149,7 +155,7 @@ fun TransactionsScreen(
                 )
             }
             is TransactionsUiState.Empty -> {
-                filterControls(state.header, events) { showFilters = true }
+                filterControls(state.header, events) { openFilter = it }
                 item {
                     MessageCard(stringResource(R.string.transactions_empty)) {
                         if (state.header.filter.range != DateRange.ALL) {
@@ -163,7 +169,7 @@ fun TransactionsScreen(
                 }
             }
             is TransactionsUiState.Content -> {
-                filterControls(state.header, events) { showFilters = true }
+                filterControls(state.header, events) { openFilter = it }
                 if (state.hiddenByFilters) {
                     item {
                         MessageCard(stringResource(R.string.transactions_no_match)) {
@@ -184,8 +190,9 @@ fun TransactionsScreen(
     val header =
         (state as? TransactionsUiState.Content)?.header
             ?: (state as? TransactionsUiState.Empty)?.header
-    if (showFilters && header != null) {
-        FilterSheet(header, events, onDismiss = { showFilters = false })
+    val part = openFilter
+    if (part != null && header != null) {
+        FilterSheet(header, part, events, onDismiss = { openFilter = null })
     }
 }
 
@@ -219,10 +226,14 @@ private fun TopBar(state: TransactionsUiState, onBack: () -> Unit) {
     }
 }
 
+/** Which filter chip's sheet is open. */
+private enum class FilterPart { RANGE, CATEGORIES }
+
+@OptIn(ExperimentalLayoutApi::class)
 private fun LazyListScope.filterControls(
     header: LedgerHeader,
     events: TransactionsEvents,
-    onOpenFilters: () -> Unit
+    onOpenFilter: (FilterPart) -> Unit
 ) {
     item {
         val spacing = AbcTheme.spacing
@@ -235,28 +246,71 @@ private fun LazyListScope.filterControls(
                 value = header.filter.query,
                 onValueChange = events.onQueryChange,
                 label = stringResource(R.string.transactions_search_label),
-                placeholder = stringResource(R.string.transactions_search_placeholder),
+                // Offline, search still works over what was saved; the hint says so.
+                placeholder = stringResource(
+                    if (header.isOffline) {
+                        R.string.transactions_search_offline
+                    } else {
+                        R.string.transactions_search_placeholder
+                    }
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(spacing.space4))
             FilterChipRow(
-                options = listOf(
-                    stringResource(R.string.transactions_type_all),
-                    stringResource(R.string.transactions_type_spendings),
-                    stringResource(R.string.transactions_type_earnings)
-                ),
+                options = TypeFilter.entries.map { typeLabel(it, header.typeCounts[it]) },
                 selectedIndex = header.filter.type.ordinal,
                 onSelect = { events.onTypeSelect(TypeFilter.entries[it]) }
             )
-            val count = header.filter.activeCount
-            SectionHeader(
-                title = rangeLabel(header.filter.range),
-                actionLabel = if (count > 0) {
-                    stringResource(R.string.transactions_filter_count, count)
-                } else {
-                    stringResource(R.string.transactions_filter)
-                },
-                onAction = onOpenFilters
+            Spacer(Modifier.height(spacing.space3))
+            // Wraps instead of squeezing: a chip label never breaks inside a word.
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.space2)) {
+                DropdownChip(
+                    label = rangeLabel(header.filter.range),
+                    active = header.filter.range != DateRange.LAST_30_DAYS,
+                    onClick = { onOpenFilter(FilterPart.RANGE) }
+                )
+                DropdownChip(
+                    label = categoriesLabel(header.filter.categories),
+                    active = header.filter.categories.isNotEmpty(),
+                    onClick = { onOpenFilter(FilterPart.CATEGORIES) }
+                )
+            }
+        }
+    }
+}
+
+/** A pill with a chevron that opens a filter's sheet; primary outline when it is not the default. */
+@Composable
+private fun DropdownChip(label: String, active: Boolean, onClick: () -> Unit) {
+    val colors = AbcTheme.colors
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .heightIn(min = AbcTheme.dimens.touchTarget)
+            .clip(AbcTheme.shapes.full)
+            .clickable(role = Role.Button, onClick = onClick)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .heightIn(min = AbcTheme.dimens.chipHeight)
+                .clip(AbcTheme.shapes.full)
+                .background(colors.surface)
+                .border(
+                    if (active) AbcTheme.dimens.focusRingWidth else AbcTheme.dimens.borderWidth,
+                    if (active) colors.primary else colors.border,
+                    AbcTheme.shapes.full
+                )
+                .padding(horizontal = AbcTheme.spacing.space3)
+        ) {
+            Text(label, style = AbcTheme.typography.small, color = colors.text, softWrap = false)
+            Spacer(Modifier.width(AbcTheme.spacing.space1))
+            Icon(
+                painter = painterResource(R.drawable.ic_chevron_down),
+                contentDescription = null,
+                tint = colors.textMuted,
+                modifier = Modifier.size(AbcTheme.dimens.iconSmall)
             )
         }
     }
@@ -268,37 +322,41 @@ private fun LazyListScope.ledgerSection(
     onTransaction: (String) -> Unit
 ) {
     item(key = "header-${section.group}") {
-        Text(
-            text = groupLabel(section.group),
-            style = AbcTheme.typography.small,
-            color = AbcTheme.colors.textMuted,
+        Row(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(top = AbcTheme.spacing.space4, bottom = AbcTheme.spacing.space2)
-                .semantics { heading() }
-        )
-    }
-    // Rows are separate lazy items drawn as one content card, so long ledgers stay fast.
-    itemsIndexed(section.rows, key = { _, row -> row.transaction.id }) { index, row ->
-        val shape = rowShape(index, section.rows.size)
-        Column(
-            Modifier
-                .background(AbcTheme.colors.surface, shape)
-                .padding(horizontal = AbcTheme.spacing.space4)
+                .semantics(mergeDescendants = true) { heading() },
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (index > 0) HorizontalDivider(color = AbcTheme.colors.border)
-            LedgerTransaction(row, section.group, hidden, onTransaction)
+            Text(
+                text = groupLabel(section.group),
+                style = AbcTheme.typography.small.copy(fontWeight = FontWeight.SemiBold),
+                color = AbcTheme.colors.textMuted,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = pluralStringResource(
+                    R.plurals.transactions_items,
+                    section.rows.size,
+                    section.rows.size
+                ),
+                style = AbcTheme.typography.small,
+                color = AbcTheme.colors.textMuted
+            )
         }
     }
-}
-
-@Composable
-private fun rowShape(index: Int, count: Int): Shape {
-    val shapes = AbcTheme.shapes
-    return when {
-        count == 1 -> shapes.xl
-        index == 0 -> shapes.xlTop
-        index == count - 1 -> shapes.xlBottom
-        else -> RectangleShape
+    // One card per transaction (Stitch), each its own lazy item so long ledgers stay fast.
+    items(section.rows, key = { it.transaction.id }) { row ->
+        Column(
+            Modifier
+                .padding(bottom = AbcTheme.spacing.space2)
+                .clip(AbcTheme.shapes.xl)
+                .background(AbcTheme.colors.surface)
+                .padding(horizontal = AbcTheme.spacing.space4)
+        ) {
+            LedgerTransaction(row, section.group, hidden, onTransaction)
+        }
     }
 }
 
@@ -317,10 +375,15 @@ private fun LedgerTransaction(
         LedgerGroup.LAST_30_DAYS, LedgerGroup.EARLIER ->
             stringResource(R.string.transaction_on_date, DateFormatter.shortDate(row.date), time)
     }
-    val subtitle = if (transaction.status == TransactionStatus.PENDING) {
-        stringResource(R.string.transaction_pending, whenText)
-    } else {
+    val withCategory = stringResource(
+        R.string.transaction_category_when,
+        categoryLabel(transaction.category),
         whenText
+    )
+    val subtitle = if (transaction.status == TransactionStatus.PENDING) {
+        stringResource(R.string.transaction_pending, withCategory)
+    } else {
+        withCategory
     }
     TransactionRow(
         title = transaction.merchant,
@@ -347,9 +410,17 @@ private fun MessageCard(message: String, action: @Composable () -> Unit) {
     }
 }
 
-/** Date range (one of three) and categories (any number); changes apply as they are made. */
+/**
+ * The sheet behind one filter chip: the date range (one of three) or categories (any number).
+ * Changes apply as they are made.
+ */
 @Composable
-private fun FilterSheet(header: LedgerHeader, events: TransactionsEvents, onDismiss: () -> Unit) {
+private fun FilterSheet(
+    header: LedgerHeader,
+    part: FilterPart,
+    events: TransactionsEvents,
+    onDismiss: () -> Unit
+) {
     val spacing = AbcTheme.spacing
     val colors = AbcTheme.colors
     AbcBottomSheet(onDismiss = onDismiss) {
@@ -360,63 +431,65 @@ private fun FilterSheet(header: LedgerHeader, events: TransactionsEvents, onDism
                 .padding(bottom = spacing.space6)
         ) {
             Text(
-                text = stringResource(R.string.transactions_filter_title),
+                text = stringResource(
+                    if (part == FilterPart.RANGE) {
+                        R.string.transactions_date_range
+                    } else {
+                        R.string.transactions_categories
+                    }
+                ),
                 style = AbcTheme.typography.h2,
                 color = colors.text,
                 modifier = Modifier.semantics { heading() }
             )
-            Spacer(Modifier.height(spacing.space4))
-            Text(
-                stringResource(R.string.transactions_date_range),
-                style = AbcTheme.typography.h3,
-                color = colors.text
-            )
-            DateRange.entries.forEach { range ->
-                val selected = header.filter.range == range
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = AbcTheme.dimens.touchTarget)
-                        .selectable(selected = selected, role = Role.RadioButton, onClick = {
-                            events.onRangeSelect(range)
-                        }),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = selected,
-                        onClick = null,
-                        colors = RadioButtonDefaults.colors(selectedColor = colors.primary)
-                    )
-                    Text(rangeLabel(range), style = AbcTheme.typography.body, color = colors.text)
+            Spacer(Modifier.height(spacing.space2))
+            if (part == FilterPart.RANGE) {
+                DateRange.entries.forEach { range ->
+                    val selected = header.filter.range == range
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = AbcTheme.dimens.touchTarget)
+                            .selectable(selected = selected, role = Role.RadioButton, onClick = {
+                                events.onRangeSelect(range)
+                            }),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selected,
+                            onClick = null,
+                            colors = RadioButtonDefaults.colors(selectedColor = colors.primary)
+                        )
+                        Text(
+                            rangeLabel(range),
+                            style = AbcTheme.typography.body,
+                            color = colors.text
+                        )
+                    }
                 }
-            }
-            Spacer(Modifier.height(spacing.space4))
-            Text(
-                stringResource(R.string.transactions_categories),
-                style = AbcTheme.typography.h3,
-                color = colors.text
-            )
-            TransactionCategory.entries.forEach { category ->
-                val checked = category in header.filter.categories
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = AbcTheme.dimens.touchTarget)
-                        .toggleable(value = checked, role = Role.Checkbox, onValueChange = {
-                            events.onCategoryToggle(category)
-                        }),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = checked,
-                        onCheckedChange = null,
-                        colors = CheckboxDefaults.colors(checkedColor = colors.primary)
-                    )
-                    Text(
-                        categoryLabel(category),
-                        style = AbcTheme.typography.body,
-                        color = colors.text
-                    )
+            } else {
+                TransactionCategory.entries.forEach { category ->
+                    val checked = category in header.filter.categories
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = AbcTheme.dimens.touchTarget)
+                            .toggleable(value = checked, role = Role.Checkbox, onValueChange = {
+                                events.onCategoryToggle(category)
+                            }),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checked,
+                            onCheckedChange = null,
+                            colors = CheckboxDefaults.colors(checkedColor = colors.primary)
+                        )
+                        Text(
+                            categoryLabel(category),
+                            style = AbcTheme.typography.body,
+                            color = colors.text
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(spacing.space4))
@@ -460,6 +533,37 @@ private fun rangeLabel(range: DateRange): String = stringResource(
         DateRange.ALL -> R.string.transactions_range_all
     }
 )
+
+/** "All 9", or just "All" before the counts are known. */
+@Composable
+private fun typeLabel(type: TypeFilter, count: Int?): String {
+    val label = stringResource(
+        when (type) {
+            TypeFilter.ALL -> R.string.transactions_type_all
+            TypeFilter.SPENDINGS -> R.string.transactions_type_spendings
+            TypeFilter.EARNINGS -> R.string.transactions_type_earnings
+        }
+    )
+    return if (count ==
+        null
+    ) {
+        label
+    } else {
+        stringResource(R.string.transactions_type_count, label, count)
+    }
+}
+
+/** "All Categories", the one category chosen, or "3 Categories". */
+@Composable
+private fun categoriesLabel(categories: Set<TransactionCategory>): String = when (categories.size) {
+    0 -> stringResource(R.string.transactions_all_categories)
+    1 -> categoryLabel(categories.first())
+    else -> pluralStringResource(
+        R.plurals.transactions_categories_count,
+        categories.size,
+        categories.size
+    )
+}
 
 @Composable
 private fun groupLabel(group: LedgerGroup): String = stringResource(

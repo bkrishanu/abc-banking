@@ -33,6 +33,16 @@ object LedgerRules {
         }
     }
 
+    /**
+     * How many transactions each type tab would show under the rest of [filter] (search,
+     * categories, account), for "All 9", "Spendings 7", "Earnings 2".
+     */
+    fun typeCounts(
+        transactions: List<Transaction>,
+        filter: TransactionFilter
+    ): Map<TypeFilter, Int> =
+        TypeFilter.entries.associateWith { apply(transactions, filter.copy(type = it)).size }
+
     /** Newest first, in sections; empty sections are left out. */
     fun group(
         transactions: List<Transaction>,

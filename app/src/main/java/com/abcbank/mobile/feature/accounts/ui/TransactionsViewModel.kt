@@ -81,7 +81,8 @@ class TransactionsViewModel @Inject constructor(
     }
 
     private fun toUiState(ledger: Ledger, hidden: Boolean): TransactionsUiState {
-        val header = LedgerHeader(ledger.account, ledger.filter, ledger.isOffline)
+        val header =
+            LedgerHeader(ledger.account, ledger.filter, ledger.isOffline, ledger.typeCounts)
         if (ledger.sections.isEmpty() &&
             !ledger.hiddenByFilters
         ) {
