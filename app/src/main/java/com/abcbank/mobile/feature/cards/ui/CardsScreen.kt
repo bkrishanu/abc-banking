@@ -2,10 +2,13 @@ package com.abcbank.mobile.feature.cards.ui
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,24 +24,30 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -53,6 +62,8 @@ import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
 import com.abcbank.mobile.core.designsystem.component.AbcConfirmDialog
 import com.abcbank.mobile.core.designsystem.component.AbcSliderRow
 import com.abcbank.mobile.core.designsystem.component.AbcSwitchRow
+import com.abcbank.mobile.core.designsystem.component.AdaptiveRow
+import com.abcbank.mobile.core.designsystem.component.BadgeTone
 import com.abcbank.mobile.core.designsystem.component.BankCardArt
 import com.abcbank.mobile.core.designsystem.component.BankCardFace
 import com.abcbank.mobile.core.designsystem.component.BankCardView
@@ -63,10 +74,13 @@ import com.abcbank.mobile.core.designsystem.component.ErrorState
 import com.abcbank.mobile.core.designsystem.component.FrozenCardBanner
 import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
+import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
 import com.abcbank.mobile.core.designsystem.component.StatusBadge
 import com.abcbank.mobile.core.designsystem.component.StepUpSheet
 import com.abcbank.mobile.core.designsystem.component.TitleTopBar
+import com.abcbank.mobile.core.designsystem.component.TransactionLeadingIcon
+import com.abcbank.mobile.core.designsystem.component.TransactionRow
 import com.abcbank.mobile.core.designsystem.component.gradient
 import com.abcbank.mobile.core.designsystem.theme.AbcMotion
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
@@ -75,8 +89,12 @@ import com.abcbank.mobile.core.model.CardArt
 import com.abcbank.mobile.core.model.CardChannels
 import com.abcbank.mobile.core.model.CardSecrets
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.core.model.TransactionDirection
+import com.abcbank.mobile.core.model.TransactionStatus
 import com.abcbank.mobile.feature.cards.domain.CardRules
 import java.time.LocalDate
+import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 /** Everything the Cards tab can ask its ViewModel to do. */
 data class CardsEvents(
@@ -99,11 +117,8 @@ data class CardsEvents(
 
 /** Where the Cards tab leads outside itself; MainTabs supplies these. */
 data class CardsNavigation(
-    val onDeposit: () -> Unit = {},
-    val onSend: () -> Unit = {},
-    val onMore: () -> Unit = {},
-    val onQuickTransfer: (String) -> Unit = {},
-    val onAddPayee: () -> Unit = {}
+    /** Transactions filtered to this account (Recent Activity's View All). */
+    val onAccount: (accountId: String) -> Unit = {}
 )
 
 @Composable
@@ -145,12 +160,13 @@ fun CardsRoute(
 @Composable
 fun CardsScreen(state: CardsUiState, events: CardsEvents, modifier: Modifier = Modifier) {
     val spacing = AbcTheme.spacing
+    val scrollState = rememberScrollState()
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(AbcTheme.colors.background)
             .windowInsetsPadding(WindowInsets.safeDrawing)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(horizontal = spacing.space4)
     ) {
         Spacer(Modifier.height(spacing.space4))
@@ -182,7 +198,7 @@ fun CardsScreen(state: CardsUiState, events: CardsEvents, modifier: Modifier = M
                 ),
                 onRetry = events.onRetry
             )
-            is CardsUiState.Content -> CardsContent(state, events)
+            is CardsUiState.Content -> CardsContent(state, events, scrollState)
         }
         Spacer(Modifier.height(spacing.space6 + LocalBottomBarClearance.current))
     }
@@ -197,10 +213,18 @@ fun CardsScreen(state: CardsUiState, events: CardsEvents, modifier: Modifier = M
 }
 
 @Composable
-private fun CardsContent(state: CardsUiState.Content, events: CardsEvents) {
+private fun CardsContent(
+    state: CardsUiState.Content,
+    events: CardsEvents,
+    scrollState: ScrollState
+) {
     val spacing = AbcTheme.spacing
     val card = state.selected.card
     var confirmFreeze by rememberSaveable { mutableStateOf(false) }
+    // Where the limits card starts in the scrolling column, so Limits can scroll it to the top
+    // (bring-into-view would stop with it under the Transfer button and the tab bar).
+    var limitsTop by remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
     if (state.isOffline) {
         OfflineBanner()
         Spacer(Modifier.height(spacing.space4))
@@ -211,36 +235,39 @@ private fun CardsContent(state: CardsUiState.Content, events: CardsEvents) {
         FrozenCardBanner(onUnfreeze = { events.onSetFrozen(false) })
         Spacer(Modifier.height(spacing.space4))
     }
-    CardsQuickActions(state, events.navigation)
-    Spacer(Modifier.height(spacing.space4))
-    AbcButton(
-        text = stringResource(
-            if (state.revealed !=
-                null
-            ) {
-                R.string.cards_hide_details
-            } else {
-                R.string.cards_show_details
-            }
-        ),
-        onClick = events.onToggleDetails,
-        variant = AbcButtonVariant.Secondary
+    if (state.revealed != null) {
+        RevealedNote(onHide = events.onToggleDetails)
+        Spacer(Modifier.height(spacing.space3))
+    }
+    CardActions(
+        state = state,
+        onToggleDetails = events.onToggleDetails,
+        onFreezeToggle = { if (card.frozen) events.onSetFrozen(false) else confirmFreeze = true },
+        onLimits = { scope.launch { scrollState.animateScrollTo(limitsTop) } },
+        onAddToWallet = events.onAddToWallet
     )
+    if (state.walletAdded) {
+        Text(
+            text = stringResource(R.string.cards_wallet_demo),
+            style = AbcTheme.typography.small,
+            color = AbcTheme.colors.textMuted,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = spacing.space2)
+        )
+    }
     state.message?.let { message ->
         Text(
             text = stringResource(
-                if (message ==
-                    CardsMessage.LIMITS_SAVED
-                ) {
+                if (message == CardsMessage.LIMITS_SAVED) {
                     R.string.cards_limits_saved
                 } else {
                     R.string.cards_action_failed
                 }
             ),
             style = AbcTheme.typography.small,
-            color = if (message ==
-                CardsMessage.LIMITS_SAVED
-            ) {
+            color = if (message == CardsMessage.LIMITS_SAVED) {
                 AbcTheme.colors.positiveText
             } else {
                 AbcTheme.colors.danger
@@ -248,26 +275,18 @@ private fun CardsContent(state: CardsUiState.Content, events: CardsEvents) {
             modifier = Modifier.padding(top = spacing.space2)
         )
     }
-    Spacer(Modifier.height(spacing.space4))
-    ContentCard {
-        AbcSwitchRow(
-            title = stringResource(R.string.cards_freeze),
-            subtitle = stringResource(R.string.cards_freeze_subtitle),
-            checked = card.frozen,
-            onCheckedChange = { freeze ->
-                if (freeze) confirmFreeze = true else events.onSetFrozen(false)
-            },
-            icon = R.drawable.ic_snowflake
-        )
-    }
-    Spacer(Modifier.height(spacing.space4))
-    LimitsCard(state, events)
+    Spacer(Modifier.height(spacing.space6))
+    RecentActivity(state, events.navigation.onAccount)
+    Spacer(Modifier.height(spacing.space6))
+    LimitsCard(
+        state,
+        events,
+        Modifier.onGloballyPositioned { limitsTop = it.positionInParent().y.roundToInt() }
+    )
     Spacer(Modifier.height(spacing.space4))
     ChannelsCard(card.channels, events.onChannelsChange)
     Spacer(Modifier.height(spacing.space4))
     TravelNoticesCard(state, events)
-    Spacer(Modifier.height(spacing.space4))
-    WalletCard(state.walletAdded, events.onAddToWallet)
     if (confirmFreeze) {
         AbcConfirmDialog(
             title = stringResource(R.string.cards_freeze_dialog_title),
@@ -281,6 +300,93 @@ private fun CardsContent(state: CardsUiState.Content, events: CardsEvents) {
             onDismiss = { confirmFreeze = false }
         )
     }
+}
+
+/** While the number and CVV show: they hide again on leaving, and Hide does it now. */
+@Composable
+private fun RevealedNote(onHide: () -> Unit) {
+    val colors = AbcTheme.colors
+    AdaptiveRow(
+        modifier = Modifier.fillMaxWidth(),
+        start = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_lock),
+                    contentDescription = null,
+                    tint = colors.textMuted,
+                    modifier = Modifier.size(AbcTheme.dimens.iconSmall)
+                )
+                Spacer(Modifier.width(AbcTheme.spacing.space2))
+                Text(
+                    text = stringResource(R.string.cards_revealed_note),
+                    style = AbcTheme.typography.small,
+                    color = colors.textMuted
+                )
+            }
+        }
+    ) {
+        AbcButton(
+            text = stringResource(R.string.card_action_hide),
+            onClick = onHide,
+            variant = AbcButtonVariant.Ghost,
+            modifier = Modifier.width(IntrinsicSize.Max)
+        )
+    }
+}
+
+/** The selected card's three newest transactions in the last 30 days, with View All. */
+@Composable
+private fun RecentActivity(state: CardsUiState.Content, onAccount: (String) -> Unit) {
+    val accountId = state.selected.card.accountId
+    SectionHeader(
+        title = stringResource(R.string.cards_recent_activity),
+        actionLabel = stringResource(R.string.action_view_all),
+        onAction = { onAccount(accountId) }
+    )
+    ContentCard(padding = AbcTheme.spacing.space4) {
+        val items = state.selected.recentActivity
+        if (items.isEmpty()) {
+            Text(
+                text = stringResource(R.string.cards_no_recent_activity),
+                style = AbcTheme.typography.body,
+                color = AbcTheme.colors.textMuted
+            )
+        }
+        items.forEach { item -> ActivityRow(item, state.balancesHidden) }
+    }
+}
+
+@Composable
+private fun ActivityRow(item: CardActivityItem, hidden: Boolean) {
+    val transaction = item.transaction
+    val time = DateFormatter.time(item.time)
+    val whenText = when (item.day) {
+        ActivityDay.TODAY -> stringResource(R.string.transaction_today, time)
+        ActivityDay.YESTERDAY -> stringResource(R.string.transaction_yesterday, time)
+        ActivityDay.EARLIER -> stringResource(
+            R.string.transaction_on_date,
+            DateFormatter.shortDate(item.date),
+            time
+        )
+    }
+    val subtitle = if (transaction.status == TransactionStatus.PENDING) {
+        stringResource(R.string.transaction_pending, whenText)
+    } else {
+        whenText
+    }
+    TransactionRow(
+        title = transaction.merchant,
+        subtitle = subtitle,
+        amount = transaction.signedAmount,
+        hidden = hidden,
+        leading = {
+            TransactionLeadingIcon(
+                transaction.category,
+                transaction.merchant,
+                transaction.direction == TransactionDirection.CREDIT
+            )
+        }
+    )
 }
 
 /**
@@ -382,10 +488,17 @@ private fun PeekingCard(
 }
 
 @Composable
-private fun LimitsCard(state: CardsUiState.Content, events: CardsEvents) {
+private fun LimitsCard(
+    state: CardsUiState.Content,
+    events: CardsEvents,
+    modifier: Modifier = Modifier
+) {
     val card = state.selected.card
-    ContentCard {
-        SectionTitle(stringResource(R.string.cards_limits))
+    ContentCard(modifier = modifier) {
+        SectionTitle(
+            stringResource(R.string.cards_limits),
+            stringResource(R.string.cards_limits_subtitle)
+        )
         LimitSlider(
             label = stringResource(
                 if (state.selected.isCredit) {
@@ -452,7 +565,10 @@ private fun LimitSlider(label: String, value: Money, max: Money, onChange: (Mone
 @Composable
 private fun ChannelsCard(channels: CardChannels, onChange: (CardChannels) -> Unit) {
     ContentCard {
-        SectionTitle(stringResource(R.string.cards_channels))
+        SectionTitle(
+            stringResource(R.string.cards_channels),
+            stringResource(R.string.cards_channels_subtitle)
+        )
         AbcSwitchRow(
             title = stringResource(R.string.cards_channel_international),
             checked = channels.international,
@@ -479,7 +595,21 @@ private fun TravelNoticesCard(state: CardsUiState.Content, events: CardsEvents) 
     var showSheet by rememberSaveable { mutableStateOf(false) }
     val notices = state.selected.notices
     ContentCard {
-        SectionTitle(stringResource(R.string.cards_travel_notices))
+        AdaptiveRow(
+            start = {
+                SectionTitle(
+                    stringResource(R.string.cards_travel_notices),
+                    stringResource(R.string.cards_travel_subtitle)
+                )
+            }
+        ) {
+            AbcButton(
+                text = stringResource(R.string.cards_add_notice),
+                onClick = { showSheet = true },
+                variant = AbcButtonVariant.Secondary,
+                modifier = Modifier.width(IntrinsicSize.Max)
+            )
+        }
         if (notices.isEmpty()) {
             Text(
                 stringResource(R.string.cards_no_travel_notices),
@@ -487,47 +617,9 @@ private fun TravelNoticesCard(state: CardsUiState.Content, events: CardsEvents) 
                 color = AbcTheme.colors.textMuted
             )
         }
-        notices.forEachIndexed { index, notice ->
-            if (index > 0) HorizontalDivider(color = AbcTheme.colors.border)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = AbcTheme.spacing.space3)
-                    .semantics(mergeDescendants = true) {},
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_plane),
-                    contentDescription = null,
-                    tint = AbcTheme.colors.text,
-                    modifier = Modifier.size(AbcTheme.dimens.iconMedium)
-                )
-                Spacer(Modifier.width(AbcTheme.spacing.space3))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        notice.destination,
-                        style = AbcTheme.typography.body,
-                        color = AbcTheme.colors.text
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.cards_travel_dates,
-                            DateFormatter.shortDate(notice.start),
-                            DateFormatter.fullDate(notice.end)
-                        ),
-                        style = AbcTheme.typography.small,
-                        color = AbcTheme.colors.textMuted
-                    )
-                }
-                if (notice.active) StatusBadge(stringResource(R.string.cards_travel_active))
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space2)) {
+            notices.forEach { notice -> NoticeTile(notice) }
         }
-        Spacer(Modifier.height(AbcTheme.spacing.space3))
-        AbcButton(
-            text = stringResource(R.string.cards_add_travel_notice),
-            onClick = { showSheet = true },
-            variant = AbcButtonVariant.Secondary
-        )
     }
     if (showSheet) {
         TravelNoticeSheet(
@@ -542,50 +634,64 @@ private fun TravelNoticesCard(state: CardsUiState.Content, events: CardsEvents) 
     }
 }
 
+/** One notice on a background-coloured tile: plane circle, destination, dates, Active badge. */
 @Composable
-private fun WalletCard(added: Boolean, onAdd: () -> Unit) {
-    if (!added) {
-        AbcButton(
-            text = stringResource(R.string.cards_add_to_wallet),
-            onClick = onAdd,
-            variant = AbcButtonVariant.Secondary
-        )
-        return
-    }
-    ContentCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+private fun NoticeTile(notice: NoticeItem) {
+    val colors = AbcTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(AbcTheme.shapes.lg)
+            .background(colors.background)
+            .padding(AbcTheme.spacing.space3)
+            .semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(AbcTheme.dimens.iconCircle)
+                .clip(AbcTheme.shapes.full)
+                .background(colors.positiveTint)
+        ) {
             Icon(
-                painter = painterResource(R.drawable.ic_check),
+                painter = painterResource(R.drawable.ic_plane),
                 contentDescription = null,
-                tint = AbcTheme.colors.positiveText,
+                tint = colors.positiveText,
                 modifier = Modifier.size(AbcTheme.dimens.iconMedium)
             )
-            Spacer(Modifier.width(AbcTheme.spacing.space2))
+        }
+        Spacer(Modifier.width(AbcTheme.spacing.space3))
+        Column(Modifier.weight(1f)) {
+            Text(notice.destination, style = AbcTheme.typography.body, color = colors.text)
             Text(
-                stringResource(R.string.cards_added_to_wallet),
-                style = AbcTheme.typography.body,
-                color = AbcTheme.colors.text
+                text = stringResource(
+                    R.string.cards_travel_dates,
+                    DateFormatter.shortDate(notice.start),
+                    DateFormatter.fullDate(notice.end)
+                ),
+                style = AbcTheme.typography.small,
+                color = colors.textMuted
             )
         }
-        Text(
-            text = stringResource(R.string.cards_wallet_demo),
-            style = AbcTheme.typography.small,
-            color = AbcTheme.colors.textMuted,
-            modifier = Modifier.padding(top = AbcTheme.spacing.space1)
-        )
+        if (notice.active) {
+            StatusBadge(stringResource(R.string.cards_travel_active), tone = BadgeTone.Neutral)
+        }
     }
 }
 
+/** A section card's H3 title and its Small muted subtitle (Stitch Card Controls). */
 @Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text = text,
-        style = AbcTheme.typography.h3,
-        color = AbcTheme.colors.text,
-        modifier = Modifier
-            .padding(bottom = AbcTheme.spacing.space2)
-            .semantics { heading() }
-    )
+private fun SectionTitle(title: String, subtitle: String) {
+    Column(Modifier.padding(bottom = AbcTheme.spacing.space3)) {
+        Text(
+            text = title,
+            style = AbcTheme.typography.h3,
+            color = AbcTheme.colors.text,
+            modifier = Modifier.semantics { heading() }
+        )
+        Text(text = subtitle, style = AbcTheme.typography.small, color = AbcTheme.colors.textMuted)
+    }
 }
 
 private fun CardItem.face(revealed: CardSecrets?) = BankCardFace(

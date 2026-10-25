@@ -11,6 +11,7 @@ import com.abcbank.mobile.core.model.CreditCardAccount
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.LoanAccount
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.security.SessionManager
 import com.abcbank.mobile.core.security.StepUpAction
 import com.abcbank.mobile.core.security.StepUpControllerFactory
@@ -240,7 +241,9 @@ class CardsViewModel @Inject constructor(
                         end = it.endDate.atZone(zone).toLocalDate(),
                         active = CardRules.isActive(it, today, zone)
                     )
-                }
+                },
+                recentActivity = CardRules.recentActivity(data.recentTransactions, card.accountId)
+                    .map { it.toActivity(zone, today) }
             )
         }
         val selected = items.firstOrNull { it.card.id == state.selectedId } ?: items.first()
@@ -258,9 +261,19 @@ class CardsViewModel @Inject constructor(
             stepUp = stepUpState,
             message = state.message,
             noticeError = state.noticeError,
-            noticesAdded = state.noticesAdded,
-            quickPayees = CardRules.quickPayees(data.beneficiaries)
+            noticesAdded = state.noticesAdded
         )
+    }
+
+    private fun Transaction.toActivity(zone: ZoneId, today: LocalDate): CardActivityItem {
+        val local = createdAt.atZone(zone)
+        val date = local.toLocalDate()
+        val day = when (date) {
+            today -> ActivityDay.TODAY
+            today.minusDays(1) -> ActivityDay.YESTERDAY
+            else -> ActivityDay.EARLIER
+        }
+        return CardActivityItem(this, day, date, local.toLocalTime())
     }
 
     /** What the card can spend: the debit card's account balance, the credit card's available credit. */

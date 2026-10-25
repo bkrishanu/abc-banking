@@ -15,7 +15,3 @@ data class Beneficiary(
 ) {
     val isRecent: Boolean get() = recentOrder != null
 }
-
-/** The Quick Transfer row on Home and Cards: recent payees in their saved order (DEMO_DATA.md). */
-fun List<Beneficiary>.quickPayees(): List<Beneficiary> =
-    filter { it.recentOrder != null }.sortedBy { it.recentOrder }

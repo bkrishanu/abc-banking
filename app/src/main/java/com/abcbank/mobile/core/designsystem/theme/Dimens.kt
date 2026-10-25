@@ -25,6 +25,7 @@ data class AbcDimens(
     val quickActionCircle: Dp = 56.dp,
     val quickActionMinWidth: Dp = 72.dp,
     val offlineBadge: Dp = 20.dp,
+    val rangePickerHeight: Dp = 440.dp,
     val unreadDot: Dp = 8.dp,
     val statusDot: Dp = 6.dp,
     val skeletonLine: Dp = 16.dp,

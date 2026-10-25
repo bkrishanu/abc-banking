@@ -4,7 +4,6 @@ import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.AccountType
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardArt
 import com.abcbank.mobile.core.model.CardChannels
@@ -14,6 +13,10 @@ import com.abcbank.mobile.core.model.CardSecrets
 import com.abcbank.mobile.core.model.CreditCardAccount
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.core.model.Transaction
+import com.abcbank.mobile.core.model.TransactionCategory
+import com.abcbank.mobile.core.model.TransactionDirection
+import com.abcbank.mobile.core.model.TransactionStatus
 import com.abcbank.mobile.core.model.TravelNotice
 import com.abcbank.mobile.core.security.MpinVerifier
 import com.abcbank.mobile.core.security.SessionManager
@@ -106,7 +109,12 @@ private class FakeCardsRepository : CardsRepository {
     val data = MutableStateFlow<DataResult<CardsData>?>(null)
     val calls = mutableListOf<String>()
 
-    override fun observeCards(): Flow<DataResult<CardsData>> = data.filterNotNull()
+    var requestedSince: Instant? = null
+
+    override fun observeCards(transactionsSince: Instant): Flow<DataResult<CardsData>> {
+        requestedSince = transactionsSince
+        return data.filterNotNull()
+    }
 
     override suspend fun loadSecrets(cardId: String): DataResult<CardSecrets> {
         calls += "secrets $cardId"
@@ -162,13 +170,42 @@ class CardRulesTest {
     }
 
     @Test
-    fun `Quick Transfer shows recent payees in their saved order`() {
-        val payees = listOf(
-            Beneficiary("b", "Kris Patel", "Kris", "Harbor", "500000034", "2290", 1),
-            Beneficiary("c", "Oakwood", "Oakwood", "Summit", "500000050", "3305", null),
-            Beneficiary("a", "Mark Robinson", "Mark R.", "Northfield", "500000021", "1180", 0)
+    fun `recent activity is the card account's three newest transactions`() {
+        fun tx(id: String, accountId: String, hoursAgo: Long) = Transaction(
+            id = id,
+            accountId = accountId,
+            direction = TransactionDirection.DEBIT,
+            amount = Money(1_000),
+            merchant = id,
+            category = TransactionCategory.SHOPPING,
+            reference = id,
+            runningBalance = Money.ZERO,
+            status = TransactionStatus.POSTED,
+            disputed = false,
+            createdAt = NOW.minusSeconds(hoursAgo * 3_600),
+            clearsAt = null
         )
-        assertEquals(listOf("a", "b"), CardRules.quickPayees(payees).map { it.id })
+        val transactions = listOf(
+            tx("old", "checking", 50),
+            tx("savings", "savings", 1),
+            tx("newest", "checking", 2),
+            tx("second", "checking", 5),
+            tx("third", "checking", 9)
+        )
+        assertEquals(
+            listOf("newest", "second", "third"),
+            CardRules.recentActivity(transactions, "checking").map { it.id }
+        )
+    }
+
+    @Test
+    fun `cards ask for today and the 29 days before it`() {
+        val repository = FakeCardsRepository()
+        ObserveCardsUseCase(repository, ManualClock(NOW)) { UTC }()
+        assertEquals(
+            TODAY.minusDays(29).atStartOfDay(UTC).toInstant(),
+            repository.requestedSince
+        )
     }
 
     @Test
@@ -269,7 +306,7 @@ class CardsViewModelTest {
     private val session = SessionManager()
 
     private fun viewModel() = CardsViewModel(
-        observeCards = ObserveCardsUseCase(repository),
+        observeCards = ObserveCardsUseCase(repository, clock) { UTC },
         revealCardDetails = RevealCardDetailsUseCase(repository, stepUp),
         setCardFrozen = SetCardFrozenUseCase(repository),
         updateChannels = UpdateCardChannelsUseCase(repository),

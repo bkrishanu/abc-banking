@@ -3,7 +3,6 @@ package com.abcbank.mobile.feature.home
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.Account
 import com.abcbank.mobile.core.model.AccountType
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardArt
 import com.abcbank.mobile.core.model.CardChannels
@@ -110,7 +109,6 @@ fun homeData(
     unread: Int = 0,
     fromCache: Boolean = false,
     personaId: PersonaId = PersonaId.SAMANTA,
-    beneficiaries: List<Beneficiary> = emptyList(),
     travelNotices: List<TravelNotice> = emptyList()
 ) = HomeData(
     profile(personaId),
@@ -118,13 +116,9 @@ fun homeData(
     cards,
     transactions,
     unread,
-    beneficiaries,
     travelNotices,
     fromCache
 )
-
-fun payee(id: String, recentOrder: Int?) =
-    Beneficiary(id, id, id, "ABC Bank", "500000018", "5532", recentOrder)
 
 fun notice(id: String, startDaysFromNow: Long, endDaysFromNow: Long) = TravelNotice(
     id = id,

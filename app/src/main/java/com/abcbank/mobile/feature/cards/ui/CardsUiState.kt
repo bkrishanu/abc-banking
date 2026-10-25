@@ -1,13 +1,14 @@
 package com.abcbank.mobile.feature.cards.ui
 
 import com.abcbank.mobile.core.common.DataError
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardSecrets
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.security.StepUpState
 import com.abcbank.mobile.feature.cards.domain.TravelNoticeError
 import java.time.LocalDate
+import java.time.LocalTime
 
 sealed interface CardsUiState {
     data object Loading : CardsUiState
@@ -31,9 +32,7 @@ sealed interface CardsUiState {
         val message: CardsMessage?,
         val noticeError: TravelNoticeError?,
         /** Bumped each time a notice is added, so the screen can close its sheet. */
-        val noticesAdded: Int,
-        /** Recent payees for Quick Transfer (Sample 1). */
-        val quickPayees: List<Beneficiary> = emptyList()
+        val noticesAdded: Int
     ) : CardsUiState
 }
 
@@ -42,7 +41,18 @@ data class CardItem(
     val card: Card,
     val balance: Money,
     val isCredit: Boolean,
-    val notices: List<NoticeItem>
+    val notices: List<NoticeItem>,
+    /** The newest transactions on the card's account, in the device time zone. */
+    val recentActivity: List<CardActivityItem> = emptyList()
+)
+
+enum class ActivityDay { TODAY, YESTERDAY, EARLIER }
+
+data class CardActivityItem(
+    val transaction: Transaction,
+    val day: ActivityDay,
+    val date: LocalDate,
+    val time: LocalTime
 )
 
 data class NoticeItem(

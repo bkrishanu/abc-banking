@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -23,16 +24,19 @@ import com.abcbank.mobile.R
 import com.abcbank.mobile.core.common.DateFormatter
 import com.abcbank.mobile.core.designsystem.component.AbcBottomSheet
 import com.abcbank.mobile.core.designsystem.component.AbcButton
-import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
-import com.abcbank.mobile.core.designsystem.component.AbcDatePickerDialog
+import com.abcbank.mobile.core.designsystem.component.AbcDateRangePicker
 import com.abcbank.mobile.core.designsystem.component.AbcTextField
+import com.abcbank.mobile.core.designsystem.component.AdaptiveRow
+import com.abcbank.mobile.core.designsystem.component.StatusBadge
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.feature.cards.domain.CardRules
 import com.abcbank.mobile.feature.cards.domain.TravelNoticeError
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 /**
- * Add a travel notice (MobileBuild.md 4.2): destination and start and end dates from date pickers.
+ * Add a travel notice (MobileBuild.md 4.2): destination, then the trip's days on a range calendar
+ * with a day count (Stitch). A single tapped day is a one-day trip.
  * The rules live in CardRules; this sheet shows their errors and closes once the notice is added.
  */
 @Composable
@@ -44,8 +48,9 @@ internal fun TravelNoticeSheet(
 ) {
     var destination by rememberSaveable { mutableStateOf("") }
     var start by rememberSaveable { mutableStateOf(LocalDate.now()) }
-    var end by rememberSaveable { mutableStateOf(LocalDate.now().plusDays(DEFAULT_TRIP_DAYS)) }
-    var picking by rememberSaveable { mutableStateOf<DateField?>(null) }
+    var end by rememberSaveable {
+        mutableStateOf<LocalDate?>(LocalDate.now().plusDays(DEFAULT_TRIP_DAYS))
+    }
     // Close once the ViewModel reports a new notice, not when Save is merely tapped.
     val addedWhenOpened = remember { noticesAdded }
     LaunchedEffect(noticesAdded) { if (noticesAdded > addedWhenOpened) onDismiss() }
@@ -73,12 +78,45 @@ internal fun TravelNoticeSheet(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(AbcTheme.spacing.space4))
-            DateButton(stringResource(R.string.cards_travel_start), start) {
-                picking =
-                    DateField.START
+            AdaptiveRow(
+                start = {
+                    Text(
+                        text = stringResource(R.string.cards_travel_dates_title),
+                        style = AbcTheme.typography.h3,
+                        color = AbcTheme.colors.text
+                    )
+                }
+            ) {
+                val days = ChronoUnit.DAYS.between(start, end ?: start) + 1
+                StatusBadge(
+                    pluralStringResource(
+                        R.plurals.cards_travel_day_count,
+                        days.toInt(),
+                        days.toInt()
+                    )
+                )
             }
+            Text(
+                text = stringResource(
+                    R.string.cards_travel_dates,
+                    DateFormatter.shortDate(start),
+                    DateFormatter.fullDate(end ?: start)
+                ),
+                style = AbcTheme.typography.small,
+                color = AbcTheme.colors.textMuted
+            )
             Spacer(Modifier.height(AbcTheme.spacing.space2))
-            DateButton(stringResource(R.string.cards_travel_end), end) { picking = DateField.END }
+            // Travel notices start today or later (CardRules checks the rest on save).
+            val today = remember { LocalDate.now() }
+            AbcDateRangePicker(
+                start = start,
+                end = end,
+                isSelectable = { !it.isBefore(today) },
+                onRangeChange = { from, to ->
+                    start = from
+                    end = to
+                }
+            )
             dateError(error)?.let {
                 Text(
                     text = it,
@@ -89,39 +127,10 @@ internal fun TravelNoticeSheet(
             }
             Spacer(Modifier.height(AbcTheme.spacing.space4))
             AbcButton(text = stringResource(R.string.cards_travel_save), onClick = {
-                onSave(destination, start, end)
+                onSave(destination, start, end ?: start)
             })
         }
     }
-    picking?.let { field ->
-        // Travel notices start today or later (CardRules checks the rest on save).
-        val today = LocalDate.now()
-        AbcDatePickerDialog(
-            initial = if (field == DateField.START) start else end,
-            isSelectable = { !it.isBefore(today) },
-            onPicked = { picked ->
-                if (field == DateField.START) {
-                    start = picked
-                    if (end < picked) end = picked
-                } else {
-                    end = picked
-                }
-                picking = null
-            },
-            onDismiss = { picking = null }
-        )
-    }
-}
-
-private enum class DateField { START, END }
-
-@Composable
-private fun DateButton(label: String, date: LocalDate, onClick: () -> Unit) {
-    AbcButton(
-        text = "$label · ${DateFormatter.fullDate(date)}",
-        onClick = onClick,
-        variant = AbcButtonVariant.Secondary
-    )
 }
 
 @Composable

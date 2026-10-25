@@ -5,9 +5,9 @@ import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.common.DispatcherProvider
 import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
-import com.abcbank.mobile.core.data.firebase.BeneficiaryDto
 import com.abcbank.mobile.core.data.firebase.CardDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
+import com.abcbank.mobile.core.data.firebase.TransactionDto
 import com.abcbank.mobile.core.data.firebase.TravelNoticeDto
 import com.abcbank.mobile.core.data.firebase.await
 import com.abcbank.mobile.core.data.firebase.snapshotFlow
@@ -23,6 +23,7 @@ import com.abcbank.mobile.feature.cards.domain.CardsData
 import com.abcbank.mobile.feature.cards.domain.CardsRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.Source
 import java.time.Instant
@@ -65,7 +66,7 @@ class FirestoreCardsRepository @Inject constructor(
     private fun Tree.card(cardId: String) = collection(FirestorePaths.CARDS).document(cardId)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun observeCards(): Flow<DataResult<CardsData>> = flow {
+    override fun observeCards(transactionsSince: Instant): Flow<DataResult<CardsData>> = flow {
         val tree = when (val result = tree()) {
             is DataResult.Success -> result.value
             is DataResult.Failure -> {
@@ -76,10 +77,17 @@ class FirestoreCardsRepository @Inject constructor(
         val cardsAndAccounts = combine(
             tree.collection(FirestorePaths.CARDS).snapshotFlow(),
             tree.collection(FirestorePaths.ACCOUNTS).snapshotFlow(),
-            tree.collection(FirestorePaths.BENEFICIARIES).snapshotFlow()
-        ) { cards, accounts, beneficiaries -> Triple(cards, accounts, beneficiaries) }
+            // A range on one field, ordered by it: no composite index is needed.
+            tree.collection(FirestorePaths.TRANSACTIONS)
+                .whereGreaterThanOrEqualTo(
+                    TransactionDto.CREATED_AT,
+                    transactionsSince.toTimestamp()
+                )
+                .orderBy(TransactionDto.CREATED_AT, Query.Direction.DESCENDING)
+                .snapshotFlow()
+        ) { cards, accounts, transactions -> Triple(cards, accounts, transactions) }
         emitAll(
-            cardsAndAccounts.flatMapLatest { (cardSnapshot, accountSnapshot, beneficiarySnapshot) ->
+            cardsAndAccounts.flatMapLatest { (cardSnapshot, accountSnapshot, transactionSnapshot) ->
                 val cards = cardSnapshot.documents.map {
                     CardDto.fromMap(it.data.orEmpty()).toCard(it.id)
                         ?: return@flatMapLatest flowOf(malformed())
@@ -88,8 +96,8 @@ class FirestoreCardsRepository @Inject constructor(
                     AccountDto.fromMap(it.data.orEmpty()).toAccount(it.id)
                         ?: return@flatMapLatest flowOf(malformed())
                 }
-                val beneficiaries = beneficiarySnapshot.documents.map {
-                    BeneficiaryDto.fromMap(it.data.orEmpty()).toBeneficiary(it.id)
+                val transactions = transactionSnapshot.documents.map {
+                    TransactionDto.fromMap(it.data.orEmpty()).toTransaction(it.id)
                         ?: return@flatMapLatest flowOf(malformed())
                 }
                 val fromCache =
@@ -97,7 +105,7 @@ class FirestoreCardsRepository @Inject constructor(
                 if (cards.isEmpty()) {
                     return@flatMapLatest flowOf(
                         DataResult.Success(
-                            CardsData(emptyList(), accounts, fromCache, beneficiaries)
+                            CardsData(emptyList(), accounts, fromCache, transactions)
                         )
                     )
                 }
@@ -123,7 +131,7 @@ class FirestoreCardsRepository @Inject constructor(
                             },
                             accounts = accounts,
                             isFromCache = fromCache,
-                            beneficiaries = beneficiaries
+                            recentTransactions = transactions
                         )
                     )
                 }

@@ -61,7 +61,7 @@ fun QuickActionButton(
             .semantics(mergeDescendants = true) {
                 if (offline) stateDescription = offlineLabel
             }
-            .padding(vertical = AbcTheme.spacing.space1),
+            .padding(horizontal = AbcTheme.spacing.space1, vertical = AbcTheme.spacing.space1),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space2)
     ) {

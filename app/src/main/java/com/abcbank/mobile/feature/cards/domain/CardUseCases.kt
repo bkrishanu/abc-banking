@@ -19,8 +19,20 @@ import kotlinx.coroutines.flow.Flow
 // The Cards tab's use cases (MobileBuild.md 4.1 and 4.2). Small and closely related, so they
 // share a file. Step-up is checked here, not in the screen, so no caller can skip it.
 
-class ObserveCardsUseCase @Inject constructor(private val repository: CardsRepository) {
-    operator fun invoke(): Flow<DataResult<CardsData>> = repository.observeCards()
+class ObserveCardsUseCase @Inject constructor(
+    private val repository: CardsRepository,
+    private val clock: Clock,
+    private val zone: Provider<ZoneId>
+) {
+    /** Recent Activity covers today and the 29 days before it, as on Home. */
+    operator fun invoke(): Flow<DataResult<CardsData>> {
+        val zone = zone.get()
+        val since = clock.now().atZone(zone).toLocalDate()
+            .minusDays(CardRules.RECENT_DAYS - 1)
+            .atStartOfDay(zone)
+            .toInstant()
+        return repository.observeCards(since)
+    }
 }
 
 sealed interface StepUpResult<out T> {

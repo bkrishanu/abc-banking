@@ -5,7 +5,6 @@ import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.common.DispatcherProvider
 import com.abcbank.mobile.core.data.firebase.AccountDto
 import com.abcbank.mobile.core.data.firebase.AuthDataSource
-import com.abcbank.mobile.core.data.firebase.BeneficiaryDto
 import com.abcbank.mobile.core.data.firebase.CardDto
 import com.abcbank.mobile.core.data.firebase.FirestorePaths
 import com.abcbank.mobile.core.data.firebase.NotificationDto
@@ -77,8 +76,6 @@ class FirestoreHomeRepository @Inject constructor(
             unread.snapshotFlow()
         ) { personaDoc, accounts, cards, recent, unreadDocs ->
             Snapshots(personaDoc, accounts, cards, recent, unreadDocs)
-        }.combine(collection(FirestorePaths.BENEFICIARIES).snapshotFlow()) { base, payees ->
-            base.copy(beneficiaries = payees)
         }
         emitAll(
             snapshots.flatMapLatest { base ->
@@ -110,8 +107,7 @@ class FirestoreHomeRepository @Inject constructor(
         val accounts: QuerySnapshot,
         val cards: QuerySnapshot,
         val transactions: QuerySnapshot,
-        val unread: QuerySnapshot,
-        val beneficiaries: QuerySnapshot? = null
+        val unread: QuerySnapshot
     )
 
     /** Null while the persona's tree is still being written after login: Home stays loading. */
@@ -119,7 +115,7 @@ class FirestoreHomeRepository @Inject constructor(
         snapshots: Snapshots,
         travelNotices: List<TravelNotice>
     ): DataResult<HomeData>? {
-        val (persona, accounts, cards, transactions, unread, beneficiaries) = snapshots
+        val (persona, accounts, cards, transactions, unread) = snapshots
         val profileFields = persona.data ?: return null
         val data = HomeData(
             profile = UserProfileDto.fromMap(profileFields).toUserProfile() ?: return malformed(),
@@ -133,9 +129,6 @@ class FirestoreHomeRepository @Inject constructor(
                 TransactionDto.fromMap(it.data.orEmpty()).toTransaction(it.id) ?: return malformed()
             },
             unreadNotifications = unread.size(),
-            beneficiaries = beneficiaries?.documents.orEmpty().map {
-                BeneficiaryDto.fromMap(it.data.orEmpty()).toBeneficiary(it.id) ?: return malformed()
-            },
             travelNotices = travelNotices,
             isFromCache = listOf(
                 persona.metadata,

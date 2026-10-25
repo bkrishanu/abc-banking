@@ -83,7 +83,6 @@ class HomeViewModel @Inject constructor(
             },
             showNoInvestments = !summary.hasInvestments,
             latestTransactions = summary.latestTransactions.map { it.toItem(zone, today) },
-            quickPayees = summary.quickPayees,
             travelNotice = summary.activeTravelNotice?.let {
                 HomeTravelNotice(
                     it.destination,

@@ -190,6 +190,23 @@
     <string name="step_up_reason_reveal_card">Confirm it\'s you to see your card details.</string>
     <!-- Cards -->
     <string name="cards_title">Cards</string>
+    <string name="card_action_details">Details</string>
+    <string name="card_action_hide">Hide</string>
+    <string name="card_action_limits">Limits</string>
+    <string name="card_action_wallet">Wallet</string>
+    <string name="card_action_in_wallet">In Wallet</string>
+    <string name="cards_revealed_note">Hidden again when you leave this screen.</string>
+    <string name="cards_limits_subtitle">Changes need your MPIN.</string>
+    <string name="cards_channels_subtitle">Choose where this card can be used.</string>
+    <string name="cards_travel_subtitle">Tell us before you travel so payments abroad go through.</string>
+    <string name="cards_add_notice">Add Notice</string>
+    <string name="cards_recent_activity">Recent Activity</string>
+    <string name="cards_no_recent_activity">No transactions on this card in the last 30 days.</string>
+    <plurals name="cards_travel_day_count">
+        <item quantity="one">%1$d Day</item>
+        <item quantity="other">%1$d Days</item>
+    </plurals>
+    <string name="cards_travel_dates_title">Travel Dates</string>
     <string name="card_balance">Balance</string>
     <string name="card_frozen">Frozen</string>
     <string name="card_last4">•••• %1$s</string>
@@ -198,10 +215,6 @@
     <string name="card_network_mastercard">Mastercard</string>
     <string name="cd_card_ending">card ending %1$s</string>
     <string name="cd_card_revealed">card number %1$s, CVV %2$s</string>
-    <string name="cards_show_details">Show Card Details</string>
-    <string name="cards_hide_details">Hide Card Details</string>
-    <string name="cards_freeze">Freeze Card</string>
-    <string name="cards_freeze_subtitle">Blocks card, ATM and online payments.</string>
     <string name="cards_freeze_dialog_title">Freeze This Card?</string>
     <string name="cards_freeze_dialog_text">Card, ATM and online payments will be declined until you unfreeze it.</string>
     <string name="action_freeze">Freeze</string>
@@ -227,16 +240,12 @@
     <string name="cards_add_travel_notice">Add Travel Notice</string>
     <string name="cards_travel_destination">Destination</string>
     <string name="cards_travel_destination_placeholder">City or country</string>
-    <string name="cards_travel_start">Start Date</string>
-    <string name="cards_travel_end">End Date</string>
     <string name="cards_travel_save">Save Notice</string>
     <string name="cards_travel_error_destination">Enter where you\'re going.</string>
     <string name="cards_travel_error_destination_long">Keep the destination to 40 characters.</string>
     <string name="cards_travel_error_past">The trip can\'t start in the past.</string>
     <string name="cards_travel_error_order">The trip has to end on or after its start date.</string>
     <string name="cards_travel_error_long">A notice can cover up to one year.</string>
-    <string name="cards_add_to_wallet">Add to Google Wallet</string>
-    <string name="cards_added_to_wallet">Added to Google Wallet</string>
     <string name="cards_wallet_demo">Demo only. No card was added to a real wallet.</string>
     <string name="cards_action_failed">That didn\'t work. Try again.</string>
     <string name="cards_empty">You don\'t have any cards yet.</string>
@@ -606,8 +615,4 @@
     <string name="quick_action_send">Send</string>
     <string name="quick_action_deposit">Deposit</string>
     <string name="quick_action_more">More</string>
-    <string name="quick_transfer">Quick Transfer</string>
-    <string name="quick_transfer_add">Add</string>
-    <string name="cd_quick_transfer_to">Send money to %1$s</string>
-    <string name="cd_add_payee">Add a new payee</string>
 </resources>

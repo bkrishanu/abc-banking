@@ -5,7 +5,6 @@ import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.common.LowBalanceRule
 import com.abcbank.mobile.core.model.Account
 import com.abcbank.mobile.core.model.AccountType
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.CreditCardAccount
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.Money
@@ -13,7 +12,6 @@ import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.model.TransactionDirection
 import com.abcbank.mobile.core.model.TravelNotice
-import com.abcbank.mobile.core.model.quickPayees
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -41,8 +39,6 @@ data class HomeSummary(
     val hasInvestments: Boolean,
     val latestTransactions: List<Transaction>,
     val unreadNotifications: Int,
-    /** Recent payees in their saved order, for the Quick Transfer row. */
-    val quickPayees: List<Beneficiary>,
     /** The travel notice active today that ends first, if any. */
     val activeTravelNotice: TravelNotice?,
     val isOffline: Boolean
@@ -104,7 +100,6 @@ class ObserveHomeUseCase @Inject constructor(
                 )
                 .take(LATEST_COUNT),
             unreadNotifications = data.unreadNotifications,
-            quickPayees = data.beneficiaries.quickPayees(),
             activeTravelNotice = data.travelNotices
                 .filter { it.isActiveOn(today, zone) }
                 .minByOrNull { it.endDate },

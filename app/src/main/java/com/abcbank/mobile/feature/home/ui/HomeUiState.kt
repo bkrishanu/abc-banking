@@ -2,7 +2,6 @@ package com.abcbank.mobile.feature.home.ui
 
 import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.model.Account
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Money
 import com.abcbank.mobile.core.model.PersonaId
 import com.abcbank.mobile.core.model.Transaction
@@ -33,7 +32,6 @@ sealed interface HomeUiState {
         /** Shown when there is no investment account, as for Marcus (PRD feature 5). */
         val showNoInvestments: Boolean,
         val latestTransactions: List<HomeTransactionItem>,
-        val quickPayees: List<Beneficiary>,
         val travelNotice: HomeTravelNotice?,
         val isOffline: Boolean
     ) : HomeUiState

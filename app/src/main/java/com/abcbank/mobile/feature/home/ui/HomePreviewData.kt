@@ -1,7 +1,6 @@
 package com.abcbank.mobile.feature.home.ui
 
 import com.abcbank.mobile.core.model.AccountType
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.CreditCardAccount
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.InvestmentAccount
@@ -151,12 +150,6 @@ internal object HomePreviewData {
                 0
             )
         ),
-        quickPayees = listOf(
-            payee("mark-robinson", "Mark Robinson", "Mark R.", 0),
-            payee("kris-patel", "Kris Patel", "Kris", 1),
-            payee("helen-torres", "Helen Torres", "Helen T.", 2),
-            payee("tonys-gym", "Tony's Gym", "Tony Gym", 3)
-        ),
         travelNotice = null,
         isOffline = offline
     )
@@ -239,7 +232,6 @@ internal object HomePreviewData {
                 0
             )
         ),
-        quickPayees = listOf(payee("sarah-lee", "Sarah Lee", "Sarah Lee", 0)),
         travelNotice = null,
         isOffline = false
     )
@@ -307,16 +299,9 @@ internal object HomePreviewData {
                 0
             )
         ),
-        quickPayees = listOf(
-            payee("emily-whitfield", "Emily Whitfield", "Emily Whitfield", 0),
-            payee("james-whitfield", "James Whitfield", "James Whitfield", 1)
-        ),
         travelNotice = HomeTravelNotice("Toronto, Canada", TODAY.minusDays(3), TODAY.plusDays(10)),
         isOffline = false
     )
-
-    private fun payee(id: String, name: String, shortName: String, order: Int) =
-        Beneficiary(id, name, shortName, "ABC Bank", "500000018", "0000", order)
 
     private fun item(
         id: String,

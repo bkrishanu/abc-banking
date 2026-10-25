@@ -2,7 +2,6 @@ package com.abcbank.mobile.feature.home.domain
 
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.Account
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.model.TravelNotice
@@ -18,8 +17,6 @@ data class HomeData(
     /** Every transaction since the requested instant, on any account. */
     val recentTransactions: List<Transaction>,
     val unreadNotifications: Int,
-    /** Saved payees, for the Quick Transfer row. */
-    val beneficiaries: List<Beneficiary>,
     /** Every card's travel notices. */
     val travelNotices: List<TravelNotice>,
     /** True while any part came from the offline cache rather than the server. */

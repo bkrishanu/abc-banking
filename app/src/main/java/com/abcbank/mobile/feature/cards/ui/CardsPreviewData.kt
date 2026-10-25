@@ -1,6 +1,5 @@
 package com.abcbank.mobile.feature.cards.ui
 
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardArt
 import com.abcbank.mobile.core.model.CardChannels
@@ -8,13 +7,51 @@ import com.abcbank.mobile.core.model.CardLimits
 import com.abcbank.mobile.core.model.CardNetwork
 import com.abcbank.mobile.core.model.CardSecrets
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.core.model.Transaction
+import com.abcbank.mobile.core.model.TransactionCategory
+import com.abcbank.mobile.core.model.TransactionDirection
+import com.abcbank.mobile.core.model.TransactionStatus
 import com.abcbank.mobile.core.security.StepUpState
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.YearMonth
+import java.time.ZoneOffset
 
 /** Samanta's cards (DEMO_DATA.md section 03) for previews and screenshot tests. */
 internal object CardsPreviewData {
     private val TODAY: LocalDate = LocalDate.of(2026, 10, 19)
+
+    private fun activity(
+        id: String,
+        merchant: String,
+        category: TransactionCategory,
+        signedCents: Long,
+        hour: Int,
+        minute: Int,
+        pending: Boolean = false
+    ) = CardActivityItem(
+        Transaction(
+            id = id,
+            accountId = "main-card",
+            direction = if (signedCents < 0) {
+                TransactionDirection.DEBIT
+            } else {
+                TransactionDirection.CREDIT
+            },
+            amount = Money(kotlin.math.abs(signedCents)),
+            merchant = merchant,
+            category = category,
+            reference = id,
+            runningBalance = Money.ZERO,
+            status = if (pending) TransactionStatus.PENDING else TransactionStatus.POSTED,
+            disputed = false,
+            createdAt = TODAY.atTime(hour, minute).toInstant(ZoneOffset.UTC),
+            clearsAt = null
+        ),
+        ActivityDay.TODAY,
+        TODAY,
+        LocalTime.of(hour, minute)
+    )
 
     private fun card(
         id: String,
@@ -52,7 +89,28 @@ internal object CardsPreviewData {
         ),
         balance = Money(15_583_200),
         isCredit = false,
-        notices = emptyList()
+        notices = emptyList(),
+        // Samanta's three newest checking transactions (DEMO_DATA.md section 03).
+        recentActivity = listOf(
+            activity(
+                "tx-001",
+                "Aster & Vine Boutique",
+                TransactionCategory.SHOPPING,
+                -12_500,
+                15,
+                14
+            ),
+            activity(
+                "tx-002",
+                "Northwind Furniture",
+                TransactionCategory.SHOPPING,
+                -37_500,
+                11,
+                40,
+                pending = true
+            ),
+            activity("tx-003", "Helen Torres", TransactionCategory.TRANSFER_IN, 3_860, 8, 9)
+        )
     )
 
     private val signature = CardItem(
@@ -120,46 +178,7 @@ internal object CardsPreviewData {
             stepUp = StepUpState(),
             message = null,
             noticeError = null,
-            noticesAdded = 0,
-            // Samanta's recent payees (DEMO_DATA.md section 03).
-            quickPayees = listOf(
-                Beneficiary(
-                    "mark-robinson",
-                    "Mark Robinson",
-                    "Mark R.",
-                    "Northfield Bank",
-                    "500000021",
-                    "1180",
-                    0
-                ),
-                Beneficiary(
-                    "kris-patel",
-                    "Kris Patel",
-                    "Kris",
-                    "Harbor State Bank",
-                    "500000034",
-                    "2290",
-                    1
-                ),
-                Beneficiary(
-                    "helen-torres",
-                    "Helen Torres",
-                    "Helen T.",
-                    "ABC Bank",
-                    "500000018",
-                    "5532",
-                    2
-                ),
-                Beneficiary(
-                    "tonys-gym",
-                    "Tony's Gym",
-                    "Tony Gym",
-                    "Pinecrest Credit Union",
-                    "500000047",
-                    "7001",
-                    3
-                )
-            )
+            noticesAdded = 0
         )
     }
 

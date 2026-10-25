@@ -60,7 +60,6 @@ import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.QuickActionButton
 import com.abcbank.mobile.core.designsystem.component.QuickActionRow
-import com.abcbank.mobile.core.designsystem.component.QuickTransferRow
 import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
 import com.abcbank.mobile.core.designsystem.component.TransactionLeadingIcon
@@ -85,9 +84,7 @@ data class HomeActions(
     val onInsights: () -> Unit = {},
     val onDepositCheck: () -> Unit = {},
     val onDocuments: () -> Unit = {},
-    val onCards: () -> Unit = {},
-    val onQuickTransfer: (beneficiaryId: String) -> Unit = {},
-    val onAddPayee: () -> Unit = {}
+    val onCards: () -> Unit = {}
 )
 
 @Composable
@@ -165,18 +162,6 @@ private fun HomeContent(
     }
     Spacer(Modifier.height(spacing.space4))
     BalanceHeader(state, actions, onToggleBalances)
-    Spacer(Modifier.height(spacing.space6))
-
-    SectionHeader(
-        title = stringResource(R.string.quick_transfer),
-        actionLabel = stringResource(R.string.action_view_all),
-        onAction = actions.onTransfer
-    )
-    QuickTransferRow(
-        payees = state.quickPayees,
-        onPayee = actions.onQuickTransfer,
-        onAddPayee = actions.onAddPayee
-    )
     Spacer(Modifier.height(spacing.space6))
 
     HomeFeatures(actions)

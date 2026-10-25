@@ -66,9 +66,6 @@ data class MainTabsNavigation(
     val onDepositCheck: () -> Unit,
     val onDocuments: () -> Unit,
     val onSupport: () -> Unit,
-    /** Starts a transfer to this saved payee (Quick Transfer). */
-    val onQuickTransfer: (String) -> Unit,
-    val onAddPayee: () -> Unit,
     val onNotifications: () -> Unit,
     val onExploreProducts: () -> Unit,
     val onLoggedOut: () -> Unit
@@ -117,21 +114,13 @@ fun MainTabs(
                             onExploreProducts = navigation.onExploreProducts,
                             onInsights = { tabs.selectTab(InsightsTab) },
                             onCards = { tabs.selectTab(CardsTab) },
-                            onMoreActions = { showMoreActions = true },
-                            onQuickTransfer = navigation.onQuickTransfer,
-                            onAddPayee = navigation.onAddPayee
+                            onMoreActions = { showMoreActions = true }
                         )
                     )
                 }
                 composable<CardsTab> {
                     CardsRoute(
-                        CardsNavigation(
-                            onDeposit = navigation.onDepositCheck,
-                            onSend = navigation.onTransfer,
-                            onMore = { showMoreActions = true },
-                            onQuickTransfer = navigation.onQuickTransfer,
-                            onAddPayee = navigation.onAddPayee
-                        )
+                        CardsNavigation(onAccount = navigation.onAccount)
                     )
                 }
                 composable<InsightsTab> { InsightsRoute() }

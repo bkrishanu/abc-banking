@@ -17,8 +17,10 @@ docs/DESIGN_SYSTEM.md (current tokens and components). Update this file as stage
 | 2a | Docked bottom bar, floating Transfer button, title and greeting top bars with a shared bell, step progress bar | Merged (`bea85e5` and this file) |
 | 2b-1 | Controls: pill buttons, text fields, keypads, badges, wordmark, launcher icon, three tint tokens | Merged (`6c80f0b`, `025c13b`) |
 | 2b-2 | Content components: quick actions, frozen card, tonal category icons, rate chip, tiles, card stack, offline banner | Merged (`364a783`) |
-| 3 Home | Hidden-balances and travel notice banners, balance card with account and low balance warning, Quick Transfer, one card per account with icons and chips | Committed on `redesign/stage-3-home` |
-| 3 rest | Screens, one tab or flow per branch | Next: Cards |
+| 3 Home | Hidden-balances and travel notice banners, balance card with account and low balance warning, one card per account with icons and chips | Merged (`3349757`) |
+| Seed fix | Later-today seed items stay on the seed day after midnight | Committed on `fix/seed-day-zero` |
+| 3 Cards | Card actions row, Recent Activity, section cards, travel notice range calendar; Quick Transfer removed from Home and Cards | Committed on `redesign/stage-3-cards` |
+| 3 rest | Screens, one tab or flow per branch | Next: Insights |
 
 Working agreement for every stage: list the files and wait for a go-ahead when there are more than five; one
 branch per stage; run `assembleDebug`, `ktlintCheck`, `lint`, `testDebugUnitTest` and `verifyPaparazziDebug`;
@@ -76,9 +78,13 @@ One branch per tab or flow, in this order, each using the row for that screen in
 Never carry over from the mockups: real brands or regulatory claims, contact photos, concierge or private banker
 features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md section 02.
 
-Home (stage 3, decided 2026-10-25): "Balances are hidden" banner with Show (not Discreet Mode wording); Quick Transfer
-row, Grace's active travel notice banner and the "Due in N Days" chip added; one card per account. Not added: the
-1099-INT ready card.
+Home (stage 3, decided 2026-10-25): "Balances are hidden" banner with Show (not Discreet Mode wording); Grace's
+active travel notice banner and the "Due in N Days" chip added; one card per account. Not added: the 1099-INT ready
+card. Quick Transfer was added, then removed from both Home and Cards in the Cards stage (user decision).
+
+Cards (stage 3, decided 2026-10-25): Stitch's card actions (Details, Freeze, Limits, Wallet) replace Send, Deposit and
+More, the Freeze switch card, the Show Card Details button and the Google Wallet card; Recent Activity shows the card
+account's 3 newest transactions from the last 30 days; the travel notice sheet uses a range calendar.
 
 ## 04 Other open items
 

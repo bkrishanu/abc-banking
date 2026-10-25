@@ -11,7 +11,6 @@ import com.abcbank.mobile.feature.home.card
 import com.abcbank.mobile.feature.home.deposit
 import com.abcbank.mobile.feature.home.homeData
 import com.abcbank.mobile.feature.home.notice
-import com.abcbank.mobile.feature.home.payee
 import com.abcbank.mobile.feature.home.transaction
 import com.abcbank.mobile.testing.ManualClock
 import java.time.Instant
@@ -115,21 +114,6 @@ class ObserveHomeUseCaseTest {
         assertEquals("checking", result.walletAccount?.id)
         assertTrue(result.walletIsLow)
         assertFalse(summary(homeData()).walletIsLow)
-    }
-
-    @Test
-    fun `quick payees are the recent ones in their saved order`() = runTest {
-        val result = summary(
-            homeData(
-                beneficiaries = listOf(
-                    payee("helen", 2),
-                    payee("oakwood", null),
-                    payee("mark", 0)
-                )
-            )
-        )
-
-        assertEquals(listOf("mark", "helen"), result.quickPayees.map { it.id })
     }
 
     @Test

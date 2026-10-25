@@ -1,10 +1,9 @@
 package com.abcbank.mobile.feature.cards.domain
 
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.model.TravelNotice
-import com.abcbank.mobile.core.model.quickPayees
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -68,7 +67,17 @@ object CardRules {
     fun isActive(notice: TravelNotice, today: LocalDate, zone: ZoneId): Boolean =
         notice.isActiveOn(today, zone)
 
-    /** The Quick Transfer row: recent payees in their saved order (DEMO_DATA.md, beneficiaries). */
-    fun quickPayees(beneficiaries: List<Beneficiary>): List<Beneficiary> =
-        beneficiaries.quickPayees()
+    /** The newest [RECENT_COUNT] transactions on the card's account, newest first. */
+    fun recentActivity(transactions: List<Transaction>, accountId: String): List<Transaction> =
+        transactions
+            .filter { it.accountId == accountId }
+            .sortedWith(
+                compareByDescending<Transaction> {
+                    it.createdAt
+                }.thenByDescending { it.id }
+            )
+            .take(RECENT_COUNT)
+
+    const val RECENT_COUNT = 3
+    const val RECENT_DAYS = 30L
 }

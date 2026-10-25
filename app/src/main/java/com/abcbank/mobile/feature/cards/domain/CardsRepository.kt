@@ -2,11 +2,11 @@ package com.abcbank.mobile.feature.cards.domain
 
 import com.abcbank.mobile.core.common.DataResult
 import com.abcbank.mobile.core.model.Account
-import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.Card
 import com.abcbank.mobile.core.model.CardChannels
 import com.abcbank.mobile.core.model.CardSecrets
 import com.abcbank.mobile.core.model.Money
+import com.abcbank.mobile.core.model.Transaction
 import com.abcbank.mobile.core.model.TravelNotice
 import java.time.Instant
 import kotlinx.coroutines.flow.Flow
@@ -18,8 +18,8 @@ data class CardsData(
     val cards: List<CardWithNotices>,
     val accounts: List<Account>,
     val isFromCache: Boolean,
-    /** Saved payees, for the Quick Transfer row (Sample 1). */
-    val beneficiaries: List<Beneficiary> = emptyList()
+    /** Every transaction since the requested instant, on any account, for Recent Activity. */
+    val recentTransactions: List<Transaction> = emptyList()
 )
 
 /**
@@ -27,7 +27,8 @@ data class CardsData(
  * background, like every other write; every control persists and survives a restart (PRD 10).
  */
 interface CardsRepository {
-    fun observeCards(): Flow<DataResult<CardsData>>
+    /** Live; [transactionsSince] bounds the transactions read for Recent Activity. */
+    fun observeCards(transactionsSince: Instant): Flow<DataResult<CardsData>>
 
     /** The full number and CVV, read only when revealing (AGENTS.md section 05). */
     suspend fun loadSecrets(cardId: String): DataResult<CardSecrets>
