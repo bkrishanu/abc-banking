@@ -9,7 +9,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 
 ## 01 Where things stand
 
-`main` is pushed and matches GitHub. Open branch: `redesign/stage-3-send-money` (committed, waiting for review).
+`main` is pushed and matches GitHub. No open branches.
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 | Seed fix | Later-today seed items stay on the seed day when seeded just after midnight | Merged (`cfbff05`) |
 | 3 Cards | Card actions row, Recent Activity, section cards, travel notice range calendar; Quick Transfer removed | Merged (`e98de74`) |
 | 3 Insights | Period tabs above the cards, Spending card with left/over chip and breakdown rows, Top Categories, Stitch savings card | Merged (`fa09770`) |
-| 3 Send Money | Payee search and cards, Stitch-order amount step with swap, speed cards with totals, review hero with Edit and Cancel, receipt with copy and new balance | Committed on `redesign/stage-3-send-money` |
+| 3 Send Money | Payee search and cards, Stitch-order amount step with swap, speed cards with totals, review hero with Edit and Cancel, receipt with copy and new balance | Merged (`b37644a`) |
 | 3 Pay Bills and Deposit | | **Next** |
 
 ## 02 Working agreement
@@ -84,21 +84,8 @@ features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md sect
 
 ## 05 Open items
 
-- **Offline sync time (ask at the end of the whole redesign).** `OfflineBanner` can show "Showing data saved at
-  3:14 pm", but no repository records when data last came from the server. Adding that touches the repositories.
-- **Range calendar font.** `AbcDateRangePicker`'s month and day labels use Material's default type, not Plus Jakarta
-  Sans. Theme the Material typography in a later pass (also affects `AbcDatePickerDialog`).
-- **Period tabs clip at 200% font (fix at the end of the overall build, decided 2026-10-25).** `FilterChipRow` shows
-  "Last 30" for "Last 30 Days" at 200%: the label wraps to a second line that is cut off instead of shrinking (it was
-  worse before Insights moved the row out of the card). Likely fix: `softWrap = false` on the label so `autoSize`
-  shrinks it. Affects Transactions too.
-- **Bottom bar labels clip at 200% font.** The selected "Insights" tab reads "Insigh…" at 360dp and 200% (stage 2a bar).
-- **Tab lost after a configuration change.** After changing density and font scale on the emulator while on Insights,
-  Back from Transactions landed on Home instead of Insights. Without the change it returns to Insights. Check whether
-  the tab NavController's state survives activity recreation.
-- **TalkBack on a real phone.** Labels were checked through the accessibility tree; listen once with TalkBack on.
-- **Keypad below the fold on P2P.** With the Stitch order the amount keypad sits under the memo and category chips,
-  so on P2P it needs a scroll on a 1080 x 2400 phone. Chosen by the user; revisit if it feels slow in a demo.
+Items left for the end of the overall build are in docs/END_OF_BUILD_FIXES.md (decided 2026-10-25). Add new ones
+there instead of fixing them inside a screen stage.
 
 ## 06 Prompt to start the next session
 
@@ -106,11 +93,11 @@ Copy this into Claude Code at the start of the next session:
 
 ```text
 We are continuing the Stitch redesign of ABC Bank Mobile. Read AGENTS.md, then docs/REDESIGN_NEXT_STEPS.md
-(where things stand, the working agreement, decisions and open items), docs/STITCH_REVIEW.md section 03, and
+(where things stand, the working agreement and decisions), docs/END_OF_BUILD_FIXES.md, docs/STITCH_REVIEW.md section 03, and
 the Pay Bills and Deposit Check parts of docs/DESIGN_SYSTEM.md (sections 06 and 10) and docs/MobileBuild.md.
 
 Start stage 3, Pay Bills and Deposit Check:
-1. Confirm main is clean and matches GitHub, and that redesign/stage-3-send-money has been merged.
+1. Confirm main is clean and matches GitHub. Read docs/END_OF_BUILD_FIXES.md; add new end-of-build items there.
 2. Look at the Stitch mockups (project 2409467982313725814, rows 21 and 22 of the review) and the current
    bill pay and deposit screens, then ask me about every open choice with your recommendation before changing
    anything.
