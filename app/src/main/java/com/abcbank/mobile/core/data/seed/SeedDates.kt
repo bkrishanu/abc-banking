@@ -24,7 +24,13 @@ internal class SeedDates(private val now: Instant, private val zone: ZoneId) {
         // stay later, by up to 24 seconds, so the list keeps its documented order.
         val endOfDay = seedDay.plusDays(1).atStartOfDay(zone).toInstant()
         val keepOrder = Duration.between(instant, endOfDay).seconds / SECONDS_PER_HOUR
-        return now.minus(FUTURE_TODAY_SHIFT).minusSeconds(keepOrder)
+        val shifted = now.minus(FUTURE_TODAY_SHIFT).minusSeconds(keepOrder)
+        val startOfDay = seedDay.atStartOfDay(zone).toInstant()
+        if (!shifted.isBefore(startOfDay)) return shifted
+        // Seeded in the first minutes after midnight: 10 minutes back would be yesterday, so the
+        // items share the time since midnight instead, in the same order, still on the seed day.
+        val sinceMidnight = Duration.between(startOfDay, now)
+        return now.minus(sinceMidnight.multipliedBy(keepOrder + 1).dividedBy(ORDER_SLOTS))
     }
 
     /** "Oct 29" for day +n. English only: the app has no localisation (PRD section 07). */
@@ -37,6 +43,9 @@ internal class SeedDates(private val now: Instant, private val zone: ZoneId) {
     private companion object {
         val FUTURE_TODAY_SHIFT: Duration = Duration.ofMinutes(10)
         const val SECONDS_PER_HOUR = 3_600L
+
+        // keepOrder runs from 0 to 24, so 26 slots keep every item after midnight.
+        const val ORDER_SLOTS = 26L
         val SHORT_DATE: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d", Locale.US)
         val DATE_TOKEN = Regex("""\{date:([+-]?\d+)\}""")
     }

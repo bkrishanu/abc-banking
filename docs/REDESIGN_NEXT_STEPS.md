@@ -85,7 +85,7 @@ row, Grace's active travel notice banner and the "Due in N Days" chip added; one
 - **Offline sync time (ask at the end of the whole redesign).** `OfflineBanner` can show "Showing data saved at
   3:14 pm", but no repository records when data last came from the server. Adding that touches the repositories, so
   the user wants to decide after all screens are done.
-- **Seed rule for day-0 items (own branch, approved 2026-10-25).** Seeding just after midnight moves every
+- **Seed rule for day-0 items (fixed on `fix/seed-day-zero`, 2026-10-25).** Seeding just after midnight moves every
   later-today item to "10 minutes before now", which can be the previous day (Samanta's day-0 items showed
   "Oct 20, 11:57 pm" because the emulator seeded at about 12:07 am IST). Fix: never move an item before midnight of
   the seed day, and keep the order. Touches the seeding code and DEMO_DATA.md section 01. Reset Demo Data during the

@@ -18,7 +18,7 @@ same commit. Every person, company, bank and number below is fictional.
 
 Dates are relative so the demo always looks current:
 - Every dated item has `dayOffset` (0 = seed day, -1 = yesterday, +9 = nine days ahead) and a local `time`.
-- An item with `dayOffset: 0` whose time is still in the future when the seed runs is moved to 10 minutes before now.
+- An item with `dayOffset: 0` whose time is still in the future when the seed runs is moved to 10 minutes before now, keeping the documented order. It never moves before midnight of the seed day: seeded in the first minutes after midnight, such items share the time since midnight, in order (fixed 2026-10-25).
 - Statements cover the 3 calendar months before the seed month, which the generated history always covers. The 1099-INT is for the previous tax year.
 
 Generated history (revised 2026-10-19):

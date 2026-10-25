@@ -326,6 +326,26 @@ class SeedPlanBuilderTest {
         assertEquals(earlyMorning.minus(51, ChronoUnit.MINUTES), today.getValue("tx-003").createdAt)
     }
 
+    @Test
+    fun `seeded just after midnight, later-today items stay on the seed day in order`() {
+        val justAfterMidnight = LocalDate.of(2026, 10, 21).atTime(0, 7).toInstant(ZoneOffset.UTC)
+        val plan = build(personas.getValue(PersonaId.SAMANTA), now = justAfterMidnight)
+        val byId = transactions(plan).associateBy { it.id }
+        val midnight = LocalDate.of(2026, 10, 21).atStartOfDay().toInstant(ZoneOffset.UTC)
+
+        val boutique = byId.getValue("tx-001").createdAt
+        val furniture = byId.getValue("tx-002").createdAt
+        val helen = byId.getValue("tx-003").createdAt
+        listOf(boutique, furniture, helen).forEach {
+            assertFalse(it.isBefore(midnight))
+            assertTrue(it.isBefore(justAfterMidnight))
+        }
+        assertTrue(helen.isBefore(furniture))
+        assertTrue(furniture.isBefore(boutique))
+        // Yesterday's items stay yesterday, before today's.
+        assertTrue(byId.getValue("tx-004").createdAt.isBefore(midnight))
+    }
+
     private fun forEachPersona(check: (PersonaId, SeedPlan) -> Unit) =
         plans.forEach { (persona, plan) -> check(persona, plan) }
 
