@@ -1,17 +1,24 @@
 package com.abcbank.mobile.feature.payments.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -37,15 +44,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.abcbank.mobile.R
 import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.designsystem.component.AbcButton
+import com.abcbank.mobile.core.designsystem.component.AbcButtonVariant
 import com.abcbank.mobile.core.designsystem.component.AbcTextField
+import com.abcbank.mobile.core.designsystem.component.AdaptiveRow
 import com.abcbank.mobile.core.designsystem.component.AmountKeypad
 import com.abcbank.mobile.core.designsystem.component.ChoiceChip
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.FlowScaffold
 import com.abcbank.mobile.core.designsystem.component.InitialsAvatar
+import com.abcbank.mobile.core.designsystem.component.SummaryRows
 import com.abcbank.mobile.core.designsystem.component.categoryLabel
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.designsystem.theme.TABULAR_FIGURES
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.TransactionCategory
 import com.abcbank.mobile.feature.payments.domain.TransferRules
 import com.abcbank.mobile.feature.payments.domain.TransferSpeed
@@ -134,73 +145,138 @@ private fun AmountForm(
     onPick: (PickerTarget) -> Unit
 ) {
     val spacing = AbcTheme.spacing
-    val colors = AbcTheme.colors
+    // Stitch order: who and from where, the amount, memo and category, then the keypad.
     Column(verticalArrangement = Arrangement.spacedBy(spacing.space4)) {
+        if (content.mode == TransferMode.MOVE) {
+            MoveAccounts(content, events.onSwapAccounts, onPick)
+        } else {
+            content.beneficiary?.let { PayeeCard(it, onChange = events.onBack) }
+            AccountField(
+                label = stringResource(R.string.transfer_from),
+                account = content.source,
+                balancesHidden = content.balancesHidden,
+                onClick = if (content.sources.size > 1) ({ onPick(PickerTarget.SOURCE) }) else null
+            )
+        }
+        AmountDisplay(content)
+        if (content.mode == TransferMode.SEND) {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.space1)) {
+                AbcTextField(
+                    value = content.memo,
+                    onValueChange = events.onMemoChange,
+                    label = stringResource(R.string.transfer_memo),
+                    placeholder = stringResource(R.string.transfer_memo_placeholder),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Done
+                    )
+                )
+                Text(
+                    text = stringResource(
+                        R.string.transfer_memo_count,
+                        content.memo.length,
+                        TransferRules.MAX_MEMO_LENGTH
+                    ),
+                    style = AbcTheme.typography.small,
+                    color = AbcTheme.colors.textMuted,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            CategoryTags(content.category, events.onCategorySelect)
+        }
+        AmountKeypad(
+            onKey = events.onKey,
+            onDelete = events.onDeleteKey,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+/** The chosen payee, with Change back to the recipient list. */
+@Composable
+private fun PayeeCard(payee: Beneficiary, onChange: () -> Unit) {
+    val colors = AbcTheme.colors
+    ContentCard(padding = AbcTheme.spacing.space3) {
+        AdaptiveRow(
+            start = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    InitialsAvatar(payee.name)
+                    Spacer(Modifier.width(AbcTheme.spacing.space3))
+                    Column(Modifier.semantics(mergeDescendants = true) {}) {
+                        Text(
+                            stringResource(R.string.transfer_to),
+                            style = AbcTheme.typography.label,
+                            color = colors.textMuted
+                        )
+                        Text(payee.name, style = AbcTheme.typography.body, color = colors.text)
+                        Text(
+                            stringResource(
+                                R.string.account_name_last4,
+                                payee.bankName,
+                                payee.accountLast4
+                            ),
+                            style = AbcTheme.typography.small,
+                            color = colors.textMuted
+                        )
+                    }
+                }
+            }
+        ) {
+            AbcButton(
+                text = stringResource(R.string.transfer_change),
+                onClick = onChange,
+                variant = AbcButtonVariant.Ghost,
+                modifier = Modifier.width(IntrinsicSize.Max)
+            )
+        }
+    }
+}
+
+/** Between My Accounts: From and To in one card, with a swap button between them. */
+@Composable
+private fun MoveAccounts(
+    content: TransferUiState.Content,
+    onSwap: () -> Unit,
+    onPick: (PickerTarget) -> Unit
+) {
+    val canSwap = content.source != null && content.destination != null
+    ContentCard(padding = AbcTheme.spacing.space3) {
         AccountField(
             label = stringResource(R.string.transfer_from),
             account = content.source,
             balancesHidden = content.balancesHidden,
             onClick = if (content.sources.size > 1) ({ onPick(PickerTarget.SOURCE) }) else null
         )
-        if (content.mode == TransferMode.MOVE) {
-            AccountField(
-                label = stringResource(R.string.transfer_to),
-                account = content.destination,
-                balancesHidden = content.balancesHidden,
-                onClick = if (content.destinations.size >
-                    1
+        if (canSwap) {
+            val swapLabel = stringResource(R.string.cd_swap_accounts)
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                IconButton(
+                    onClick = onSwap,
+                    modifier = Modifier
+                        .size(AbcTheme.dimens.touchTarget)
+                        .semantics { contentDescription = swapLabel }
                 ) {
-                    ({ onPick(PickerTarget.DESTINATION) })
-                } else {
-                    null
-                }
-            )
-        } else {
-            content.beneficiary?.let { payee ->
-                Column(verticalArrangement = Arrangement.spacedBy(spacing.space1)) {
-                    Text(
-                        stringResource(R.string.transfer_to),
-                        style = AbcTheme.typography.small,
-                        color = colors.textMuted
+                    IconCircle(
+                        R.drawable.ic_arrow_up_down,
+                        size = AbcTheme.dimens.iconCircle,
+                        background = AbcTheme.colors.surfaceMuted
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        InitialsAvatar(payee.name)
-                        Spacer(Modifier.width(spacing.space3))
-                        Column {
-                            Text(payee.name, style = AbcTheme.typography.body, color = colors.text)
-                            Text(
-                                stringResource(
-                                    R.string.account_name_last4,
-                                    payee.bankName,
-                                    payee.accountLast4
-                                ),
-                                style = AbcTheme.typography.small,
-                                color = colors.textMuted
-                            )
-                        }
-                    }
                 }
             }
+        } else {
+            Spacer(Modifier.height(AbcTheme.spacing.space3))
         }
-        AmountDisplay(content)
-        AmountKeypad(
-            onKey = events.onKey,
-            onDelete = events.onDeleteKey,
-            modifier = Modifier.fillMaxWidth()
+        AccountField(
+            label = stringResource(R.string.transfer_to),
+            account = content.destination,
+            balancesHidden = content.balancesHidden,
+            onClick = if (content.destinations.size > 1) {
+                ({ onPick(PickerTarget.DESTINATION) })
+            } else {
+                null
+            }
         )
-        if (content.mode == TransferMode.SEND) {
-            AbcTextField(
-                value = content.memo,
-                onValueChange = events.onMemoChange,
-                label = stringResource(R.string.transfer_memo),
-                placeholder = stringResource(R.string.transfer_memo_placeholder),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Done
-                )
-            )
-            CategoryTags(content.category, events.onCategorySelect)
-        }
     }
 }
 
@@ -309,23 +385,27 @@ fun TransferSpeedScreen(
             TransferStatePlaceholder(state, events.onRetry)
             return@FlowScaffold
         }
-        Column(
-            modifier = Modifier.selectableGroup(),
-            verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space3)
-        ) {
-            TransferSpeed.entries.forEach { speed ->
-                val fee = TransferRules.fee(content.amount, speed)
-                SpeedOption(
-                    title = speedLabel(speed),
-                    detail = deliveryText(TransferMode.SEND, speed),
-                    price = if (fee.isPositive) {
-                        stringResource(R.string.transfer_fee_amount, MoneyFormatter.format(fee))
-                    } else {
-                        stringResource(R.string.transfer_fee_free)
-                    },
-                    selected = content.speed == speed,
-                    onClick = { events.onSpeedSelect(speed) }
-                )
+        Column(verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space3)) {
+            SpeedSummary(content)
+            Column(
+                modifier = Modifier.selectableGroup(),
+                verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space3)
+            ) {
+                TransferSpeed.entries.forEach { speed ->
+                    val fee = TransferRules.fee(content.amount, speed)
+                    SpeedOption(
+                        title = speedLabel(speed),
+                        detail = deliveryText(TransferMode.SEND, speed),
+                        price = if (fee.isPositive) {
+                            stringResource(R.string.transfer_fee_amount, MoneyFormatter.format(fee))
+                        } else {
+                            stringResource(R.string.transfer_fee_free)
+                        },
+                        total = MoneyFormatter.format(content.amount + fee),
+                        selected = content.speed == speed,
+                        onClick = { events.onSpeedSelect(speed) }
+                    )
+                }
             }
             Text(
                 text = stringResource(R.string.transfer_fee_rule),
@@ -336,11 +416,26 @@ fun TransferSpeedScreen(
     }
 }
 
+/** From which account, to whom, and how much, above the speed choices (Stitch). */
+@Composable
+private fun SpeedSummary(content: TransferUiState.Content) {
+    val rows = listOfNotNull(
+        content.source?.let {
+            stringResource(R.string.transfer_from) to
+                stringResource(R.string.account_name_last4, it.nickname, it.last4)
+        },
+        content.beneficiary?.let { stringResource(R.string.transfer_to) to it.name },
+        stringResource(R.string.transfer_amount) to MoneyFormatter.format(content.amount)
+    )
+    ContentCard { SummaryRows(rows) }
+}
+
 @Composable
 private fun SpeedOption(
     title: String,
     detail: String,
     price: String,
+    total: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -368,6 +463,27 @@ private fun SpeedOption(
             }
             Spacer(Modifier.width(AbcTheme.spacing.space2))
             Text(price, style = AbcTheme.typography.label, color = colors.text)
+        }
+        Spacer(Modifier.height(AbcTheme.spacing.space3))
+        AdaptiveRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(AbcTheme.shapes.lg)
+                .background(colors.background)
+                .padding(horizontal = AbcTheme.spacing.space4, vertical = AbcTheme.spacing.space3),
+            start = {
+                Text(
+                    stringResource(R.string.transfer_total_deducted),
+                    style = AbcTheme.typography.small,
+                    color = colors.textMuted
+                )
+            }
+        ) {
+            Text(
+                total,
+                style = AbcTheme.typography.body.copy(fontFeatureSettings = TABULAR_FIGURES),
+                color = colors.text
+            )
         }
     }
 }

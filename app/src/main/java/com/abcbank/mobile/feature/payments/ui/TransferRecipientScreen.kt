@@ -1,5 +1,6 @@
 package com.abcbank.mobile.feature.payments.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,11 +12,15 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
@@ -31,14 +36,16 @@ import com.abcbank.mobile.core.designsystem.component.FlowScaffold
 import com.abcbank.mobile.core.designsystem.component.InitialsAvatar
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
 import com.abcbank.mobile.core.designsystem.component.SectionHeader
+import com.abcbank.mobile.core.designsystem.component.StatusBadge
 import com.abcbank.mobile.core.designsystem.component.StepUpSheet
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.feature.payments.domain.PayeeError
+import com.abcbank.mobile.feature.payments.domain.TransferRules
 
 /**
- * Step 1 (MobileBuild.md 3.1 and 3.2): Between My Accounts, then saved payees with recent ones
- * first, and Add New Payee.
+ * Step 1 (MobileBuild.md 3.1 and 3.2): a payee search, Between My Accounts, then saved payees as
+ * cards with recent ones first, and Add New Payee.
  */
 @Composable
 fun TransferRecipientScreen(
@@ -72,15 +79,27 @@ fun TransferRecipientScreen(
             OfflineBanner()
             Spacer(Modifier.height(spacing.space4))
         }
-        ContentCard {
+        var query by rememberSaveable { mutableStateOf("") }
+        AbcTextField(
+            value = query,
+            onValueChange = { query = it },
+            label = stringResource(R.string.transfer_search),
+            placeholder = stringResource(R.string.transfer_search_placeholder),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
+        )
+        Spacer(Modifier.height(spacing.space4))
+        ContentCard(
+            modifier = Modifier
+                .clip(AbcTheme.shapes.xl)
+                .clickable(role = Role.Button, onClick = events.onMoveBetweenAccounts)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = AbcTheme.dimens.touchTarget)
-                    .clickable(role = Role.Button, onClick = events.onMoveBetweenAccounts),
+                    .heightIn(min = AbcTheme.dimens.touchTarget),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconCircle(R.drawable.ic_arrow_left_right)
+                IconCircle(R.drawable.ic_arrow_left_right, emphasized = true)
                 Spacer(Modifier.width(spacing.space3))
                 Column(Modifier.weight(1f)) {
                     Text(
@@ -98,23 +117,26 @@ fun TransferRecipientScreen(
         }
         Spacer(Modifier.height(spacing.space4))
         SectionHeader(title = stringResource(R.string.transfer_saved_payees))
-        if (state.beneficiaries.isEmpty()) {
-            Text(
+        val shown = state.beneficiaries.filter { TransferRules.matchesPayee(it, query) }
+        when {
+            state.beneficiaries.isEmpty() -> Text(
                 text = stringResource(R.string.transfer_no_payees),
                 style = AbcTheme.typography.body,
                 color = AbcTheme.colors.textMuted
             )
-        } else {
-            ContentCard(padding = spacing.space2) {
-                state.beneficiaries.forEachIndexed { index, payee ->
-                    if (index > 0) HorizontalDivider(color = AbcTheme.colors.border)
-                    PayeeRow(payee) { events.onSendTo(payee.id) }
-                }
+            shown.isEmpty() -> Text(
+                text = stringResource(R.string.transfer_no_match),
+                style = AbcTheme.typography.body,
+                color = AbcTheme.colors.textMuted
+            )
+            else -> Column(verticalArrangement = Arrangement.spacedBy(spacing.space2)) {
+                shown.forEach { payee -> PayeeRow(payee) { events.onSendTo(payee.id) } }
             }
         }
     }
 }
 
+/** One payee card: initials, name, bank and last 4, and a Recent badge. */
 @Composable
 private fun PayeeRow(payee: Beneficiary, onClick: () -> Unit) {
     val spacing = AbcTheme.spacing
@@ -122,8 +144,10 @@ private fun PayeeRow(payee: Beneficiary, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = AbcTheme.dimens.touchTarget)
+            .clip(AbcTheme.shapes.xl)
+            .background(AbcTheme.colors.surface)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(spacing.space2),
+            .padding(spacing.space3),
         verticalAlignment = Alignment.CenterVertically
     ) {
         InitialsAvatar(payee.name)
@@ -141,11 +165,8 @@ private fun PayeeRow(payee: Beneficiary, onClick: () -> Unit) {
             )
         }
         if (payee.isRecent) {
-            Text(
-                text = stringResource(R.string.transfer_recent),
-                style = AbcTheme.typography.small,
-                color = AbcTheme.colors.textMuted
-            )
+            Spacer(Modifier.width(spacing.space2))
+            StatusBadge(stringResource(R.string.transfer_recent))
         }
     }
 }

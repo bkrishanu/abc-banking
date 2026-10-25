@@ -126,6 +126,8 @@ private fun navigation(
             leave()
             onViewTransaction(id)
         },
-        onDone = { leave() }
+        onDone = { leave() },
+        onEdit = { navController.popBackStack<TransferAmountStep>(inclusive = false) },
+        onCancel = { leave() }
     )
 }

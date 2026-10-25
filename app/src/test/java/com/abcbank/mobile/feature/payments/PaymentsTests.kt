@@ -209,6 +209,16 @@ class TransferRulesTest {
     }
 
     @Test
+    fun `payee search matches the name or bank in any case, and blank matches all`() {
+        assertTrue(TransferRules.matchesPayee(MARK, ""))
+        assertTrue(TransferRules.matchesPayee(MARK, "  "))
+        assertTrue(TransferRules.matchesPayee(MARK, "robin"))
+        assertTrue(TransferRules.matchesPayee(MARK, "NORTHFIELD"))
+        assertFalse(TransferRules.matchesPayee(OAKWOOD, "mark"))
+        assertTrue(TransferRules.matchesPayee(OAKWOOD, " summit "))
+    }
+
+    @Test
     fun `short names keep the first name and last initial`() {
         assertEquals("Jordan E.", TransferRules.shortName("  Jordan  Ellis "))
         assertEquals("Cher", TransferRules.shortName("Cher"))
@@ -494,6 +504,27 @@ class TransferViewModelTest {
     }
 
     @Test
+    fun `swap trades From and To between own accounts`() = runTest {
+        val viewModel = viewModel()
+        viewModel.uiState.test {
+            awaitItem()
+            load()
+            awaitItem()
+            viewModel.onMoveBetweenAccounts()
+            testScheduler.runCurrent()
+            val before = expectMostRecentItem() as TransferUiState.Content
+            assertEquals("checking", before.source?.id)
+            assertEquals("savings", before.destination?.id)
+
+            viewModel.onSwapAccounts()
+            testScheduler.runCurrent()
+            val after = expectMostRecentItem() as TransferUiState.Content
+            assertEquals("savings", after.source?.id)
+            assertEquals("checking", after.destination?.id)
+        }
+    }
+
+    @Test
     fun `a send over $1,000 waits for the MPIN, then shows the receipt`() = runTest {
         val viewModel = viewModel()
         viewModel.uiState.test {
@@ -522,6 +553,7 @@ class TransferViewModelTest {
             assertEquals(plan.reference, receipt?.reference)
             assertEquals(plan.mainTransactionId, receipt?.transactionId)
             assertEquals("Mark Robinson", receipt?.recipient)
+            assertEquals("checking", receipt?.sourceAccountId)
 
             // A second confirm on the receipt does nothing.
             viewModel.onConfirm()

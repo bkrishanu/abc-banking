@@ -2,6 +2,7 @@ package com.abcbank.mobile.feature.payments.domain
 
 import com.abcbank.mobile.core.model.Account
 import com.abcbank.mobile.core.model.AccountType
+import com.abcbank.mobile.core.model.Beneficiary
 import com.abcbank.mobile.core.model.DepositAccount
 import com.abcbank.mobile.core.model.LoanAccount
 import com.abcbank.mobile.core.model.Money
@@ -22,6 +23,17 @@ enum class PayeeError {
 
 /** Money movement rules (MobileBuild.md 3.1 and 3.2, PRD section 08, DEMO_DATA.md section 07). */
 object TransferRules {
+    /** A P2P memo is optional and at most this long (MobileBuild.md 3.2). */
+    const val MAX_MEMO_LENGTH = 60
+
+    /** Choose Recipient's search: blank matches every payee; otherwise the name or bank, any case. */
+    fun matchesPayee(payee: Beneficiary, query: String): Boolean {
+        val text = query.trim()
+        return text.isEmpty() ||
+            payee.name.contains(text, ignoreCase = true) ||
+            payee.bankName.contains(text, ignoreCase = true)
+    }
+
     private val FEE_MINIMUM = Money(25)
     private val FEE_MAXIMUM = Money.ofDollars(15)
     private const val FEE_BASIS_POINTS = 150L

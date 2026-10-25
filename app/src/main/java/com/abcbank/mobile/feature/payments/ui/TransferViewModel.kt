@@ -112,11 +112,21 @@ class TransferViewModel @Inject constructor(
 
     fun onSelectDestination(accountId: String) = editDraft { it.copy(destinationId = accountId) }
 
+    /** Between My Accounts: From and To trade places. Every account here can do both. */
+    fun onSwapAccounts() {
+        val content = latest ?: return
+        val source = content.source ?: return
+        val destination = content.destination ?: return
+        editDraft { it.copy(sourceId = destination.id, destinationId = source.id) }
+    }
+
     fun onKey(key: Char) = editDraft { it.copy(amount = it.amount.press(key)) }
 
     fun onDeleteKey() = editDraft { it.copy(amount = it.amount.delete()) }
 
-    fun onMemoChange(memo: String) = editDraft { it.copy(memo = memo.take(MAX_MEMO)) }
+    fun onMemoChange(memo: String) = editDraft {
+        it.copy(memo = memo.take(TransferRules.MAX_MEMO_LENGTH))
+    }
 
     fun onCategorySelect(category: TransactionCategory?) = editDraft {
         it.copy(category = category)
@@ -258,6 +268,7 @@ class TransferViewModel @Inject constructor(
                         recipient = content.beneficiary?.name
                             ?: content.destination?.let(TransferPlanner::label).orEmpty(),
                         source = content.source?.let(TransferPlanner::label).orEmpty(),
+                        sourceAccountId = content.source?.id,
                         reference = result.plan.reference,
                         transactionId = result.plan.mainTransactionId,
                         speed = content.speed
@@ -367,7 +378,7 @@ class TransferViewModel @Inject constructor(
             runCatching { TransferSpeed.valueOf(it) }.getOrNull()
         }
             ?: TransferSpeed.STANDARD,
-        memo = savedStateHandle.get<String>(KEY_MEMO).orEmpty().take(MAX_MEMO),
+        memo = savedStateHandle.get<String>(KEY_MEMO).orEmpty().take(TransferRules.MAX_MEMO_LENGTH),
         category = savedStateHandle.get<String>(KEY_CATEGORY)?.let {
             runCatching { TransactionCategory.valueOf(it) }.getOrNull()
         }
@@ -388,7 +399,6 @@ class TransferViewModel @Inject constructor(
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
-        const val MAX_MEMO = 60
         const val ROUTING_LENGTH = 9
         const val MAX_ACCOUNT_DIGITS = 17
         val ORDER = listOf(AccountType.CHECKING, AccountType.SAVINGS, AccountType.LOAN)

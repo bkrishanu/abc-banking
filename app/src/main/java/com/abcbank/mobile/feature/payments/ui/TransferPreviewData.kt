@@ -57,6 +57,7 @@ internal object TransferPreviewData {
         fee = Money.ZERO,
         recipient = "Mark Robinson",
         source = "Everyday Checking ••3144",
+        sourceAccountId = "checking",
         reference = "7c1e9a52-4b0d-4f3e-9d61-2a8f5b3c7e10",
         transactionId = "transfer-7c1e9a52-4b0d-4f3e-9d61-2a8f5b3c7e10",
         speed = TransferSpeed.STANDARD

@@ -71,6 +71,8 @@ data class TransferReceipt(
     val fee: Money,
     val recipient: String,
     val source: String,
+    /** The From account, whose new balance the receipt shows from live data. */
+    val sourceAccountId: String? = null,
     val reference: String,
     val transactionId: String,
     val speed: TransferSpeed

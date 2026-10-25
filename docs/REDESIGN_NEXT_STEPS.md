@@ -9,7 +9,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 
 ## 01 Where things stand
 
-`main` is pushed and matches GitHub. No open branches.
+`main` is pushed and matches GitHub. Open branch: `redesign/stage-3-send-money` (committed, waiting for review).
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -24,7 +24,8 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 | Seed fix | Later-today seed items stay on the seed day when seeded just after midnight | Merged (`cfbff05`) |
 | 3 Cards | Card actions row, Recent Activity, section cards, travel notice range calendar; Quick Transfer removed | Merged (`e98de74`) |
 | 3 Insights | Period tabs above the cards, Spending card with left/over chip and breakdown rows, Top Categories, Stitch savings card | Merged (`fa09770`) |
-| 3 Send Money | | **Next** |
+| 3 Send Money | Payee search and cards, Stitch-order amount step with swap, speed cards with totals, review hero with Edit and Cancel, receipt with copy and new balance | Committed on `redesign/stage-3-send-money` |
+| 3 Pay Bills and Deposit | | **Next** |
 
 ## 02 Working agreement
 
@@ -49,8 +50,8 @@ One branch per tab or flow, in this order. Each uses the row for that screen in 
 1. ~~Home~~ (done)
 2. ~~Cards~~ (done)
 3. ~~Insights~~ (done)
-4. **Send Money flow** (next) (recipient, add payee, amount, speed, review, receipt) and Between My Accounts
-5. Pay Bills and Deposit Check
+4. ~~Send Money flow~~ (done)
+5. **Pay Bills and Deposit Check** (next) (recipient, add payee, amount, speed, review, receipt) and Between My Accounts
 6. Transactions and Transaction Detail
 7. Notifications, Statements and Documents, Help and Support
 8. Explore Products and the application flow
@@ -75,6 +76,10 @@ features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md sect
   Spending card follows Stitch (left/over chip, large total, donut showing the budget %, breakdown rows); Top
   Categories shows the period's 4 biggest categories with their 2 biggest merchants and a share bar; the Savings card
   follows Stitch (% Reached chip, amount of target, progress panel, then the chart). Dropped: the AI insight card.
+- Send Money: payee search (name or bank); payee cards with a Recent badge; the amount step in Stitch order with the
+  keypad last (it needs a scroll on P2P); swap between own accounts; speed cards each with Total Deducted; Review with
+  Edit Transfer Details and Cancel Transfer under the card; Receipt with Copy for the reference and the From account's
+  new balance. Not added: sharing the receipt from the Receipt step. Add New Payee keeps "Step 1 of 5".
 - Badges use an opaque tint, a tone dot and the label in `text` (warning text on its own tint fails AA).
 
 ## 05 Open items
@@ -92,9 +97,8 @@ features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md sect
   Back from Transactions landed on Home instead of Insights. Without the change it returns to Insights. Check whether
   the tab NavController's state survives activity recreation.
 - **TalkBack on a real phone.** Labels were checked through the accessibility tree; listen once with TalkBack on.
-- **Add New Payee shows "Step 1 of 5"** in its screenshot test. Check whether that is intended (Send Money stage).
-- Payees without a short name (Grace's) are cut to one line with an ellipsis in payee rows; the seed has no
-  `shortName` for them. Raise it if it shows in the Send Money stage.
+- **Keypad below the fold on P2P.** With the Stitch order the amount keypad sits under the memo and category chips,
+  so on P2P it needs a scroll on a 1080 x 2400 phone. Chosen by the user; revisit if it feels slow in a demo.
 
 ## 06 Prompt to start the next session
 
@@ -103,14 +107,15 @@ Copy this into Claude Code at the start of the next session:
 ```text
 We are continuing the Stitch redesign of ABC Bank Mobile. Read AGENTS.md, then docs/REDESIGN_NEXT_STEPS.md
 (where things stand, the working agreement, decisions and open items), docs/STITCH_REVIEW.md section 03, and
-the Send Money parts of docs/DESIGN_SYSTEM.md (sections 06 and 10) and docs/MobileBuild.md (transfers).
+the Pay Bills and Deposit Check parts of docs/DESIGN_SYSTEM.md (sections 06 and 10) and docs/MobileBuild.md.
 
-Start stage 3, Send Money (recipient, add payee, amount, speed, review, receipt) and Between My Accounts:
-1. Confirm main is clean and matches GitHub.
-2. Look at the Stitch mockups (project 2409467982313725814, rows 14 to 20 of the review) and the current
-   transfer screens, then ask me about every open choice with your recommendation before changing anything.
+Start stage 3, Pay Bills and Deposit Check:
+1. Confirm main is clean and matches GitHub, and that redesign/stage-3-send-money has been merged.
+2. Look at the Stitch mockups (project 2409467982313725814, rows 21 and 22 of the review) and the current
+   bill pay and deposit screens, then ask me about every open choice with your recommendation before changing
+   anything.
 3. List the files you expect to touch and wait for my go-ahead.
-4. Build it on redesign/stage-3-send-money, run the five checks, look at every golden, check all four personas
+4. Build it on redesign/stage-3-pay-bills, run the five checks, look at every golden, check all four personas
    on the emulator (also 360dp at 200% font and balances hidden), update the docs, commit, and stop for review.
 Do not push or merge until I ask.
 ```

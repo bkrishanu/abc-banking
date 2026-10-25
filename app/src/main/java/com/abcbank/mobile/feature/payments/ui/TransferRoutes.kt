@@ -15,7 +15,11 @@ data class TransferNavigation(
     val onReview: () -> Unit,
     val onReceipt: () -> Unit,
     val onViewTransaction: (String) -> Unit,
-    val onDone: () -> Unit
+    val onDone: () -> Unit,
+    /** Back to the amount step from Review. */
+    val onEdit: () -> Unit = {},
+    /** Leave the flow without sending. */
+    val onCancel: () -> Unit = {}
 )
 
 @Composable
@@ -42,6 +46,7 @@ private fun rememberEvents(
         onSavePayee = viewModel::onSavePayee,
         onSelectSource = viewModel::onSelectSource,
         onSelectDestination = viewModel::onSelectDestination,
+        onSwapAccounts = viewModel::onSwapAccounts,
         onKey = viewModel::onKey,
         onDeleteKey = viewModel::onDeleteKey,
         onMemoChange = viewModel::onMemoChange,
@@ -49,6 +54,8 @@ private fun rememberEvents(
         onSpeedSelect = viewModel::onSpeedSelect,
         onContinue = onContinue,
         onConfirm = viewModel::onConfirm,
+        onEdit = navigation.onEdit,
+        onCancel = navigation.onCancel,
         onViewTransaction = navigation.onViewTransaction,
         onDone = navigation.onDone,
         onStepUpDigit = viewModel::onStepUpDigit,

@@ -264,6 +264,21 @@
     <string name="transfer_between_accounts">Between My Accounts</string>
     <string name="transfer_between_accounts_hint">Checking, savings and line of credit</string>
     <string name="transfer_saved_payees">Saved Payees</string>
+    <string name="transfer_search">Search Payees</string>
+    <string name="transfer_search_placeholder">Name or bank</string>
+    <string name="transfer_no_match">No payees match your search.</string>
+    <string name="transfer_change">Change</string>
+    <string name="transfer_memo_count">%1$d/%2$d</string>
+    <string name="cd_swap_accounts">Swap From and To</string>
+    <string name="transfer_total_deducted">Total Deducted</string>
+    <string name="transfer_edit">Edit Transfer Details</string>
+    <string name="transfer_cancel">Cancel Transfer</string>
+    <string name="transfer_money_sent">Money Sent</string>
+    <string name="transfer_money_moved">Money Moved</string>
+    <string name="transfer_new_balance">New Balance</string>
+    <string name="action_copy">Copy</string>
+    <string name="cd_copy_reference">Copy reference</string>
+    <string name="transfer_reference_copied">Reference copied.</string>
     <string name="transfer_recent">Recent</string>
     <string name="transfer_no_payees">No saved payees yet. Add one to send money.</string>
     <string name="transfer_error">Your accounts could not be loaded. Try again.</string>
@@ -314,7 +329,6 @@
     <string name="transfer_fee_amount">%1$s fee</string>
     <string name="transfer_fee_rule" formatted="false">Instant fee is 1.5% of the amount, at least $0.25 and at most $15.00.</string>
     <string name="transfer_review_title">Review Transfer</string>
-    <string name="transfer_total">Total</string>
     <string name="transfer_amount">Amount</string>
     <string name="transfer_payee_line">%1$s, %2$s ••%3$s</string>
     <string name="action_confirm_transfer">Confirm Transfer</string>
@@ -322,8 +336,6 @@
     <string name="transfer_disclaimer_title">Before You Send</string>
     <string name="transfer_disclaimer_text">Check the payee and amount. Once sent, a transfer cannot be cancelled. Standard transfers arrive in 1 to 2 business days; Instant transfers usually arrive within minutes. This is a demo: no real money moves.</string>
     <string name="action_agree_and_send">Agree and Send</string>
-    <string name="transfer_receipt_sent">Transfer Sent</string>
-    <string name="transfer_receipt_moved">Money Moved</string>
     <string name="transfer_receipt_to">Sent to %1$s</string>
     <string name="transfer_receipt_to_account">Moved to %1$s</string>
     <string name="transfer_reference">Reference</string>

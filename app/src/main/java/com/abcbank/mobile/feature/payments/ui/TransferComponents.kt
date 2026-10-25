@@ -60,6 +60,7 @@ data class TransferEvents(
     val onSavePayee: () -> Unit = {},
     val onSelectSource: (String) -> Unit = {},
     val onSelectDestination: (String) -> Unit = {},
+    val onSwapAccounts: () -> Unit = {},
     val onKey: (Char) -> Unit = {},
     val onDeleteKey: () -> Unit = {},
     val onMemoChange: (String) -> Unit = {},
@@ -67,6 +68,10 @@ data class TransferEvents(
     val onSpeedSelect: (TransferSpeed) -> Unit = {},
     val onContinue: () -> Unit = {},
     val onConfirm: () -> Unit = {},
+    /** Review: back to the amount step with everything kept. */
+    val onEdit: () -> Unit = {},
+    /** Review: leave the flow; nothing has been sent. */
+    val onCancel: () -> Unit = {},
     val onViewTransaction: (String) -> Unit = {},
     val onDone: () -> Unit = {},
     val onStepUpDigit: (Int) -> Unit = {},
@@ -134,9 +139,9 @@ internal fun AccountField(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = AbcTheme.dimens.textFieldHeight)
-                .clip(AbcTheme.shapes.sm)
+                .clip(AbcTheme.shapes.md)
                 .background(colors.surface)
-                .border(AbcTheme.dimens.borderWidth, colors.border, AbcTheme.shapes.sm)
+                .border(AbcTheme.dimens.borderWidth, colors.border, AbcTheme.shapes.md)
                 .then(
                     if (onClick !=
                         null
@@ -264,19 +269,21 @@ internal fun IconCircle(
     modifier: Modifier = Modifier,
     size: Dp = AbcTheme.dimens.iconCircle,
     iconSize: Dp = AbcTheme.dimens.iconMedium,
-    background: Color = AbcTheme.colors.surfaceMuted
+    background: Color = AbcTheme.colors.surfaceMuted,
+    /** Primary fill with an onPrimary icon, for the main choice on a screen. */
+    emphasized: Boolean = false
 ) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(size)
             .clip(AbcTheme.shapes.full)
-            .background(background)
+            .background(if (emphasized) AbcTheme.colors.primary else background)
     ) {
         Icon(
             painter = painterResource(icon),
             contentDescription = null,
-            tint = AbcTheme.colors.text,
+            tint = if (emphasized) AbcTheme.colors.onPrimary else AbcTheme.colors.text,
             modifier = Modifier.size(iconSize)
         )
     }
