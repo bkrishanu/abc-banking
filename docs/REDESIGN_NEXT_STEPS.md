@@ -9,7 +9,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 
 ## 01 Where things stand
 
-`main` is pushed and matches GitHub. Open branch: `redesign/stage-3-pay-bills` (committed, waiting for review).
+`main` is pushed and matches GitHub. No open branches.
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 | 3 Cards | Card actions row, Recent Activity, section cards, travel notice range calendar; Quick Transfer removed | Merged (`e98de74`) |
 | 3 Insights | Period tabs above the cards, Spending card with left/over chip and breakdown rows, Top Categories, Stitch savings card | Merged (`fa09770`) |
 | 3 Send Money | Payee search and cards, Stitch-order amount step with swap, speed cards with totals, review hero with Edit and Cancel, receipt with copy and new balance | Merged (`b37644a`) |
-| 3 Pay Bills and Deposit | Total Due summary, bill cards with due badges, Recently Paid, deposit keypad panel, image rows, availability note | Committed on `redesign/stage-3-pay-bills` |
+| 3 Pay Bills and Deposit | Total Due summary, bill cards with due badges, Recently Paid, deposit keypad panel, image rows, availability note | Merged (`0fb6fd9`) |
 | 3 Transactions | | **Next** |
 
 ## 02 Working agreement
@@ -101,7 +101,7 @@ We are continuing the Stitch redesign of ABC Bank Mobile. Read AGENTS.md, then d
 the Transactions parts of docs/DESIGN_SYSTEM.md (sections 06 and 10) and docs/MobileBuild.md 2.2.
 
 Start stage 3, Transactions and Transaction Detail:
-1. Confirm main is clean and matches GitHub, and that redesign/stage-3-pay-bills has been merged. Read
+1. Confirm main is clean and matches GitHub. Read
    docs/END_OF_BUILD_FIXES.md; add new end-of-build items there.
 2. Look at the Stitch mockups (project 2409467982313725814, rows 23 and 24 of the review, and 41 for offline)
    and the current transaction screens, then ask me about every open choice with your recommendation before
