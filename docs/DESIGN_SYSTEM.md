@@ -182,7 +182,7 @@ Buttons (`AbcButton`)
 | Danger | danger | onPrimary | Destructive actions, always confirm first (Freeze card, Dispute) |
 
 - Height 56dp, full width, radius-full (a pill, stage 2b, 2026-10-25), Body 600. No outline on any variant.
-- States: pressed (primary lightens to `primaryPressed` #185352), disabled (40% alpha), focused (2dp accent ring for keyboard/D-pad).
+- States: pressed (primary lightens to `primaryPressed` #185352), disabled (40% alpha), focused (a 2dp ring for keyboard/D-pad, drawn inside the pill: accent on Primary, primary on Secondary and Ghost, onPrimary on Danger, so it reaches 3:1).
 - Loading: a 20dp progress indicator replaces the label; width stays fixed; taps are ignored.
 
 Action pills

@@ -72,6 +72,12 @@ fun AbcButton(
         AbcButtonVariant.Secondary -> colors.accentDeep
         AbcButtonVariant.Ghost -> colors.text
     }
+    // The ring is drawn inside the pill, so it must reach 3:1 against the button's own fill.
+    val focusRing = when (variant) {
+        AbcButtonVariant.Primary -> colors.accent
+        AbcButtonVariant.Secondary, AbcButtonVariant.Ghost -> colors.primary
+        AbcButtonVariant.Danger -> colors.onPrimary
+    }
     val loadingLabel = stringResource(R.string.button_loading)
 
     Box(
@@ -83,11 +89,7 @@ fun AbcButton(
             .background(container)
             .then(
                 if (focused) {
-                    Modifier.border(
-                        dimens.focusRingWidth,
-                        colors.accent,
-                        shape
-                    )
+                    Modifier.border(dimens.focusRingWidth, focusRing, shape)
                 } else {
                     Modifier
                 }
