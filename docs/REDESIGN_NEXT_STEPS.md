@@ -9,7 +9,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 
 ## 01 Where things stand
 
-`main` is pushed and matches GitHub. Open branch: `redesign/stage-3-insights` (committed, waiting for review).
+`main` is pushed and matches GitHub. No open branches.
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -23,7 +23,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 | 3 Home | Hidden-balances and travel notice banners, balance card with account and low balance warning, one card per account | Merged (`3349757`) |
 | Seed fix | Later-today seed items stay on the seed day when seeded just after midnight | Merged (`cfbff05`) |
 | 3 Cards | Card actions row, Recent Activity, section cards, travel notice range calendar; Quick Transfer removed | Merged (`e98de74`) |
-| 3 Insights | Period tabs above the cards, Spending card with left/over chip and breakdown rows, Top Categories, Stitch savings card | Committed on `redesign/stage-3-insights` |
+| 3 Insights | Period tabs above the cards, Spending card with left/over chip and breakdown rows, Top Categories, Stitch savings card | Merged (`fa09770`) |
 | 3 Send Money | | **Next** |
 
 ## 02 Working agreement
@@ -83,9 +83,10 @@ features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md sect
   3:14 pm", but no repository records when data last came from the server. Adding that touches the repositories.
 - **Range calendar font.** `AbcDateRangePicker`'s month and day labels use Material's default type, not Plus Jakarta
   Sans. Theme the Material typography in a later pass (also affects `AbcDatePickerDialog`).
-- **Period tabs clip at 200% font.** `FilterChipRow` shows "Last 30" for "Last 30 Days" at 200%: the label wraps
-  to a second line that is cut off instead of shrinking (it was worse before Insights moved the row out of the card).
-  Likely fix: `softWrap = false` on the label so `autoSize` shrinks it. Affects Transactions too. Ask before fixing.
+- **Period tabs clip at 200% font (fix at the end of the overall build, decided 2026-10-25).** `FilterChipRow` shows
+  "Last 30" for "Last 30 Days" at 200%: the label wraps to a second line that is cut off instead of shrinking (it was
+  worse before Insights moved the row out of the card). Likely fix: `softWrap = false` on the label so `autoSize`
+  shrinks it. Affects Transactions too.
 - **Bottom bar labels clip at 200% font.** The selected "Insights" tab reads "Insigh…" at 360dp and 200% (stage 2a bar).
 - **Tab lost after a configuration change.** After changing density and font scale on the emulator while on Insights,
   Back from Transactions landed on Home instead of Insights. Without the change it returns to Insights. Check whether
@@ -105,7 +106,7 @@ We are continuing the Stitch redesign of ABC Bank Mobile. Read AGENTS.md, then d
 the Send Money parts of docs/DESIGN_SYSTEM.md (sections 06 and 10) and docs/MobileBuild.md (transfers).
 
 Start stage 3, Send Money (recipient, add payee, amount, speed, review, receipt) and Between My Accounts:
-1. Confirm main is clean and matches GitHub, and that redesign/stage-3-insights has been merged.
+1. Confirm main is clean and matches GitHub.
 2. Look at the Stitch mockups (project 2409467982313725814, rows 14 to 20 of the review) and the current
    transfer screens, then ask me about every open choice with your recommendation before changing anything.
 3. List the files you expect to touch and wait for my go-ahead.
