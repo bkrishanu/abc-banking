@@ -1,15 +1,15 @@
 # Redesign: Next Steps
 
 <!--
-Hand-over for the Stitch redesign of ABC Bank Mobile. First written 2026-10-24 (end of stage 2a), rewritten
-2026-10-25 at the end of the day (Home, Cards and the seed fix merged). Read with docs/STITCH_REVIEW.md (decisions
+Hand-over for the Stitch redesign of ABC Bank Mobile. First written 2026-10-24 (end of stage 2a), last updated
+2026-10-25 at the end of the day (Home through Transactions merged). Read with docs/STITCH_REVIEW.md (decisions
 and the screen-by-screen checklist) and docs/DESIGN_SYSTEM.md (current tokens, components and screen layouts).
 Update this file as stages finish. Section 06 is the prompt to start the next session with.
 -->
 
 ## 01 Where things stand
 
-`main` is pushed and matches GitHub. Open branch: `redesign/stage-3-transactions` (committed, waiting for review).
+`main` is pushed and matches GitHub. No open branches.
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -26,8 +26,28 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 | 3 Insights | Period tabs above the cards, Spending card with left/over chip and breakdown rows, Top Categories, Stitch savings card | Merged (`fa09770`) |
 | 3 Send Money | Payee search and cards, Stitch-order amount step with swap, speed cards with totals, review hero with Edit and Cancel, receipt with copy and new balance | Merged (`b37644a`) |
 | 3 Pay Bills and Deposit | Total Due summary, bill cards with due badges, Recently Paid, deposit keypad panel, image rows, availability note | Merged (`0fb6fd9`) |
-| 3 Transactions | Tab counts, range and category chips, one card per transaction with its category, group counts, offline search hint; detail with badges and tinted rows | Committed on `redesign/stage-3-transactions` |
+| 3 Transactions | Tab counts, range and category chips, one card per transaction with its category, group counts, offline search hint; detail with badges and tinted rows | Merged (`2fcdafc`) |
 | 3 Notifications, Documents, Support | | **Next** |
+
+### What is left
+
+Screens (stage 3), in order, one branch each; the review rows are in docs/STITCH_REVIEW.md section 03:
+
+| # | Screens | Review rows | Branch |
+| --- | --- | --- | --- |
+| 7 | Notifications, Statements and Documents, Help and Support | 25, 28, 29 | `redesign/stage-3-notifications` |
+| 8 | Explore Products and the application flow | 26, 27 | `redesign/stage-3-products` |
+| 9 | Welcome, Login, Lock, Step-up sheet | 1, 3, 4, 5 | `redesign/stage-3-auth` |
+| 10 | More Actions sheet | 8 | `redesign/stage-3-more-actions` |
+| 11 | Profile | 30 | `redesign/stage-3-profile` |
+
+After the screens:
+- The end-of-build fixes in docs/END_OF_BUILD_FIXES.md (8 items, including the offline sync time decision), one
+  branch per fix or small group, asking before each.
+- A final pass over every screen with all four personas, 360dp at 200% font, balances hidden and offline, and
+  TalkBack on a real phone.
+- Update docs/STITCH_REVIEW.md to mark the redesign done, and refresh the sample screen map in
+  docs/DESIGN_SYSTEM.md section 10 if needed.
 
 ## 02 Working agreement
 
@@ -55,10 +75,11 @@ One branch per tab or flow, in this order. Each uses the row for that screen in 
 4. ~~Send Money flow~~ (done)
 5. ~~Pay Bills and Deposit Check~~ (done)
 6. ~~Transactions and Transaction Detail~~ (done)
-7. **Notifications, Statements and Documents, Help and Support** (next) (recipient, add payee, amount, speed, review, receipt) and Between My Accounts
+7. **Notifications, Statements and Documents, Help and Support** (next)
 8. Explore Products and the application flow
 9. Welcome, Login, Lock, Step-up sheet
-10. Profile
+10. More Actions sheet
+11. Profile
 
 Never carry over from the mockups: real brands or regulatory claims, contact photos, concierge or private banker
 features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md section 02.
@@ -106,8 +127,7 @@ the Notifications, Documents and Support parts of docs/DESIGN_SYSTEM.md (section
 docs/MobileBuild.md.
 
 Start stage 3, Notifications, Statements and Documents, Help and Support:
-1. Confirm main is clean and matches GitHub, and that redesign/stage-3-transactions has been merged. Read
-   docs/END_OF_BUILD_FIXES.md; add new end-of-build items there.
+1. Confirm main is clean and matches GitHub. Read docs/END_OF_BUILD_FIXES.md; add new end-of-build items there.
 2. Look at the Stitch mockups (project 2409467982313725814, rows 25, 28 and 29 of the review) and the current
    screens, then ask me about every open choice with your recommendation before changing anything.
 3. List the files you expect to touch and wait for my go-ahead.
