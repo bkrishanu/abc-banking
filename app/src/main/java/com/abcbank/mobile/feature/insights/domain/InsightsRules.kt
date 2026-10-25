@@ -15,6 +15,8 @@ object InsightsRules {
     /** Money moved to people or own accounts is not spending; tagged P2P payments are. */
     private val NOT_SPENDING = setOf(TransactionCategory.TRANSFER, TransactionCategory.TRANSFER_OUT)
     private const val NAMED_SLICES = 2
+    private const val TOP_CATEGORIES = 4
+    private const val TOP_MERCHANTS = 2
     private const val PERCENT = 100L
     private const val DAYS_IN_WINDOW = 30L
     private const val DAYS_PER_WEEK = 7L
@@ -40,7 +42,8 @@ object InsightsRules {
 
     /**
      * Spending in [period] by category: the two largest categories, then everything else as
-     * Other (DEMO_DATA.md: top two plus Other). Ties go to the category listed first.
+     * Other (DEMO_DATA.md: top two plus Other), and the four largest as Top Categories with their
+     * two biggest merchants. Ties go to the category listed first, then the merchant name.
      */
     fun spending(
         transactions: List<Transaction>,
@@ -50,8 +53,9 @@ object InsightsRules {
         zone: ZoneId
     ): SpendingSummary {
         val range = range(period, today)
-        val byCategory = transactions
+        val inPeriod = transactions
             .filter { isSpending(it) && it.createdAt.atZone(zone).toLocalDate() in range }
+        val byCategory = inPeriod
             .groupBy { it.category }
             .mapValues { (_, items) -> Money(items.sumOf { it.amount.cents }) }
             .entries
@@ -81,7 +85,25 @@ object InsightsRules {
             total = total,
             budget = budget,
             percentOfBudget = percent(total, budget),
-            slices = slices
+            slices = slices,
+            topCategories = byCategory.take(TOP_CATEGORIES).map { (category, amount) ->
+                TopCategory(
+                    category = category,
+                    amount = amount,
+                    percentOfSpending = percent(amount, total),
+                    merchants = inPeriod
+                        .filter { it.category == category }
+                        .groupBy { it.merchant }
+                        .mapValues { (_, items) -> items.sumOf { it.amount.cents } }
+                        .entries
+                        .sortedWith(
+                            compareByDescending<Map.Entry<String, Long>> { it.value }
+                                .thenBy { it.key }
+                        )
+                        .take(TOP_MERCHANTS)
+                        .map { it.key }
+                )
+            }
         )
     }
 

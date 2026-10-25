@@ -123,7 +123,9 @@ fun MainTabs(
                         CardsNavigation(onAccount = navigation.onAccount)
                     )
                 }
-                composable<InsightsTab> { InsightsRoute() }
+                composable<InsightsTab> {
+                    InsightsRoute(onViewAllTransactions = navigation.onViewAllTransactions)
+                }
                 composable<ProfileTab> {
                     ProfileRoute(
                         onBack = null,

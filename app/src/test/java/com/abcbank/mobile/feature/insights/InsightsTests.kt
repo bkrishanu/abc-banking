@@ -45,13 +45,14 @@ private fun spend(
     cents: Long,
     daysAgo: Long,
     direction: TransactionDirection = TransactionDirection.DEBIT,
-    status: TransactionStatus = TransactionStatus.POSTED
+    status: TransactionStatus = TransactionStatus.POSTED,
+    merchant: String = id
 ) = Transaction(
     id = id,
     accountId = "checking",
     direction = direction,
     amount = Money(cents),
-    merchant = id,
+    merchant = merchant,
     category = category,
     reference = id,
     runningBalance = Money.ZERO,
@@ -143,6 +144,54 @@ class InsightsRulesTest {
         )
         assertEquals(Money.ZERO, empty.total)
         assertTrue(empty.slices.isEmpty())
+    }
+
+    @Test
+    fun `top categories are the four biggest with their two biggest merchants`() {
+        val transactions = listOf(
+            spend("a", TransactionCategory.SHOPPING, 30_000, 1, merchant = "Northwind"),
+            spend("b", TransactionCategory.SHOPPING, 12_500, 2, merchant = "Aster & Vine"),
+            spend("c", TransactionCategory.SHOPPING, 20_000, 3, merchant = "Aster & Vine"),
+            spend("d", TransactionCategory.SHOPPING, 5_000, 4, merchant = "Corner Shop"),
+            spend("e", TransactionCategory.DINING, 20_000, 1, merchant = "Olive & Ember"),
+            spend("f", TransactionCategory.TRAVEL, 15_000, 1, merchant = "SkyWays"),
+            spend("g", TransactionCategory.HEALTH, 10_000, 1, merchant = "Tony's Gym"),
+            spend("h", TransactionCategory.UTILITIES, 2_500, 1, merchant = "Volt Mobile")
+        )
+        val top = InsightsRules.spending(
+            transactions,
+            Money(100_000),
+            SpendingPeriod.LAST_30_DAYS,
+            TODAY,
+            UTC
+        ).topCategories
+
+        assertEquals(
+            listOf(
+                TransactionCategory.SHOPPING,
+                TransactionCategory.DINING,
+                TransactionCategory.TRAVEL,
+                TransactionCategory.HEALTH
+            ),
+            top.map { it.category }
+        )
+        assertEquals(listOf("Aster & Vine", "Northwind"), top.first().merchants)
+        assertEquals(Money(67_500), top.first().amount)
+        assertEquals(59, top.first().percentOfSpending)
+    }
+
+    @Test
+    fun `remaining is what is left of the budget, negative when over`() {
+        fun remaining(spent: Long) = InsightsRules.spending(
+            listOf(spend("a", TransactionCategory.SHOPPING, spent, 1)),
+            Money(100_000),
+            SpendingPeriod.LAST_30_DAYS,
+            TODAY,
+            UTC
+        ).remaining
+
+        assertEquals(Money(40_000), remaining(60_000))
+        assertEquals(Money(-25_000), remaining(125_000))
     }
 
     @Test

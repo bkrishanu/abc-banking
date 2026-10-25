@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -26,8 +24,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -39,17 +40,22 @@ import com.abcbank.mobile.core.common.DataError
 import com.abcbank.mobile.core.common.DateFormatter
 import com.abcbank.mobile.core.common.MoneyFormatter
 import com.abcbank.mobile.core.designsystem.component.AdaptiveRow
+import com.abcbank.mobile.core.designsystem.component.BadgeTone
+import com.abcbank.mobile.core.designsystem.component.CategoryIcon
 import com.abcbank.mobile.core.designsystem.component.ChartLabel
 import com.abcbank.mobile.core.designsystem.component.ContentCard
 import com.abcbank.mobile.core.designsystem.component.DonutChart
 import com.abcbank.mobile.core.designsystem.component.DonutSegment
 import com.abcbank.mobile.core.designsystem.component.ErrorState
 import com.abcbank.mobile.core.designsystem.component.FilterChipRow
-import com.abcbank.mobile.core.designsystem.component.LegendChip
 import com.abcbank.mobile.core.designsystem.component.LineChart
 import com.abcbank.mobile.core.designsystem.component.LocalBottomBarClearance
 import com.abcbank.mobile.core.designsystem.component.OfflineBanner
+import com.abcbank.mobile.core.designsystem.component.RateChip
+import com.abcbank.mobile.core.designsystem.component.RateTone
+import com.abcbank.mobile.core.designsystem.component.SectionHeader
 import com.abcbank.mobile.core.designsystem.component.SkeletonBlock
+import com.abcbank.mobile.core.designsystem.component.StatusBadge
 import com.abcbank.mobile.core.designsystem.component.TitleTopBar
 import com.abcbank.mobile.core.designsystem.component.categoryLabel
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
@@ -60,17 +66,22 @@ import com.abcbank.mobile.feature.insights.domain.InsightsRules
 import com.abcbank.mobile.feature.insights.domain.SavingsSummary
 import com.abcbank.mobile.feature.insights.domain.SpendingPeriod
 import com.abcbank.mobile.feature.insights.domain.SpendingSummary
+import com.abcbank.mobile.feature.insights.domain.TopCategory
 import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun InsightsRoute(viewModel: InsightsViewModel = hiltViewModel()) {
+fun InsightsRoute(
+    onViewAllTransactions: () -> Unit = {},
+    viewModel: InsightsViewModel = hiltViewModel()
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     InsightsScreen(
         state = state,
         onPeriodSelect = viewModel::onPeriodSelect,
         onPointSelect = viewModel::onPointSelect,
-        onRetry = viewModel::onRetry
+        onRetry = viewModel::onRetry,
+        onViewAllTransactions = onViewAllTransactions
     )
 }
 
@@ -85,7 +96,8 @@ fun InsightsScreen(
     onPeriodSelect: (SpendingPeriod) -> Unit,
     onPointSelect: (Int) -> Unit,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onViewAllTransactions: () -> Unit = {}
 ) {
     val spacing = AbcTheme.spacing
     Column(
@@ -136,8 +148,19 @@ fun InsightsScreen(
                     OfflineBanner()
                     Spacer(Modifier.height(spacing.space4))
                 }
-                SpendingCard(state.spending, state.balancesHidden, onPeriodSelect)
+                // The period drives Spending and Top Categories; the savings goal has its own timeline.
+                FilterChipRow(
+                    options = PERIODS.map { periodLabel(it) },
+                    selectedIndex = PERIODS.indexOf(state.period),
+                    onSelect = { onPeriodSelect(PERIODS[it]) }
+                )
                 Spacer(Modifier.height(spacing.space4))
+                SpendingCard(state.spending, state.balancesHidden)
+                if (state.spending.topCategories.isNotEmpty()) {
+                    Spacer(Modifier.height(spacing.space6))
+                    TopCategories(state.spending, state.balancesHidden, onViewAllTransactions)
+                }
+                Spacer(Modifier.height(spacing.space6))
                 state.savings?.let {
                     SavingsCard(it, state.selectedPoint, state.balancesHidden, onPointSelect)
                 } ?: ContentCard {
@@ -156,44 +179,36 @@ fun InsightsScreen(
 private val PERIODS =
     listOf(SpendingPeriod.LAST_30_DAYS, SpendingPeriod.THIS_MONTH, SpendingPeriod.LAST_MONTH)
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SpendingCard(
-    summary: SpendingSummary,
-    hidden: Boolean,
-    onPeriodSelect: (SpendingPeriod) -> Unit
-) {
+private fun SpendingCard(summary: SpendingSummary, hidden: Boolean) {
     val spacing = AbcTheme.spacing
     val colors = AbcTheme.colors
     val sliceColors = listOf(colors.accent, colors.accentDeep, colors.positive)
     ContentCard {
-        // At large font sizes the dates move under the title instead of breaking it.
+        // At large font sizes the chip moves under the title instead of breaking it.
         AdaptiveRow(
             start = {
-                Text(
-                    text = stringResource(R.string.insights_spending),
-                    style = AbcTheme.typography.h3,
-                    color = colors.text,
-                    modifier = Modifier.semantics { heading() }
-                )
+                Column {
+                    Text(
+                        text = stringResource(R.string.insights_spending),
+                        style = AbcTheme.typography.h3,
+                        color = colors.text,
+                        modifier = Modifier.semantics { heading() }
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.insights_date_range,
+                            DateFormatter.shortDate(summary.start),
+                            DateFormatter.shortDate(summary.end)
+                        ),
+                        style = AbcTheme.typography.small,
+                        color = colors.textMuted
+                    )
+                }
             }
         ) {
-            Text(
-                text = stringResource(
-                    R.string.insights_date_range,
-                    DateFormatter.shortDate(summary.start),
-                    DateFormatter.shortDate(summary.end)
-                ),
-                style = AbcTheme.typography.small,
-                color = colors.textMuted
-            )
+            BudgetChip(summary, hidden)
         }
-        Spacer(Modifier.height(spacing.space3))
-        FilterChipRow(
-            options = PERIODS.map { periodLabel(it) },
-            selectedIndex = PERIODS.indexOf(summary.period),
-            onSelect = { onPeriodSelect(PERIODS[it]) }
-        )
         Spacer(Modifier.height(spacing.space4))
         if (!summary.total.isPositive) {
             Text(
@@ -203,14 +218,25 @@ private fun SpendingCard(
             )
             return@ContentCard
         }
+        val total = money(summary.total, hidden)
+        val budget = money(summary.budget, hidden)
+        Text(
+            text = total,
+            style = AbcTheme.typography.h1.copy(fontFeatureSettings = TABULAR_FIGURES),
+            color = colors.text
+        )
+        Text(
+            text = stringResource(R.string.insights_of_budget, budget),
+            style = AbcTheme.typography.small,
+            color = colors.textMuted
+        )
+        Spacer(Modifier.height(spacing.space4))
         val labels = summary.slices.map { slice ->
             slice.category?.let { categoryLabel(it) }
                 ?: stringResource(R.string.insights_other)
         }
         // The ring is the budget; spending past it fills the ring.
         val ring = maxOf(summary.budget.cents, summary.total.cents).toFloat()
-        val total = money(summary.total, hidden)
-        val budget = money(summary.budget, hidden)
         val description = stringResource(
             R.string.cd_spending_donut,
             total,
@@ -233,44 +259,163 @@ private fun SpendingCard(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = total,
+                    text = stringResource(R.string.insights_percent, summary.percentOfBudget),
                     style = AbcTheme.typography.h2.copy(fontFeatureSettings = TABULAR_FIGURES),
                     color = colors.text,
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = stringResource(R.string.insights_of_budget, budget),
+                    text = stringResource(R.string.insights_budget_used),
                     style = AbcTheme.typography.small,
                     color = colors.textMuted,
                     textAlign = TextAlign.Center
                 )
-                Spacer(Modifier.height(spacing.space2))
-                Text(
-                    text = stringResource(R.string.insights_percent, summary.percentOfBudget),
-                    style = AbcTheme.typography.label,
-                    color = colors.text,
-                    modifier = Modifier
-                        .clip(AbcTheme.shapes.full)
-                        .background(colors.surfaceMuted)
-                        .padding(horizontal = spacing.space3, vertical = spacing.space1)
-                )
             }
         }
         Spacer(Modifier.height(spacing.space4))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(spacing.space2),
-            verticalArrangement = Arrangement.spacedBy(spacing.space2)
-        ) {
-            labels.forEachIndexed { index, label ->
-                LegendChip(
-                    label,
-                    sliceColors[index % sliceColors.size],
-                    background = colors.background
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.space2)) {
+            summary.slices.forEachIndexed { index, slice ->
+                SliceRow(
+                    label = labels[index],
+                    color = sliceColors[index % sliceColors.size],
+                    percent = slice.percentOfSpending,
+                    amount = money(slice.amount, hidden, cents = true)
                 )
             }
         }
     }
 }
+
+/** "$6,420 Left" while under budget, "Over by $X" in warning past it. */
+@Composable
+private fun BudgetChip(summary: SpendingSummary, hidden: Boolean) {
+    val over = summary.remaining.isNegative
+    val amount = money(summary.remaining.absoluteValue(), hidden)
+    StatusBadge(
+        text = stringResource(
+            if (over) R.string.insights_over_budget else R.string.insights_left,
+            amount
+        ),
+        tone = if (over) BadgeTone.Warning else BadgeTone.Neutral
+    )
+}
+
+/** A breakdown row under the donut: the segment's colour dot, name, share and amount. */
+@Composable
+private fun SliceRow(label: String, color: Color, percent: Int, amount: String) {
+    val colors = AbcTheme.colors
+    AdaptiveRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(AbcTheme.shapes.lg)
+            .background(colors.background)
+            .padding(horizontal = AbcTheme.spacing.space4, vertical = AbcTheme.spacing.space3)
+            .semantics(mergeDescendants = true) {},
+        start = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(AbcTheme.dimens.unreadDot)
+                        .clip(AbcTheme.shapes.full)
+                        .background(color)
+                )
+                Spacer(Modifier.width(AbcTheme.spacing.space3))
+                Column {
+                    Text(label, style = AbcTheme.typography.body, color = colors.text)
+                    Text(
+                        text = stringResource(R.string.insights_share, percent),
+                        style = AbcTheme.typography.small,
+                        color = colors.textMuted
+                    )
+                }
+            }
+        }
+    ) {
+        Text(
+            text = amount,
+            style = AbcTheme.typography.body.copy(fontFeatureSettings = TABULAR_FIGURES),
+            color = colors.text
+        )
+    }
+}
+
+/** The period's biggest categories with their biggest merchants and a bar for their share. */
+@Composable
+private fun TopCategories(summary: SpendingSummary, hidden: Boolean, onViewAll: () -> Unit) {
+    SectionHeader(
+        title = stringResource(R.string.insights_top_categories),
+        actionLabel = stringResource(R.string.action_view_all),
+        onAction = onViewAll
+    )
+    ContentCard {
+        Column(verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space4)) {
+            summary.topCategories.forEach { TopCategoryRow(it, hidden) }
+        }
+    }
+}
+
+@Composable
+private fun TopCategoryRow(top: TopCategory, hidden: Boolean) {
+    val colors = AbcTheme.colors
+    val spacing = AbcTheme.spacing
+    Column(Modifier.semantics(mergeDescendants = true) {}) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CategoryIcon(top.category, incoming = false)
+            Spacer(Modifier.width(spacing.space3))
+            AdaptiveRow(
+                modifier = Modifier.weight(1f),
+                start = {
+                    Column {
+                        Text(
+                            text = categoryLabel(top.category),
+                            style = AbcTheme.typography.body,
+                            color = colors.text
+                        )
+                        if (top.merchants.isNotEmpty()) {
+                            Text(
+                                text = top.merchants.joinToString(", "),
+                                style = AbcTheme.typography.small,
+                                color = colors.textMuted
+                            )
+                        }
+                    }
+                }
+            ) {
+                Text(
+                    text = money(top.amount, hidden, cents = true),
+                    style = AbcTheme.typography.body.copy(fontFeatureSettings = TABULAR_FIGURES),
+                    color = colors.text
+                )
+            }
+        }
+        Spacer(Modifier.height(spacing.space2))
+        ShareBar(top.percentOfSpending)
+    }
+}
+
+/** A thin bar for a share of spending; TalkBack reads the share as text instead. */
+@Composable
+private fun ShareBar(percent: Int) {
+    val share = stringResource(R.string.insights_share, percent)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(AbcTheme.dimens.progressBarHeight)
+            .clip(AbcTheme.shapes.full)
+            .background(AbcTheme.colors.surfaceMuted)
+            .clearAndSetSemantics { contentDescription = share }
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth(percent.coerceIn(0, PERCENT_MAX) / PERCENT_MAX.toFloat())
+                .height(AbcTheme.dimens.progressBarHeight)
+                .clip(AbcTheme.shapes.full)
+                .background(AbcTheme.colors.primary)
+        )
+    }
+}
+
+private const val PERCENT_MAX = 100
 
 @Composable
 private fun SavingsCard(
@@ -282,18 +427,64 @@ private fun SavingsCard(
     val spacing = AbcTheme.spacing
     val colors = AbcTheme.colors
     val goal = summary.goal
+    val reached = InsightsRules.percent(goal.saved, goal.target)
     ContentCard {
+        AdaptiveRow(
+            start = {
+                Column {
+                    Text(
+                        text = stringResource(R.string.insights_savings_goal),
+                        style = AbcTheme.typography.label,
+                        color = colors.textMuted
+                    )
+                    Text(
+                        text = goal.name,
+                        style = AbcTheme.typography.h3,
+                        color = colors.text,
+                        modifier = Modifier.semantics { heading() }
+                    )
+                }
+            }
+        ) {
+            RateChip(stringResource(R.string.insights_reached, reached), RateTone.Earn)
+        }
+        Spacer(Modifier.height(spacing.space3))
         Text(
-            text = money(goal.saved, hidden),
+            text = money(goal.saved, hidden, cents = true),
             style = AbcTheme.typography.h1.copy(fontFeatureSettings = TABULAR_FIGURES),
             color = colors.text
         )
         Text(
-            text = stringResource(R.string.insights_saved_so_far),
+            text = stringResource(
+                R.string.insights_of_target,
+                money(goal.target, hidden, cents = true)
+            ),
             style = AbcTheme.typography.small,
             color = colors.textMuted
         )
-        Spacer(Modifier.height(spacing.space2))
+        Spacer(Modifier.height(spacing.space3))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(AbcTheme.shapes.md)
+                .background(colors.positiveTint)
+                .padding(spacing.space3)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_smile),
+                contentDescription = null,
+                tint = colors.positiveText,
+                modifier = Modifier.size(AbcTheme.dimens.iconMedium)
+            )
+            Spacer(Modifier.width(spacing.space3))
+            Text(
+                text = progressText(summary.progress),
+                style = AbcTheme.typography.small,
+                color = colors.text
+            )
+        }
+        Spacer(Modifier.height(spacing.space4))
         val point = summary.points.getOrNull(selected)
         val labels = monthLabels(summary)
         LineChart(
@@ -309,46 +500,6 @@ private fun SavingsCard(
             ),
             onSelect = onPointSelect
         )
-        Spacer(Modifier.height(spacing.space4))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(AbcTheme.dimens.iconCircle)
-                    .clip(AbcTheme.shapes.full)
-                    .background(colors.surfaceMuted)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_smile),
-                    contentDescription = null,
-                    tint = colors.positiveText,
-                    modifier = Modifier.size(AbcTheme.dimens.iconMedium)
-                )
-            }
-            Spacer(Modifier.width(spacing.space3))
-            Column(Modifier.weight(1f)) {
-                Text(goal.name, style = AbcTheme.typography.body, color = colors.text)
-                Text(
-                    text = stringResource(
-                        R.string.insights_goal_line,
-                        money(goal.saved, hidden),
-                        money(goal.target, hidden),
-                        progressText(summary.progress)
-                    ),
-                    style = AbcTheme.typography.small,
-                    color = colors.textMuted
-                )
-            }
-            Spacer(Modifier.width(spacing.space2))
-            Text(
-                text = stringResource(
-                    R.string.insights_percent,
-                    InsightsRules.percent(goal.saved, goal.target)
-                ),
-                style = AbcTheme.typography.label,
-                color = colors.text
-            )
-        }
     }
 }
 
@@ -371,8 +522,11 @@ private fun monthLabels(summary: SavingsSummary): List<ChartLabel> {
 
 private const val LABEL_SPACING = 4
 
-private fun money(amount: Money, hidden: Boolean): String =
-    if (hidden) AMOUNT_MASK else MoneyFormatter.formatWhole(amount)
+private fun money(amount: Money, hidden: Boolean, cents: Boolean = false): String = when {
+    hidden -> AMOUNT_MASK
+    cents -> MoneyFormatter.format(amount)
+    else -> MoneyFormatter.formatWhole(amount)
+}
 
 @Composable
 private fun periodLabel(period: SpendingPeriod): String = stringResource(

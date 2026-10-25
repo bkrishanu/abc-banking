@@ -51,7 +51,22 @@ data class SpendingSummary(
     val budget: Money,
     /** Total as a share of the budget, rounded; can pass 100. */
     val percentOfBudget: Int,
-    val slices: List<SpendingSlice>
+    val slices: List<SpendingSlice>,
+    /** The biggest categories, largest first (Top Categories). */
+    val topCategories: List<TopCategory> = emptyList()
+) {
+    /** Budget minus total: what is left, or negative when over budget. */
+    val remaining: Money get() = Money(budget.cents - total.cents)
+}
+
+/** A Top Categories row: the category, its spending and share, and its biggest merchants. */
+data class TopCategory(
+    val category: TransactionCategory,
+    val amount: Money,
+    /** Share of all spending in the period, rounded to whole percent. */
+    val percentOfSpending: Int,
+    /** Up to two merchants with the most spending in the category, largest first. */
+    val merchants: List<String>
 )
 
 enum class GoalProgress { REACHED, ALMOST, HALFWAY, STARTED }

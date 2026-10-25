@@ -9,7 +9,7 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 
 ## 01 Where things stand
 
-`main` is pushed and matches GitHub. No open branches.
+`main` is pushed and matches GitHub. Open branch: `redesign/stage-3-insights` (committed, waiting for review).
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -23,7 +23,8 @@ Update this file as stages finish. Section 06 is the prompt to start the next se
 | 3 Home | Hidden-balances and travel notice banners, balance card with account and low balance warning, one card per account | Merged (`3349757`) |
 | Seed fix | Later-today seed items stay on the seed day when seeded just after midnight | Merged (`cfbff05`) |
 | 3 Cards | Card actions row, Recent Activity, section cards, travel notice range calendar; Quick Transfer removed | Merged (`e98de74`) |
-| 3 Insights | | **Next** |
+| 3 Insights | Period tabs above the cards, Spending card with left/over chip and breakdown rows, Top Categories, Stitch savings card | Committed on `redesign/stage-3-insights` |
+| 3 Send Money | | **Next** |
 
 ## 02 Working agreement
 
@@ -47,10 +48,8 @@ One branch per tab or flow, in this order. Each uses the row for that screen in 
 
 1. ~~Home~~ (done)
 2. ~~Cards~~ (done)
-3. **Insights** (next). Stitch row 13: take period tabs, the donut against the budget, the savings line chart and top
-   categories with progress bars. Drop the 5-slot bar, merged categories, the AI insight card (v2) and all-caps labels.
-   Insights already has `TitleTopBar` and the shared bell (stage 2a), and charts in `Charts.kt`.
-4. Send Money flow (recipient, add payee, amount, speed, review, receipt) and Between My Accounts
+3. ~~Insights~~ (done)
+4. **Send Money flow** (next) (recipient, add payee, amount, speed, review, receipt) and Between My Accounts
 5. Pay Bills and Deposit Check
 6. Transactions and Transaction Detail
 7. Notifications, Statements and Documents, Help and Support
@@ -72,6 +71,10 @@ features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md sect
 - Cards: Stitch's card actions (Details, Freeze, Limits, Wallet) replace Send, Deposit and More, the Freeze switch
   card, the Show Card Details button and the Google Wallet card; Recent Activity shows the card account's 3 newest
   transactions from the last 30 days; the travel notice sheet uses a range calendar (`AbcDateRangePicker`).
+- Insights: the period tabs sit above both cards and drive Spending and Top Categories (not the savings goal); the
+  Spending card follows Stitch (left/over chip, large total, donut showing the budget %, breakdown rows); Top
+  Categories shows the period's 4 biggest categories with their 2 biggest merchants and a share bar; the Savings card
+  follows Stitch (% Reached chip, amount of target, progress panel, then the chart). Dropped: the AI insight card.
 - Badges use an opaque tint, a tone dot and the label in `text` (warning text on its own tint fails AA).
 
 ## 05 Open items
@@ -80,6 +83,13 @@ features, biometrics, invented data. The full list is docs/STITCH_REVIEW.md sect
   3:14 pm", but no repository records when data last came from the server. Adding that touches the repositories.
 - **Range calendar font.** `AbcDateRangePicker`'s month and day labels use Material's default type, not Plus Jakarta
   Sans. Theme the Material typography in a later pass (also affects `AbcDatePickerDialog`).
+- **Period tabs clip at 200% font.** `FilterChipRow` shows "Last 30" for "Last 30 Days" at 200%: the label wraps
+  to a second line that is cut off instead of shrinking (it was worse before Insights moved the row out of the card).
+  Likely fix: `softWrap = false` on the label so `autoSize` shrinks it. Affects Transactions too. Ask before fixing.
+- **Bottom bar labels clip at 200% font.** The selected "Insights" tab reads "Insigh…" at 360dp and 200% (stage 2a bar).
+- **Tab lost after a configuration change.** After changing density and font scale on the emulator while on Insights,
+  Back from Transactions landed on Home instead of Insights. Without the change it returns to Insights. Check whether
+  the tab NavController's state survives activity recreation.
 - **TalkBack on a real phone.** Labels were checked through the accessibility tree; listen once with TalkBack on.
 - **Add New Payee shows "Step 1 of 5"** in its screenshot test. Check whether that is intended (Send Money stage).
 - Payees without a short name (Grace's) are cut to one line with an ellipsis in payee rows; the seed has no
@@ -92,14 +102,14 @@ Copy this into Claude Code at the start of the next session:
 ```text
 We are continuing the Stitch redesign of ABC Bank Mobile. Read AGENTS.md, then docs/REDESIGN_NEXT_STEPS.md
 (where things stand, the working agreement, decisions and open items), docs/STITCH_REVIEW.md section 03, and
-the Insights parts of docs/DESIGN_SYSTEM.md (sections 06 and 10).
+the Send Money parts of docs/DESIGN_SYSTEM.md (sections 06 and 10) and docs/MobileBuild.md (transfers).
 
-Start stage 3, Insights:
-1. Confirm main is clean and matches GitHub.
-2. Look at the Stitch Insights mockup (project 2409467982313725814, row 13 of the review) and the current
-   InsightsScreen, then ask me about every open choice with your recommendation before changing anything.
+Start stage 3, Send Money (recipient, add payee, amount, speed, review, receipt) and Between My Accounts:
+1. Confirm main is clean and matches GitHub, and that redesign/stage-3-insights has been merged.
+2. Look at the Stitch mockups (project 2409467982313725814, rows 14 to 20 of the review) and the current
+   transfer screens, then ask me about every open choice with your recommendation before changing anything.
 3. List the files you expect to touch and wait for my go-ahead.
-4. Build it on redesign/stage-3-insights, run the five checks, look at every golden, check all four personas
+4. Build it on redesign/stage-3-send-money, run the five checks, look at every golden, check all four personas
    on the emulator (also 360dp at 200% font and balances hidden), update the docs, commit, and stop for review.
 Do not push or merge until I ask.
 ```

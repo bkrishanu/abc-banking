@@ -7,6 +7,7 @@ import com.abcbank.mobile.feature.insights.domain.SavingsGoal
 import com.abcbank.mobile.feature.insights.domain.SpendingPeriod
 import com.abcbank.mobile.feature.insights.domain.SpendingSlice
 import com.abcbank.mobile.feature.insights.domain.SpendingSummary
+import com.abcbank.mobile.feature.insights.domain.TopCategory
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -26,6 +27,28 @@ internal object InsightsPreviewData {
             SpendingSlice(TransactionCategory.SHOPPING, Money(462_000), 37),
             SpendingSlice(TransactionCategory.ENTERTAINMENT, Money(262_000), 21),
             SpendingSlice(null, Money(524_000), 42)
+        ),
+        // The four biggest of DEMO_DATA.md's last-30-day targets, with seeded merchants.
+        topCategories = listOf(
+            TopCategory(
+                TransactionCategory.SHOPPING,
+                Money(462_000),
+                37,
+                listOf("Northwind Furniture", "Aster & Vine Boutique")
+            ),
+            TopCategory(
+                TransactionCategory.ENTERTAINMENT,
+                Money(262_000),
+                21,
+                listOf("Melody Live Tickets", "Cineplex Grand")
+            ),
+            TopCategory(
+                TransactionCategory.DINING,
+                Money(185_931),
+                15,
+                listOf("Olive & Ember", "Bluebird Coffee")
+            ),
+            TopCategory(TransactionCategory.TRAVEL, Money(166_000), 13, listOf("SkyWays Airlines"))
         )
     )
 
