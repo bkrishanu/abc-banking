@@ -54,6 +54,12 @@ Tokens live in `core/designsystem/theme/Color.kt` and are read via `AbcTheme.col
 | color-primary-pressed | `primaryPressed` | #185352 | Pressed state of primary buttons (section 06) |
 | color-shadow | `shadow` | #1A0E3E3D | Ambient and spot shadow of floating elements, teal-tinted (section 05) |
 | color-card-scrim | `cardScrim` | #33000000 | Bottom of card art, fading up to transparent, so white text stays readable |
+| color-accent-tint | `accentTint` | #F7E9E3 | Secondary button fill: Stitch's 12% terracotta tint, made opaque over background (stage 2b, 2026-10-25) |
+| color-warning-tint | `warningTint` | #F6EAE1 | Warning `StatusBadge` fill: 12% warning over surface |
+| color-danger-tint | `dangerTint` | #F7E4E4 | Danger `StatusBadge` fill: 12% danger over surface |
+
+The tints are opaque so a badge stays readable on card art. `accentDeep` on `accentTint` is 5.4:1; badge labels stay in
+`text`, because `warning` on `warningTint` is only 4.3:1.
 
 Contrast adjustments to the Stitch theme (2026-10-24). Stitch values that fail WCAG AA were replaced with the nearest
 passing shade from the same palette:
@@ -146,19 +152,15 @@ Layout:
 
 Tokens in `core/designsystem/theme/Shape.kt`.
 
-| Token | Value | Use |
-| --- | --- | --- |
 Radii follow the Stitch scale (sm 8, DEFAULT 16, md 24, lg 32), one step larger than v1 (2026-10-24):
 
 | Token | Value | Stitch | Use |
 | --- | --- | --- | --- |
-| radius-sm | 8dp | sm | Inputs, small tags, chart value labels |
-| radius-md | 16dp | DEFAULT | Full-width buttons (Get Started), keypad keys |
+| radius-sm | 8dp | sm | Small tags, chart value labels, document pages |
+| radius-md | 16dp | DEFAULT | Text fields, image tiles, small panels |
 | radius-lg | 24dp | md | Bank cards, feature tiles |
 | radius-xl | 32dp | lg | Content cards (transactions panel, chart cards), bottom sheets (top corners), Home balance header |
-| radius-full | 50% | full | Pills, chips, avatars, icon circles, bottom bar |
-
-Stitch draws buttons and text fields as pills and 16dp rectangles; those component changes come in stage 2.
+| radius-full | 50% | full | Buttons, keypad keys, pills, chips, badges, avatars, icon circles |
 
 Elevation: one level only, for floating elements: bottom bar, the pill action
 row that overlaps the Home header, the card-stack tag, the Welcome card stack, bottom sheets.
@@ -175,11 +177,11 @@ Buttons (`AbcButton`)
 | Variant | Background | Content | Use |
 | --- | --- | --- | --- |
 | Primary | primary | onPrimary | One per screen, the main action (Get Started, Confirm Transfer) |
-| Secondary | surface | text, 1dp border | Supporting actions (Download receipt) |
+| Secondary | accentTint | accentDeep | Supporting actions (Download Receipt) |
 | Ghost | transparent | text | Low emphasis (View All, Filter) |
 | Danger | danger | onPrimary | Destructive actions, always confirm first (Freeze card, Dispute) |
 
-- Height 56dp, full width, radius-md, Body 500.
+- Height 56dp, full width, radius-full (a pill, stage 2b, 2026-10-25), Body 600. No outline on any variant.
 - States: pressed (primary lightens to `primaryPressed` #185352), disabled (40% alpha), focused (2dp accent ring for keyboard/D-pad).
 - Loading: a 20dp progress indicator replaces the label; width stays fixed; taps are ignored.
 
@@ -199,7 +201,7 @@ Choice chips (`ChoiceChip`, 2026-10-20)
 
 Cards and lists
 - `ContentCard`: surface, radius-xl, padding space-4 (space-5 for charts).
-- `AbcWordmark`: the dotted mark plus "abcbank" in H2 (H3 on card art). Mark is 1.2x the text size, space-2 before the text, so it follows font scale. Tone Brand: mark and "abc" in card-sage end #0E3E3D, "bank" in text. Tone OnCard: all white. Read by TalkBack as "ABC Bank".
+- `AbcWordmark`: the dotted mark plus "abcbank" in H2 (H3 on card art). Mark is 1.2x the text size, space-2 before the text, so it follows font scale. Tone Brand (stage 2b): the mark in accent (a graphic, so terracotta is allowed), "abc" in primary, "bank" in text. Tone OnCard: all white. Read by TalkBack as "ABC Bank".
 - `BankCardArt`: the card face only. 1.586 aspect ratio, radius-lg, card-art gradient with the drawn `Ribbons` or `Waves` pattern (section 02), an optional EMV chip tinted with the card's own tones (left, 38% down, 14% of the card width), and an optional `cardScrim` fading up from the bottom edge. Content slot for text. `BankCardView` builds on it. `AbcWordmark` tone `OnLightCard` (all `text` colour) is for the peach face.
 - `BankCardView`: 1.586 aspect ratio, radius-lg, card art, contactless and network icons top-left, balance, holder name, expiry, last four. Stacked cards peek 24dp below one another. Optional tag (`CardTag`, primary pill, "Main card").
   Built 2026-10-20: Lucide `nfc` plus two rings for Mastercard or "VISA" in Label; a Danger `StatusBadge` "Frozen" next to the marks (the top-right corner belongs to the tag); "Balance" in Small over `BalanceText` in H1; while revealed, the full number in Mono and "CVV 314" in place of "•••• 3144". Text is dark on card-peach, white elsewhere. At large font scales the face grows taller (it keeps the ratio as a minimum) and the expiry and number move under the name.
@@ -209,7 +211,7 @@ Cards and lists
 - `ProfileAvatar`: the signed-in persona's photo (`avatar_{personaId}`) cropped to a circle with `ContentScale.Crop`; 32dp in `AbcTopBar`, 72dp on the lock screen and Profile. Falls back to initials on surfaceMuted. Decorative next to the name (contentDescription null), otherwise "Profile photo". Add contact is a 48dp accent circle with a plus.
 - `FeatureTile`: 140 x 120dp, radius-lg, surface, illustration top, Body title bottom.
 - `SectionHeader`: H3 title left, Ghost "View All" or "Filter" with icon right. "View All" is underlined Small muted.
-- `StatusBadge`: Small label in a radius-full pill (Pending, Frozen, Scheduled) on surface with a 1dp outline in the tone colour: Neutral textMuted, Warning (Disputed), Danger (Frozen).
+- `StatusBadge` (stage 2b, 2026-10-25, Stitch "• Posted"): a 6dp tone dot, space-1, and a Small label in `text`, in a radius-full pill (Pending, Frozen, Scheduled). Neutral: textMuted dot on surfaceMuted. Warning (Disputed): warning dot on warningTint. Danger (Frozen): danger dot on dangerTint. The word carries the meaning, so colour is never the only signal.
 - `TransactionLeadingIcon`: picks `InitialsAvatar` for people (Transfer in/out) or `CategoryIcon` for businesses; Home and the ledger share it. `categoryLabel()` gives each category's Title Case name.
 - `AdaptiveRow`: a label on the start side and an amount on the end side (account and transaction rows). Side by side when the amount fits unwrapped and no word of the label has to break; otherwise the amount moves below the label, end-aligned, so money never splits across lines at 200% font scale.
 - `CategoryIcon`: the `TransactionRow` leading circle for businesses: accent fill for money out, positive fill for money in, Lucide category icon in `text` colour (white on accent fails contrast). People (Transfer in/out) get `InitialsAvatar` instead: 40dp, initials in Label on surfaceMuted.
@@ -221,8 +223,8 @@ Navigation
 - Flows that leave the tabs (transfer, bill pay, applications) hide the bottom bar and show a back arrow and step indicator ("Step 2 of 5") with a step progress bar (`FlowScaffold`).
 
 Inputs
-- `AbcTextField`: 56dp, surface, radius-sm, 1dp border, label always visible above (Small muted). Placeholder is a hint, never the label. Error: border danger, message below in Small danger.
-- `AmountKeypad` and `MpinPad`: 3 x 4 grid of 64dp keys, radius-md, H1 digits; MPIN shows 6 dots that fill as digits are entered. Keys are 64dp tall, a third of the pad width each, 12dp (space-3) gaps, surface on background. `AmountKeypad` bottom row: decimal point, 0, delete; it reports keys and `AmountInput` decides what is valid. `MpinPad` bottom row: blank, 0, delete (Lucide `delete`, 24dp, no key background). Dots are 12dp circles, 16dp (space-4) apart; filled in text colour, empty as a 1dp textMuted ring (a surfaceMuted fill was tried and is invisible on the background). `MpinPad` submits on the sixth digit. Wrong MPIN: dots clear and a Small danger message shows the attempts left. Lockout: keys disabled and a Small muted countdown ("Try again in 24 s"). TalkBack never reads the digits entered, only "3 of 6 entered".
+- `AbcTextField`: 56dp, surface, radius-md (16dp, Stitch), 1dp border, padding space-4 across, label always visible above (Small muted). Focused: 2dp primary border. Placeholder is a hint, never the label. Error: border danger (2dp while focused), message below in Small danger.
+- `AmountKeypad` and `MpinPad`: 3 x 4 grid of 64dp pill keys (radius-full, stage 2b), H2 digits; MPIN shows 6 dots that fill as digits are entered. Keys are 64dp tall, a third of the pad width each, 12dp (space-3) gaps, surface on background. `AmountKeypad` bottom row: decimal point and delete on surfaceMuted, 0 on surface; it reports keys and `AmountInput` decides what is valid. `MpinPad` bottom row: blank, 0, delete (Lucide `delete`, 24dp, on a surfaceMuted key). Dots are 12dp circles, 16dp (space-4) apart; filled in primary, empty as a 1dp textMuted ring (a surfaceMuted fill was tried and is invisible on the background). `MpinPad` submits on the sixth digit. Wrong MPIN: dots clear and a Small danger message shows the attempts left. Lockout: keys disabled and a Small muted countdown ("Try again in 24 s"). TalkBack never reads the digits entered, only "3 of 6 entered".
 - `AbcSwitch`, `AbcSlider`: Material 3 components themed with primary for active track and accent thumb highlight. Slider always shows the current value as text.
   Built as rows: `AbcSwitchRow` (optional 20dp icon, Body title, Small muted subtitle, the whole row toggles) and `AbcSliderRow` (label and value text in an `AdaptiveRow` above the slider; TalkBack reads the money value).
 
@@ -254,11 +256,10 @@ States (every data-driven screen)
 - Bottom bar icons in the samples are filled. Use Lucide's filled-equivalent shapes or ask before drawing custom ones.
 - Every icon-only control has a contentDescription. Decorative icons set it to null.
 
-Launcher icon (chosen 2026-10-17, concept B "Peach card"):
+Launcher icon (chosen 2026-10-17, concept B; recoloured for the Stitch redesign in stage 2b, 2026-10-25):
 - Adaptive icon in `res/mipmap-anydpi/ic_launcher.xml` and `ic_launcher_round.xml`, all vectors, no PNGs (minSdk 26).
-- Background `drawable/ic_launcher_background.xml`: card-peach gradient #F7DCC8 to #F08A3C, top-left to bottom-right, so the icon matches the Main card.
-- Foreground `drawable/ic_launcher_foreground.xml`: the abcbank dotted mark in #111111. 13 rounded squares (corner radius 28% of side) on the diagonals c + r = 3, 5, 7 of a 6 x 6 grid of 7.6dp cells, centred on the 108dp canvas and inside the 66dp safe zone. Size and opacity grow towards the top-right (side 24% to 92% of a cell, opacity 48% to 100%), traced from the wordmark in Sample Screens 1.
-- Not yet updated for the redesign (2026-10-24): the launcher drawables still use the v1 peach and #111111; they are vectors outside the theme and move to the Stitch colours in stage 2.
+- Background `drawable/ic_launcher_background.xml`: card-sage gradient #3A6664 to #0E3E3D, top-left to bottom-right, as on the Home balance header.
+- Foreground `drawable/ic_launcher_foreground.xml`: the abcbank dotted mark in accent #E07A5F, as in the wordmark. 13 rounded squares (corner radius 28% of side) on the diagonals c + r = 3, 5, 7 of a 6 x 6 grid of 7.6dp cells, centred on the 108dp canvas and inside the 66dp safe zone. Size and opacity grow towards the top-right (side 24% to 92% of a cell, opacity 48% to 100%), traced from the wordmark in Sample Screens 1.
 - Monochrome `drawable/ic_launcher_monochrome.xml`: the same mark, for Android 13+ themed icons.
 - If ABC Bank supplies a brand icon, replace these three drawables only.
 

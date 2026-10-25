@@ -6,7 +6,7 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- card-peach gradient, the Main card face -->
+    <!-- card-sage gradient (deep teal), as on the Home balance header -->
     <path android:pathData="M0,0h108v108h-108z">
         <aapt:attr name="android:fillColor">
             <gradient
@@ -15,8 +15,8 @@
                 android:startY="0"
                 android:endX="108"
                 android:endY="108"
-                android:startColor="#F7DCC8"
-                android:endColor="#F08A3C" />
+                android:startColor="#3A6664"
+                android:endColor="#0E3E3D" />
         </aapt:attr>
     </path>
 </vector>

@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -26,9 +27,9 @@ import com.abcbank.mobile.R
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 
 /**
- * `AmountKeypad` from DESIGN_SYSTEM.md section 06: the MPIN pad's 3 x 4 grid of 64dp keys with
- * H1 digits, and a decimal point and delete on the bottom row. Keys report characters; the
- * caller decides what a valid amount is.
+ * `AmountKeypad` from DESIGN_SYSTEM.md section 06: the MPIN pad's 3 x 4 grid of 64dp pill keys with
+ * H2 digits, and a decimal point and delete on surfaceMuted on the bottom row. Keys report
+ * characters; the caller decides what a valid amount is.
  */
 @Composable
 fun AmountKeypad(onKey: (Char) -> Unit, onDelete: () -> Unit, modifier: Modifier = Modifier) {
@@ -40,7 +41,12 @@ fun AmountKeypad(onKey: (Char) -> Unit, onDelete: () -> Unit, modifier: Modifier
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(spacing.space3)) {
-            Key('.', onKey, description = stringResource(R.string.cd_decimal_point))
+            Key(
+                '.',
+                onKey,
+                description = stringResource(R.string.cd_decimal_point),
+                container = AbcTheme.colors.surfaceMuted
+            )
             Key('0', onKey)
             val deleteDescription = stringResource(R.string.cd_delete)
             Box(
@@ -48,7 +54,8 @@ fun AmountKeypad(onKey: (Char) -> Unit, onDelete: () -> Unit, modifier: Modifier
                 modifier = Modifier
                     .weight(1f)
                     .height(AbcTheme.dimens.keypadKeyHeight)
-                    .clip(AbcTheme.shapes.md)
+                    .clip(AbcTheme.shapes.full)
+                    .background(AbcTheme.colors.surfaceMuted)
                     .clickable(role = Role.Button, onClick = onDelete)
                     .semantics { contentDescription = deleteDescription }
             ) {
@@ -64,14 +71,19 @@ fun AmountKeypad(onKey: (Char) -> Unit, onDelete: () -> Unit, modifier: Modifier
 }
 
 @Composable
-private fun RowScope.Key(key: Char, onKey: (Char) -> Unit, description: String? = null) {
+private fun RowScope.Key(
+    key: Char,
+    onKey: (Char) -> Unit,
+    description: String? = null,
+    container: Color = AbcTheme.colors.surface
+) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .weight(1f)
             .height(AbcTheme.dimens.keypadKeyHeight)
-            .clip(AbcTheme.shapes.md)
-            .background(AbcTheme.colors.surface)
+            .clip(AbcTheme.shapes.full)
+            .background(container)
             .clickable(role = Role.Button) { onKey(key) }
             .then(
                 if (description !=
@@ -83,7 +95,7 @@ private fun RowScope.Key(key: Char, onKey: (Char) -> Unit, description: String? 
                 }
             )
     ) {
-        Text(text = key.toString(), style = AbcTheme.typography.h1, color = AbcTheme.colors.text)
+        Text(text = key.toString(), style = AbcTheme.typography.h2, color = AbcTheme.colors.text)
     }
 }
 

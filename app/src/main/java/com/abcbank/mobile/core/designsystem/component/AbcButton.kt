@@ -41,7 +41,7 @@ import com.abcbank.mobile.core.designsystem.theme.DISABLED_ALPHA
 enum class AbcButtonVariant { Primary, Secondary, Ghost, Danger }
 
 /**
- * Full-width button from DESIGN_SYSTEM.md section 06. One Primary per screen.
+ * Full-width pill button from DESIGN_SYSTEM.md section 06. One Primary per screen.
  * While [loading], a progress indicator replaces the label, the width stays fixed and taps are ignored.
  */
 @Composable
@@ -55,7 +55,7 @@ fun AbcButton(
 ) {
     val colors = AbcTheme.colors
     val dimens = AbcTheme.dimens
-    val shape = AbcTheme.shapes.md
+    val shape = AbcTheme.shapes.full
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val focused by interactionSource.collectIsFocusedAsState()
@@ -63,13 +63,14 @@ fun AbcButton(
 
     val container = when (variant) {
         AbcButtonVariant.Primary -> if (pressed) colors.primaryPressed else colors.primary
-        AbcButtonVariant.Secondary -> colors.surface
+        AbcButtonVariant.Secondary -> colors.accentTint
         AbcButtonVariant.Ghost -> Color.Transparent
         AbcButtonVariant.Danger -> colors.danger
     }
     val content = when (variant) {
         AbcButtonVariant.Primary, AbcButtonVariant.Danger -> colors.onPrimary
-        AbcButtonVariant.Secondary, AbcButtonVariant.Ghost -> colors.text
+        AbcButtonVariant.Secondary -> colors.accentDeep
+        AbcButtonVariant.Ghost -> colors.text
     }
     val loadingLabel = stringResource(R.string.button_loading)
 
@@ -80,13 +81,6 @@ fun AbcButton(
             .alpha(if (enabled) 1f else DISABLED_ALPHA)
             .clip(shape)
             .background(container)
-            .then(
-                if (variant == AbcButtonVariant.Secondary) {
-                    Modifier.border(dimens.borderWidth, colors.border, shape)
-                } else {
-                    Modifier
-                }
-            )
             .then(
                 if (focused) {
                     Modifier.border(
@@ -129,7 +123,7 @@ fun AbcButton(
         } else {
             Text(
                 text = text,
-                style = AbcTheme.typography.body.copy(fontWeight = FontWeight.Medium),
+                style = AbcTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
                 color = content
             )
         }
@@ -145,11 +139,11 @@ private fun AbcButtonPreview() {
             verticalArrangement = Arrangement.spacedBy(AbcTheme.spacing.space3)
         ) {
             AbcButton(text = "Get Started", onClick = {})
-            AbcButton(text = "Download receipt", onClick = {}, variant = AbcButtonVariant.Secondary)
+            AbcButton(text = "Download Receipt", onClick = {}, variant = AbcButtonVariant.Secondary)
             AbcButton(text = "View All", onClick = {}, variant = AbcButtonVariant.Ghost)
-            AbcButton(text = "Freeze card", onClick = {}, variant = AbcButtonVariant.Danger)
-            AbcButton(text = "Confirm transfer", onClick = {}, loading = true)
-            AbcButton(text = "Confirm transfer", onClick = {}, enabled = false)
+            AbcButton(text = "Freeze Card", onClick = {}, variant = AbcButtonVariant.Danger)
+            AbcButton(text = "Confirm Transfer", onClick = {}, loading = true)
+            AbcButton(text = "Confirm Transfer", onClick = {}, enabled = false)
         }
     }
 }

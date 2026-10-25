@@ -27,7 +27,7 @@ import com.abcbank.mobile.R
 import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 
 enum class WordmarkTone {
-    /** Dots and "abc" in sage, "bank" in text colour. Welcome screen. */
+    /** Dots in terracotta, "abc" in primary, "bank" in text colour. Welcome screen. */
     Brand,
 
     /** All white, for dark card art (sage, graphite). */
@@ -45,10 +45,15 @@ fun AbcWordmark(
     style: TextStyle = AbcTheme.typography.h2
 ) {
     val colors = AbcTheme.colors
+    // The dots are a graphic, so terracotta is fine there; "abc" is text and stays in primary.
     val markColor = when (tone) {
-        WordmarkTone.Brand -> colors.cardSage.end
+        WordmarkTone.Brand -> colors.accent
         WordmarkTone.OnCard -> colors.onPrimary
         WordmarkTone.OnLightCard -> colors.text
+    }
+    val abcColor = when (tone) {
+        WordmarkTone.Brand -> colors.primary
+        else -> markColor
     }
     val bankColor = when (tone) {
         WordmarkTone.Brand, WordmarkTone.OnLightCard -> colors.text
@@ -68,7 +73,7 @@ fun AbcWordmark(
         AbcMark(color = markColor, modifier = Modifier.size(markSize))
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = markColor)) { append(abc) }
+                withStyle(SpanStyle(color = abcColor)) { append(abc) }
                 withStyle(SpanStyle(color = bankColor)) { append(bank) }
             },
             style = style

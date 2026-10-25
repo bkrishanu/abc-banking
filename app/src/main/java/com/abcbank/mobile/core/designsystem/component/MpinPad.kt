@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -97,7 +96,7 @@ private fun MpinDots(enteredCount: Int, length: Int) {
             val filled = index < enteredCount
             Box(
                 modifier = if (filled) {
-                    dot.background(AbcTheme.colors.text)
+                    dot.background(AbcTheme.colors.primary)
                 } else {
                     // Outline, not a muted fill: a fill close to the background disappears.
                     dot.border(AbcTheme.dimens.borderWidth, AbcTheme.colors.textMuted, CircleShape)
@@ -115,11 +114,11 @@ private fun RowScope.DigitKey(digit: Int, enabled: Boolean, onDigit: (Int) -> Un
             .weight(1f)
             .height(AbcTheme.dimens.keypadKeyHeight)
             .alpha(if (enabled) 1f else DISABLED_ALPHA)
-            .clip(AbcTheme.shapes.md)
+            .clip(AbcTheme.shapes.full)
             .background(AbcTheme.colors.surface)
             .clickable(enabled = enabled, role = Role.Button) { onDigit(digit) }
     ) {
-        Text(text = digit.toString(), style = AbcTheme.typography.h1, color = AbcTheme.colors.text)
+        Text(text = digit.toString(), style = AbcTheme.typography.h2, color = AbcTheme.colors.text)
     }
 }
 
@@ -131,8 +130,8 @@ private fun RowScope.DeleteKey(enabled: Boolean, onDelete: () -> Unit) {
             .weight(1f)
             .height(AbcTheme.dimens.keypadKeyHeight)
             .alpha(if (enabled) 1f else DISABLED_ALPHA)
-            .clip(AbcTheme.shapes.md)
-            .background(Color.Transparent)
+            .clip(AbcTheme.shapes.full)
+            .background(AbcTheme.colors.surfaceMuted)
             .clickable(enabled = enabled, role = Role.Button, onClick = onDelete)
     ) {
         Icon(

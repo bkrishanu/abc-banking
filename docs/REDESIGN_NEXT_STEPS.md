@@ -15,7 +15,8 @@ docs/DESIGN_SYSTEM.md (current tokens and components). Update this file as stage
 | 1 | Tokens: palette, Plus Jakarta Sans, radii, 56dp buttons | Merged (`ae3e73a`) |
 | 1 fix | PDFs embed Plus Jakarta Sans through static Regular and Medium files | Merged (`b25a2c2`) |
 | 2a | Docked bottom bar, floating Transfer button, title and greeting top bars with a shared bell, step progress bar | Merged (`bea85e5` and this file) |
-| 2b | Content components | Next |
+| 2b-1 | Controls: pill buttons, text fields, keypads, badges, wordmark, launcher icon, three tint tokens | Committed on `redesign/stage-2b1-controls` |
+| 2b-2 | Content components: quick actions, card art, rows, tiles, card stack, offline banner | Next |
 | 3 | Screens, one tab or flow per branch | After 2b |
 
 Working agreement for every stage: list the files and wait for a go-ahead when there are more than five; one
@@ -24,7 +25,9 @@ look at every re-recorded golden; check on the emulator; commit, then stop for r
 
 ## 02 Stage 2b: content components
 
-Branch `redesign/stage-2b-components`. Expected files (confirm before starting):
+Split in two (decided 2026-10-25). 2b-1 (`redesign/stage-2b1-controls`) is done: `AbcButton`, `AbcTextField`,
+`MpinPad`, `AmountKeypad`, `StatusBadge`, `AbcWordmark`, the launcher icon, and the `accentTint`, `warningTint` and
+`dangerTint` tokens. 2b-2 (`redesign/stage-2b2-content`) covers the rest of this table. Original plan:
 
 | Component | File | Change |
 | --- | --- | --- |
@@ -44,8 +47,8 @@ Branch `redesign/stage-2b-components`. Expected files (confirm before starting):
 
 Home's own Transfer pill duplicates the floating Transfer button until Home's quick actions are replaced here.
 
-Decide with the user before starting: whether the Home balance card extras (Discreet Mode banner, low balance
-warning inside the card) are built as components in 2b or inside `HomeScreen` in stage 3.
+Decided 2026-10-25: the Home balance card extras (Discreet Mode banner, low balance warning inside the card) are built
+inside `HomeScreen` in stage 3, not as 2b components.
 
 ## 03 Stage 3: screens
 

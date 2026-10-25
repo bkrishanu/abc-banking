@@ -2,6 +2,8 @@ package com.abcbank.mobile.core.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +29,8 @@ import com.abcbank.mobile.core.designsystem.theme.AbcTheme
 
 /**
  * Single-line input from DESIGN_SYSTEM.md section 06. The label is always visible above the field;
- * the placeholder is only a hint. [errorText] turns the border danger and shows below the field.
+ * the placeholder is only a hint. Focus draws a 2dp primary border; [errorText] turns the border
+ * danger, at either width, and shows below the field.
  */
 @Composable
 fun AbcTextField(
@@ -42,7 +47,10 @@ fun AbcTextField(
     val colors = AbcTheme.colors
     val spacing = AbcTheme.spacing
     val typography = AbcTheme.typography
-    val shape = AbcTheme.shapes.sm
+    val dimens = AbcTheme.dimens
+    val shape = AbcTheme.shapes.md
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(spacing.space1)) {
         Text(text = label, style = typography.small, color = colors.textMuted)
@@ -55,6 +63,7 @@ fun AbcTextField(
             cursorBrush = SolidColor(colors.text),
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
+            interactionSource = interactionSource,
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics {
@@ -65,15 +74,19 @@ fun AbcTextField(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = AbcTheme.dimens.textFieldHeight)
+                        .heightIn(min = dimens.textFieldHeight)
                         .clip(shape)
                         .background(if (enabled) colors.surface else colors.surfaceMuted)
                         .border(
-                            width = AbcTheme.dimens.borderWidth,
-                            color = if (errorText != null) colors.danger else colors.border,
+                            width = if (focused) dimens.focusRingWidth else dimens.borderWidth,
+                            color = when {
+                                errorText != null -> colors.danger
+                                focused -> colors.primary
+                                else -> colors.border
+                            },
                             shape = shape
                         )
-                        .padding(horizontal = spacing.space3, vertical = spacing.space3),
+                        .padding(horizontal = spacing.space4, vertical = spacing.space3),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     if (value.isEmpty() && placeholder != null) {
